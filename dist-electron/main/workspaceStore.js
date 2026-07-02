@@ -1,7 +1,21 @@
-import electron from 'electron';
-import { mkdir, readFile, writeFile } from 'node:fs/promises';
-import path from 'node:path';
-const { app } = electron;
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.loadWorkspace = loadWorkspace;
+exports.saveProject = saveProject;
+exports.deleteProject = deleteProject;
+exports.setLastActiveProject = setLastActiveProject;
+exports.saveRoleProfile = saveRoleProfile;
+exports.deleteRoleProfile = deleteRoleProfile;
+exports.saveSettings = saveSettings;
+exports.saveRecentUrl = saveRecentUrl;
+exports.saveRecentTabs = saveRecentTabs;
+const electron_1 = __importDefault(require("electron"));
+const promises_1 = require("node:fs/promises");
+const node_path_1 = __importDefault(require("node:path"));
+const { app } = electron_1.default;
 const workspaceSchemaVersion = 1;
 const defaultSettings = {
     restoreTabsOnStartup: true,
@@ -18,7 +32,7 @@ const defaultWorkspace = {
     lastActiveProjectId: null,
 };
 function workspacePath() {
-    return path.join(app.getPath('userData'), 'workspace.json');
+    return node_path_1.default.join(app.getPath('userData'), 'workspace.json');
 }
 function sanitizeWorkspace(data) {
     const projects = Array.isArray(data.projects) ? data.projects.filter(isValidProject) : [];
@@ -116,13 +130,13 @@ function isValidSavedTab(recentTab, projects, roleProfiles) {
 async function writeWorkspace(workspace) {
     const nextWorkspace = sanitizeWorkspace(workspace);
     const filePath = workspacePath();
-    await mkdir(path.dirname(filePath), { recursive: true });
-    await writeFile(filePath, `${JSON.stringify(nextWorkspace, null, 2)}\n`, 'utf8');
+    await (0, promises_1.mkdir)(node_path_1.default.dirname(filePath), { recursive: true });
+    await (0, promises_1.writeFile)(filePath, `${JSON.stringify(nextWorkspace, null, 2)}\n`, 'utf8');
     return nextWorkspace;
 }
-export async function loadWorkspace() {
+async function loadWorkspace() {
     try {
-        const raw = await readFile(workspacePath(), 'utf8');
+        const raw = await (0, promises_1.readFile)(workspacePath(), 'utf8');
         const parsed = JSON.parse(raw);
         return sanitizeWorkspace(parsed);
     }
@@ -134,7 +148,7 @@ export async function loadWorkspace() {
         throw error;
     }
 }
-export async function saveProject(project) {
+async function saveProject(project) {
     if (!isValidProject(project)) {
         throw new Error('Project name and a valid http(s) base URL are required.');
     }
@@ -157,7 +171,7 @@ export async function saveProject(project) {
         schemaVersion: workspaceSchemaVersion,
     });
 }
-export async function deleteProject(projectId) {
+async function deleteProject(projectId) {
     const workspace = await loadWorkspace();
     const projects = workspace.projects.filter((project) => project.id !== projectId);
     const roleProfiles = workspace.roleProfiles.filter((roleProfile) => roleProfile.projectId !== projectId);
@@ -166,14 +180,14 @@ export async function deleteProject(projectId) {
     const recentTabs = workspace.recentTabs.filter((recentTab) => recentTab.projectId !== projectId);
     return writeWorkspace({ ...workspace, projects, roleProfiles, recentUrls, recentTabs, lastActiveProjectId });
 }
-export async function setLastActiveProject(projectId) {
+async function setLastActiveProject(projectId) {
     const workspace = await loadWorkspace();
     const lastActiveProjectId = workspace.projects.some((project) => project.id === projectId)
         ? projectId
         : null;
     return writeWorkspace({ ...workspace, lastActiveProjectId });
 }
-export async function saveRoleProfile(roleProfile) {
+async function saveRoleProfile(roleProfile) {
     const workspace = await loadWorkspace();
     if (!isValidRoleProfile(roleProfile, workspace.projects)) {
         throw new Error('Role name, color, session partition, and a valid start URL are required.');
@@ -188,18 +202,18 @@ export async function saveRoleProfile(roleProfile) {
     }
     return writeWorkspace({ ...workspace, roleProfiles });
 }
-export async function deleteRoleProfile(roleProfileId) {
+async function deleteRoleProfile(roleProfileId) {
     const workspace = await loadWorkspace();
     const roleProfiles = workspace.roleProfiles.filter((roleProfile) => roleProfile.id !== roleProfileId);
     const recentUrls = workspace.recentUrls.filter((recentUrl) => recentUrl.roleProfileId !== roleProfileId);
     const recentTabs = workspace.recentTabs.filter((recentTab) => recentTab.roleProfileId !== roleProfileId);
     return writeWorkspace({ ...workspace, roleProfiles, recentUrls, recentTabs });
 }
-export async function saveSettings(settings) {
+async function saveSettings(settings) {
     const workspace = await loadWorkspace();
     return writeWorkspace({ ...workspace, settings: sanitizeSettings(settings) });
 }
-export async function saveRecentUrl(recentUrl) {
+async function saveRecentUrl(recentUrl) {
     const workspace = await loadWorkspace();
     const nextRecentUrl = {
         ...recentUrl,
@@ -214,7 +228,7 @@ export async function saveRecentUrl(recentUrl) {
     ].slice(0, 50);
     return writeWorkspace({ ...workspace, recentUrls });
 }
-export async function saveRecentTabs(recentTabs) {
+async function saveRecentTabs(recentTabs) {
     const workspace = await loadWorkspace();
     return writeWorkspace({ ...workspace, recentTabs });
 }

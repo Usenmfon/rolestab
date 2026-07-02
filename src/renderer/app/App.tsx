@@ -12,7 +12,7 @@ import type {
   SavedBrowserTab,
   WorkspaceData,
 } from '../../shared/workspace'
-import { normalizeHttpUrl } from '../utils/url'
+import { isProductionUrl, normalizeHttpUrl } from '../utils/url'
 
 const commonRoleTemplates = [
   { name: 'Admin', color: '#2563eb' },
@@ -500,6 +500,10 @@ function App() {
   }
 
   function openRoleProfileTab(roleProfile: RoleProfile, initialUrl = roleProfile.startUrl, title = roleProfile.name) {
+    if (!confirmProductionUrl(initialUrl)) {
+      return
+    }
+
     const tabId = `tab-${crypto.randomUUID()}`
 
     setTabs((currentTabs) => [
@@ -733,7 +737,13 @@ function App() {
     }
 
     try {
-      sendBrowserCommand({ type: 'navigate', url: normalizeHttpUrl(url) })
+      const normalizedUrl = normalizeHttpUrl(url)
+
+      if (!confirmProductionUrl(normalizedUrl)) {
+        return
+      }
+
+      sendBrowserCommand({ type: 'navigate', url: normalizedUrl })
       updateTab(activeTab.id, { consoleErrors: [], loadError: undefined })
       setWorkspaceError(null)
     } catch (error) {
@@ -778,11 +788,24 @@ function App() {
     }
 
     try {
+      if (!window.confirm(`Open this URL in your external browser?\n\n${activeTab.url}`)) {
+        return
+      }
+
       await window.rolesTab?.app.openExternal(activeTab.url)
       setWorkspaceError(null)
     } catch (error) {
       setWorkspaceError(error instanceof Error ? error.message : 'Unable to open the current URL externally.')
     }
+  }
+
+  function confirmProductionUrl(url: string): boolean {
+    return (
+      !isProductionUrl(url) ||
+      window.confirm(
+        `This looks like a production URL:\n\n${url}\n\nContinue only if you intend to test against production.`,
+      )
+    )
   }
 
   return (

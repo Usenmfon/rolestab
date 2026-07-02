@@ -14,7 +14,8 @@ import {
 } from './workspaceStore.js'
 import type { AppSettings, ProjectSummary, RecentUrl, RoleProfile, SavedBrowserTab } from '../shared/workspace.js'
 
-const { app, BrowserWindow, ipcMain, shell } = electron
+const { app, BrowserWindow, ipcMain } = electron
+const { shell } = electron
 
 if (!app.requestSingleInstanceLock()) {
   app.quit()
@@ -27,6 +28,10 @@ let mainWindow: AppBrowserWindow | null = null
 app.setName('RolesTab')
 
 app.whenReady().then(() => {
+  electron.session.defaultSession.setPermissionRequestHandler((_webContents, _permission, callback) => {
+    callback(false)
+  })
+
   mainWindow = createAppWindow()
 
   app.on('activate', () => {
@@ -55,25 +60,29 @@ app.on('window-all-closed', () => {
 })
 
 ipcMain.handle('app:open-external', async (_event, url: string) => {
-  const parsed = new URL(url)
-
-  if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
-    throw new Error('Only http and https URLs can be opened externally.')
-  }
+  const parsed = parseHttpUrl(url)
 
   await shell.openExternal(parsed.toString())
 })
 
 ipcMain.handle('session:create-role-partition', (_event, projectId: string, roleProfileId: string) => {
+  if (!isSafeIdentifier(projectId) || !isSafeIdentifier(roleProfileId)) {
+    throw new Error('Project and role identifiers must be safe partition identifiers.')
+  }
+
   return createRolePartition(projectId, roleProfileId)
 })
 
 ipcMain.handle('session:clear-role-session', async (_event, partition: string) => {
+  if (!isSafePartition(partition)) {
+    throw new Error('Invalid session partition.')
+  }
+
   await clearRoleSession(partition)
 })
 
 ipcMain.handle('session:clear-role-sessions', async (_event, partitions: string[]) => {
-  await clearRoleSessions(partitions)
+  await clearRoleSessions(partitions.filter(isSafePartition))
 })
 
 ipcMain.handle('workspace:load', async () => {
@@ -111,3 +120,21 @@ ipcMain.handle('workspace:save-recent-url', async (_event, recentUrl: RecentUrl)
 ipcMain.handle('workspace:save-recent-tabs', async (_event, recentTabs: SavedBrowserTab[]) => {
   return saveRecentTabs(recentTabs)
 })
+
+function parseHttpUrl(url: string): URL {
+  const parsed = new URL(url)
+
+  if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
+    throw new Error('Only http and https URLs are allowed.')
+  }
+
+  return parsed
+}
+
+function isSafeIdentifier(value: string): boolean {
+  return /^[\w-]+$/.test(value)
+}
+
+function isSafePartition(partition: string): boolean {
+  return /^persist:[\w-]+-[\w-]+$/.test(partition)
+}

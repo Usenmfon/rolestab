@@ -9,3 +9,20 @@ export function normalizeHttpUrl(value: string): string {
 
   return parsed.toString().replace(/\/$/, '')
 }
+
+export function isProductionUrl(value: string): boolean {
+  try {
+    const hostname = new URL(value).hostname.toLowerCase()
+
+    return (
+      hostname !== 'localhost' &&
+      hostname !== '127.0.0.1' &&
+      !hostname.endsWith('.test') &&
+      !hostname.includes('staging') &&
+      !hostname.includes('stage') &&
+      !hostname.includes('dev')
+    )
+  } catch {
+    return false
+  }
+}

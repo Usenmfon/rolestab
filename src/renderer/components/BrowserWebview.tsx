@@ -23,6 +23,10 @@ type NavigationEvent = Event & {
   url?: string
 }
 
+type WindowOpenEvent = Event & {
+  url?: string
+}
+
 type FaviconEvent = Event & {
   favicons?: string[]
 }
@@ -98,6 +102,33 @@ export function BrowserWebview({ tab, active, command, onUpdate }: BrowserWebvie
       }
     }
 
+    function handleWillNavigate(event: Event) {
+      const navigationEvent = event as NavigationEvent
+      const url = navigationEvent.url
+
+      if (!url || isSafeWebUrl(url)) {
+        return
+      }
+
+      event.preventDefault()
+      onUpdate(tab.id, {
+        loading: false,
+        loadError: 'Blocked unsafe navigation. Only http and https URLs are allowed.',
+      })
+    }
+
+    function handleWindowOpen(event: Event) {
+      const windowEvent = event as WindowOpenEvent
+
+      event.preventDefault()
+
+      onUpdate(tab.id, {
+        loadError: windowEvent.url
+          ? `Blocked pop-up window: ${windowEvent.url}`
+          : 'Blocked pop-up window.',
+      })
+    }
+
     function handleFavicon(event: Event) {
       const favicons = (event as FaviconEvent).favicons
       const faviconUrl = favicons?.[0]
@@ -143,6 +174,8 @@ export function BrowserWebview({ tab, active, command, onUpdate }: BrowserWebvie
     webviewElement.addEventListener('page-title-updated', handleTitle)
     webviewElement.addEventListener('did-navigate', handleNavigation)
     webviewElement.addEventListener('did-navigate-in-page', handleNavigation)
+    webviewElement.addEventListener('will-navigate', handleWillNavigate)
+    webviewElement.addEventListener('new-window', handleWindowOpen)
     webviewElement.addEventListener('page-favicon-updated', handleFavicon)
     webviewElement.addEventListener('did-fail-load', handleFailLoad)
     webviewElement.addEventListener('console-message', handleConsoleMessage)
@@ -153,6 +186,8 @@ export function BrowserWebview({ tab, active, command, onUpdate }: BrowserWebvie
       webviewElement.removeEventListener('page-title-updated', handleTitle)
       webviewElement.removeEventListener('did-navigate', handleNavigation)
       webviewElement.removeEventListener('did-navigate-in-page', handleNavigation)
+      webviewElement.removeEventListener('will-navigate', handleWillNavigate)
+      webviewElement.removeEventListener('new-window', handleWindowOpen)
       webviewElement.removeEventListener('page-favicon-updated', handleFavicon)
       webviewElement.removeEventListener('did-fail-load', handleFailLoad)
       webviewElement.removeEventListener('console-message', handleConsoleMessage)
@@ -188,8 +223,15 @@ export function BrowserWebview({ tab, active, command, onUpdate }: BrowserWebvie
         break
       case 'home':
       case 'navigate':
-        webview.loadURL?.(command.url)
-        onUpdate(tab.id, { url: command.url, loading: true, loadError: undefined })
+        if (isSafeWebUrl(command.url)) {
+          webview.loadURL?.(command.url)
+          onUpdate(tab.id, { url: command.url, loading: true, loadError: undefined })
+        } else {
+          onUpdate(tab.id, {
+            loading: false,
+            loadError: 'Blocked unsafe navigation. Only http and https URLs are allowed.',
+          })
+        }
         break
       case 'open-devtools':
         webview.openDevTools?.()
@@ -202,8 +244,17 @@ export function BrowserWebview({ tab, active, command, onUpdate }: BrowserWebvie
       ref={webviewRef}
       src={initialUrl}
       partition={tab.sessionPartition}
-      webpreferences="contextIsolation=yes,nodeIntegration=no,sandbox=yes"
+      webpreferences="contextIsolation=yes,nodeIntegration=no,sandbox=yes,webSecurity=yes,allowRunningInsecureContent=no"
       className={`h-full w-full ${active ? 'block' : 'hidden'}`}
     />
   )
+}
+
+function isSafeWebUrl(url: string): boolean {
+  try {
+    const parsed = new URL(url)
+    return parsed.protocol === 'http:' || parsed.protocol === 'https:'
+  } catch {
+    return false
+  }
 }

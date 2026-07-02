@@ -1,16 +1,24 @@
 import electron from 'electron'
 import path from 'node:path'
-import { fileURLToPath } from 'node:url'
 
-const { BrowserWindow, shell } = electron
-const currentFile = fileURLToPath(import.meta.url)
-const currentDirectory = path.dirname(currentFile)
+const { BrowserWindow } = electron
+const { shell } = electron
+const currentDirectory = __dirname
 
 const rendererDevServerUrl = process.env.VITE_DEV_SERVER_URL ?? 'http://localhost:5173'
 const rendererIndexPath = path.join(currentDirectory, '../../dist/index.html')
 const preloadPath = path.join(currentDirectory, '../preload/index.js')
 
 type AppBrowserWindow = InstanceType<typeof BrowserWindow>
+
+function isSafeExternalUrl(url: string): boolean {
+  try {
+    const parsed = new URL(url)
+    return parsed.protocol === 'http:' || parsed.protocol === 'https:'
+  } catch {
+    return false
+  }
+}
 
 export function createAppWindow(): AppBrowserWindow {
   const window = new BrowserWindow({
@@ -25,8 +33,10 @@ export function createAppWindow(): AppBrowserWindow {
       preload: preloadPath,
       nodeIntegration: false,
       contextIsolation: true,
-      sandbox: false,
+      sandbox: true,
       webviewTag: true,
+      webSecurity: true,
+      allowRunningInsecureContent: false,
     },
   })
 
@@ -35,8 +45,19 @@ export function createAppWindow(): AppBrowserWindow {
   })
 
   window.webContents.setWindowOpenHandler(({ url }) => {
-    void shell.openExternal(url)
+    if (isSafeExternalUrl(url)) {
+      void shell.openExternal(url)
+    }
+
     return { action: 'deny' }
+  })
+
+  window.webContents.on('will-navigate', (event, url) => {
+    const expectedUrl = process.env.NODE_ENV === 'production' ? `file://${rendererIndexPath}` : rendererDevServerUrl
+
+    if (!url.startsWith(expectedUrl)) {
+      event.preventDefault()
+    }
   })
 
   if (process.env.NODE_ENV === 'production') {

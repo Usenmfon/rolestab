@@ -1,13 +1,27 @@
-import electron from 'electron';
-import path from 'node:path';
-import { fileURLToPath } from 'node:url';
-const { BrowserWindow, shell } = electron;
-const currentFile = fileURLToPath(import.meta.url);
-const currentDirectory = path.dirname(currentFile);
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.createAppWindow = createAppWindow;
+const electron_1 = __importDefault(require("electron"));
+const node_path_1 = __importDefault(require("node:path"));
+const { BrowserWindow } = electron_1.default;
+const { shell } = electron_1.default;
+const currentDirectory = __dirname;
 const rendererDevServerUrl = process.env.VITE_DEV_SERVER_URL ?? 'http://localhost:5173';
-const rendererIndexPath = path.join(currentDirectory, '../../dist/index.html');
-const preloadPath = path.join(currentDirectory, '../preload/index.js');
-export function createAppWindow() {
+const rendererIndexPath = node_path_1.default.join(currentDirectory, '../../dist/index.html');
+const preloadPath = node_path_1.default.join(currentDirectory, '../preload/index.js');
+function isSafeExternalUrl(url) {
+    try {
+        const parsed = new URL(url);
+        return parsed.protocol === 'http:' || parsed.protocol === 'https:';
+    }
+    catch {
+        return false;
+    }
+}
+function createAppWindow() {
     const window = new BrowserWindow({
         width: 1280,
         height: 820,
@@ -20,16 +34,26 @@ export function createAppWindow() {
             preload: preloadPath,
             nodeIntegration: false,
             contextIsolation: true,
-            sandbox: false,
+            sandbox: true,
             webviewTag: true,
+            webSecurity: true,
+            allowRunningInsecureContent: false,
         },
     });
     window.once('ready-to-show', () => {
         window.show();
     });
     window.webContents.setWindowOpenHandler(({ url }) => {
-        void shell.openExternal(url);
+        if (isSafeExternalUrl(url)) {
+            void shell.openExternal(url);
+        }
         return { action: 'deny' };
+    });
+    window.webContents.on('will-navigate', (event, url) => {
+        const expectedUrl = process.env.NODE_ENV === 'production' ? `file://${rendererIndexPath}` : rendererDevServerUrl;
+        if (!url.startsWith(expectedUrl)) {
+            event.preventDefault();
+        }
     });
     if (process.env.NODE_ENV === 'production') {
         void window.loadFile(rendererIndexPath);
