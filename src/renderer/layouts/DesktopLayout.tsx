@@ -2,6 +2,7 @@ import { Sidebar } from '../components/Sidebar'
 import { TabBar } from '../components/TabBar'
 import { TopBar } from '../components/TopBar'
 import { WebviewArea } from '../components/WebviewArea'
+import { ConfirmationDialog } from '../components/ConfirmationDialog'
 import { ProjectFormPanel, type ProjectDraft } from '../components/ProjectFormPanel'
 import {
   RoleProfileFormPanel,
@@ -15,12 +16,20 @@ import type {
   RecentUrl,
   RoleProfile,
 } from '../../shared/workspace'
+import type { SessionUsage } from '../../shared/session'
+
+type ConfirmationRequest = {
+  title: string
+  message: string
+  confirmLabel: string
+}
 
 type DesktopLayoutProps = {
   projects: ProjectSummary[]
   activeProjectRoleProfiles: RoleProfile[]
   settings: AppSettings
   recentUrls: RecentUrl[]
+  sessionUsage: SessionUsage[]
   activeProject: ProjectSummary | null
   tabs: BrowserTab[]
   activeTab: BrowserTab | null
@@ -31,6 +40,7 @@ type DesktopLayoutProps = {
   editingRoleProfile: RoleProfile | null
   projectFormOpen: boolean
   roleProfileFormOpen: boolean
+  confirmationRequest: ConfirmationRequest | null
   onCreateProject: () => void
   onEditProject: (projectId: string) => void
   onDeleteProject: (projectId: string) => void
@@ -68,6 +78,8 @@ type DesktopLayoutProps = {
   onCopyUrl: () => void
   onOpenExternal: () => void
   onOpenDevTools: () => void
+  onConfirmAction: () => void
+  onCancelAction: () => void
 }
 
 export function DesktopLayout({
@@ -75,6 +87,7 @@ export function DesktopLayout({
   activeProjectRoleProfiles,
   settings,
   recentUrls,
+  sessionUsage,
   activeProject,
   tabs,
   activeTab,
@@ -85,6 +98,7 @@ export function DesktopLayout({
   editingRoleProfile,
   projectFormOpen,
   roleProfileFormOpen,
+  confirmationRequest,
   onCreateProject,
   onEditProject,
   onDeleteProject,
@@ -122,6 +136,8 @@ export function DesktopLayout({
   onCopyUrl,
   onOpenExternal,
   onOpenDevTools,
+  onConfirmAction,
+  onCancelAction,
 }: DesktopLayoutProps) {
   return (
     <main className="flex h-screen overflow-hidden bg-slate-100 text-slate-900">
@@ -130,6 +146,7 @@ export function DesktopLayout({
         activeProjectRoleProfiles={activeProjectRoleProfiles}
         settings={settings}
         recentUrls={recentUrls}
+        sessionUsage={sessionUsage}
         activeProjectId={activeProject?.id ?? null}
         onCreateProject={onCreateProject}
         onEditProject={onEditProject}
@@ -214,6 +231,16 @@ export function DesktopLayout({
           roleProfile={editingRoleProfile}
           onClose={onCloseRoleProfileForm}
           onSubmit={onSaveRoleProfile}
+        />
+      ) : null}
+
+      {confirmationRequest ? (
+        <ConfirmationDialog
+          title={confirmationRequest.title}
+          message={confirmationRequest.message}
+          confirmLabel={confirmationRequest.confirmLabel}
+          onConfirm={onConfirmAction}
+          onCancel={onCancelAction}
         />
       ) : null}
     </main>

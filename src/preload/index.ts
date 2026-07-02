@@ -7,6 +7,7 @@ import type {
   SavedBrowserTab,
   WorkspaceData,
 } from '../shared/workspace.js'
+import type { SessionUsage } from '../shared/session.js'
 
 const { contextBridge, ipcRenderer } = electron
 
@@ -31,6 +32,12 @@ const api = {
     },
     clearRoleSessions(partitions: string[]): Promise<void> {
       return ipcRenderer.invoke('session:clear-role-sessions', partitions)
+    },
+    getRoleSessionUsage(partition: string): Promise<SessionUsage> {
+      return ipcRenderer.invoke('session:get-role-session-usage', partition)
+    },
+    getRoleSessionsUsage(partitions: string[]): Promise<SessionUsage[]> {
+      return ipcRenderer.invoke('session:get-role-sessions-usage', partitions)
     },
   },
   workspace: {

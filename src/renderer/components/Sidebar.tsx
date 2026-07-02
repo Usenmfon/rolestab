@@ -1,5 +1,6 @@
 import { FolderPlus, Pencil, Trash2, PanelsTopLeft } from 'lucide-react'
 import type { AppSettings, ProjectSummary, RecentUrl, RoleProfile } from '../../shared/workspace'
+import type { SessionUsage } from '../../shared/session'
 import { RoleProfileList } from './RoleProfileList'
 import { WorkspacePersistencePanel } from './WorkspacePersistencePanel'
 
@@ -8,6 +9,7 @@ type SidebarProps = {
   activeProjectRoleProfiles: RoleProfile[]
   settings: AppSettings
   recentUrls: RecentUrl[]
+  sessionUsage: SessionUsage[]
   activeProjectId: string | null
   onCreateProject: () => void
   onEditProject: (projectId: string) => void
@@ -31,6 +33,7 @@ export function Sidebar({
   activeProjectRoleProfiles,
   settings,
   recentUrls,
+  sessionUsage,
   activeProjectId,
   onCreateProject,
   onEditProject,
@@ -158,6 +161,7 @@ export function Sidebar({
         <WorkspacePersistencePanel
           settings={settings}
           recentUrls={recentUrls}
+          sessionUsage={sessionUsage}
           onToggleRestoreTabs={onToggleRestoreTabs}
           onToggleConfirmSessionClear={onToggleConfirmSessionClear}
           onOpenRecentUrl={onOpenRecentUrl}

@@ -58,6 +58,15 @@ ipcMain.handle('session:clear-role-session', async (_event, partition) => {
 ipcMain.handle('session:clear-role-sessions', async (_event, partitions) => {
     await (0, sessionManager_js_1.clearRoleSessions)(partitions.filter(isSafePartition));
 });
+ipcMain.handle('session:get-role-session-usage', async (_event, partition) => {
+    if (!isSafePartition(partition)) {
+        throw new Error('Invalid session partition.');
+    }
+    return (0, sessionManager_js_1.getRoleSessionUsage)(partition);
+});
+ipcMain.handle('session:get-role-sessions-usage', async (_event, partitions) => {
+    return (0, sessionManager_js_1.getRoleSessionsUsage)(partitions.filter(isSafePartition));
+});
 ipcMain.handle('workspace:load', async () => {
     return (0, workspaceStore_js_1.loadWorkspace)();
 });

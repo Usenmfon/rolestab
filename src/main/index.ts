@@ -1,6 +1,12 @@
 import electron from 'electron'
 import { createAppWindow } from './browserWindow.js'
-import { clearRoleSession, clearRoleSessions, createRolePartition } from './sessionManager.js'
+import {
+  clearRoleSession,
+  clearRoleSessions,
+  createRolePartition,
+  getRoleSessionUsage,
+  getRoleSessionsUsage,
+} from './sessionManager.js'
 import {
   deleteProject,
   deleteRoleProfile,
@@ -83,6 +89,18 @@ ipcMain.handle('session:clear-role-session', async (_event, partition: string) =
 
 ipcMain.handle('session:clear-role-sessions', async (_event, partitions: string[]) => {
   await clearRoleSessions(partitions.filter(isSafePartition))
+})
+
+ipcMain.handle('session:get-role-session-usage', async (_event, partition: string) => {
+  if (!isSafePartition(partition)) {
+    throw new Error('Invalid session partition.')
+  }
+
+  return getRoleSessionUsage(partition)
+})
+
+ipcMain.handle('session:get-role-sessions-usage', async (_event, partitions: string[]) => {
+  return getRoleSessionsUsage(partitions.filter(isSafePartition))
 })
 
 ipcMain.handle('workspace:load', async () => {

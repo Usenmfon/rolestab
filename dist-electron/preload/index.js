@@ -27,6 +27,12 @@ const api = {
         clearRoleSessions(partitions) {
             return ipcRenderer.invoke('session:clear-role-sessions', partitions);
         },
+        getRoleSessionUsage(partition) {
+            return ipcRenderer.invoke('session:get-role-session-usage', partition);
+        },
+        getRoleSessionsUsage(partitions) {
+            return ipcRenderer.invoke('session:get-role-sessions-usage', partitions);
+        },
     },
     workspace: {
         load() {

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { DesktopLayout } from '../layouts/DesktopLayout'
 import type { ProjectDraft } from '../components/ProjectFormPanel'
 import type { RoleProfileDraft } from '../components/RoleProfileFormPanel'
@@ -12,6 +12,7 @@ import type {
   SavedBrowserTab,
   WorkspaceData,
 } from '../../shared/workspace'
+import type { SessionUsage } from '../../shared/session'
 import { isProductionUrl, normalizeHttpUrl } from '../utils/url'
 
 const commonRoleTemplates = [
@@ -26,6 +27,12 @@ const defaultSettings: AppSettings = {
   restoreTabsOnStartup: true,
   confirmBeforeClearingSessions: true,
   defaultHomepage: '',
+}
+
+type ConfirmationRequest = {
+  title: string
+  message: string
+  confirmLabel: string
 }
 
 function App() {
@@ -43,6 +50,9 @@ function App() {
   const [workspaceError, setWorkspaceError] = useState<string | null>(null)
   const [browserCommand, setBrowserCommand] = useState<BrowserCommand | null>(null)
   const [workspaceLoaded, setWorkspaceLoaded] = useState(false)
+  const [sessionUsage, setSessionUsage] = useState<SessionUsage[]>([])
+  const [confirmationRequest, setConfirmationRequest] = useState<ConfirmationRequest | null>(null)
+  const confirmationResolverRef = useRef<((confirmed: boolean) => void) | null>(null)
 
   const activeProject = useMemo(
     () => projects.find((project) => project.id === activeProjectId) ?? null,
@@ -64,6 +74,17 @@ function App() {
     () => tabs.find((tab) => tab.id === activeTabId) ?? null,
     [activeTabId, tabs],
   )
+
+  const refreshSessionUsage = useCallback(async (nextRoleProfiles = roleProfiles) => {
+    const partitions = nextRoleProfiles.map((roleProfile) => roleProfile.sessionPartition)
+
+    try {
+      const usage = await window.rolesTab?.sessions.getRoleSessionsUsage(partitions)
+      setSessionUsage(usage ?? [])
+    } catch (error) {
+      setWorkspaceError(error instanceof Error ? error.message : 'Unable to read session usage.')
+    }
+  }, [roleProfiles])
 
   useEffect(() => {
     let mounted = true
@@ -99,6 +120,16 @@ function App() {
       mounted = false
     }
   }, [])
+
+  useEffect(() => {
+    if (!workspaceLoaded) {
+      return
+    }
+
+    queueMicrotask(() => {
+      void refreshSessionUsage(roleProfiles)
+    })
+  }, [refreshSessionUsage, roleProfiles, workspaceLoaded])
 
   useEffect(() => {
     if (!workspaceLoaded) {
@@ -570,8 +601,21 @@ function App() {
     }
   }
 
-  function shouldClearSessions(message: string): boolean {
-    return !settings.confirmBeforeClearingSessions || window.confirm(message)
+  async function shouldClearSessions(request: ConfirmationRequest): Promise<boolean> {
+    if (!settings.confirmBeforeClearingSessions) {
+      return true
+    }
+
+    return new Promise((resolve) => {
+      confirmationResolverRef.current = resolve
+      setConfirmationRequest(request)
+    })
+  }
+
+  function resolveConfirmation(confirmed: boolean) {
+    confirmationResolverRef.current?.(confirmed)
+    confirmationResolverRef.current = null
+    setConfirmationRequest(null)
   }
 
   function openRecentUrl(recentUrl: RecentUrl) {
@@ -622,16 +666,20 @@ function App() {
       return
     }
 
-    if (
-      !shouldClearSessions(
-        `Reset the persisted browser session for ${activeTab.roleName}? Cookies, cache, localStorage, and IndexedDB for this role partition will be cleared.`,
-      )
-    ) {
+    const confirmed = await shouldClearSessions({
+      title: `Reset ${activeTab.roleName} session`,
+      message:
+        'Cookies, cache, localStorage, IndexedDB, cache storage, and service worker data for this role partition will be cleared.',
+      confirmLabel: 'Reset Session',
+    })
+
+    if (!confirmed) {
       return
     }
 
     try {
       await window.rolesTab?.sessions.clearRoleSession(activeTab.sessionPartition)
+      await refreshSessionUsage()
       setTabs((currentTabs) =>
         currentTabs.map((tab) =>
           tab.roleProfileId === activeTab.roleProfileId
@@ -658,17 +706,20 @@ function App() {
       return
     }
 
-    if (
-      !shouldClearSessions(
-        `Clear sessions for all roles in ${activeProject.name}? Cookies, cache, localStorage, and IndexedDB for ${projectRoleProfiles.length} role partition(s) will be cleared.`,
-      )
-    ) {
+    const confirmed = await shouldClearSessions({
+      title: `Clear ${activeProject.name} sessions`,
+      message: `Cookies, cache, localStorage, IndexedDB, cache storage, and service worker data for ${projectRoleProfiles.length} role partition(s) will be cleared.`,
+      confirmLabel: 'Clear Sessions',
+    })
+
+    if (!confirmed) {
       return
     }
 
     try {
       const partitions = projectRoleProfiles.map((roleProfile) => roleProfile.sessionPartition)
       await window.rolesTab?.sessions.clearRoleSessions(partitions)
+      await refreshSessionUsage()
       const remainingTabs = tabs.filter((tab) => tab.projectId !== activeProject.id)
 
       setTabs(remainingTabs)
@@ -691,16 +742,19 @@ function App() {
       return
     }
 
-    if (
-      !shouldClearSessions(
-        `Clear all app role sessions? Cookies, cache, localStorage, and IndexedDB for ${partitions.length} role partition(s) will be cleared.`,
-      )
-    ) {
+    const confirmed = await shouldClearSessions({
+      title: 'Clear all role sessions',
+      message: `Cookies, cache, localStorage, IndexedDB, cache storage, and service worker data for ${partitions.length} role partition(s) will be cleared.`,
+      confirmLabel: 'Clear All Sessions',
+    })
+
+    if (!confirmed) {
       return
     }
 
     try {
       await window.rolesTab?.sessions.clearRoleSessions(partitions)
+      await refreshSessionUsage()
       setTabs([])
       setActiveTabId(null)
       setWorkspaceError(null)
@@ -814,6 +868,7 @@ function App() {
       activeProjectRoleProfiles={activeProjectRoleProfiles}
       settings={settings}
       recentUrls={recentUrls}
+      sessionUsage={sessionUsage}
       activeProject={activeProject}
       tabs={tabs}
       activeTab={activeTab}
@@ -824,6 +879,7 @@ function App() {
       editingRoleProfile={editingRoleProfile}
       projectFormOpen={projectFormOpen}
       roleProfileFormOpen={roleProfileFormOpen}
+      confirmationRequest={confirmationRequest}
       onCreateProject={openCreateProjectForm}
       onEditProject={openEditProjectForm}
       onDeleteProject={(projectId) => {
@@ -887,6 +943,8 @@ function App() {
         void openActiveUrlExternal()
       }}
       onOpenDevTools={() => sendBrowserCommand({ type: 'open-devtools' })}
+      onConfirmAction={() => resolveConfirmation(true)}
+      onCancelAction={() => resolveConfirmation(false)}
     />
   )
 }

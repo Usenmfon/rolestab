@@ -1,9 +1,11 @@
 import { Clock3, RotateCcw, ShieldAlert } from 'lucide-react'
 import type { AppSettings, RecentUrl } from '../../shared/workspace'
+import type { SessionUsage } from '../../shared/session'
 
 type WorkspacePersistencePanelProps = {
   settings: AppSettings
   recentUrls: RecentUrl[]
+  sessionUsage: SessionUsage[]
   onToggleRestoreTabs: () => void
   onToggleConfirmSessionClear: () => void
   onOpenRecentUrl: (recentUrl: RecentUrl) => void
@@ -14,12 +16,15 @@ type WorkspacePersistencePanelProps = {
 export function WorkspacePersistencePanel({
   settings,
   recentUrls,
+  sessionUsage,
   onToggleRestoreTabs,
   onToggleConfirmSessionClear,
   onOpenRecentUrl,
   onClearProjectSessions,
   onClearAllSessions,
 }: WorkspacePersistencePanelProps) {
+  const totalSessionBytes = sessionUsage.reduce((total, usage) => total + usage.totalBytes, 0)
+
   return (
     <section className="min-h-0">
       <label className="flex items-center gap-2 rounded-md border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700">
@@ -45,6 +50,18 @@ export function WorkspacePersistencePanel({
       <div className="mt-4 flex items-center gap-2 px-1 text-xs font-semibold uppercase tracking-wide text-slate-500">
         <ShieldAlert aria-hidden="true" size={14} />
         Sessions
+      </div>
+
+      <div className="mt-3 rounded-md border border-slate-200 bg-slate-50 px-3 py-2">
+        <div className="flex items-center justify-between gap-3 text-xs">
+          <span className="font-semibold text-slate-700">Stored role data</span>
+          <span className="font-mono text-[11px] text-slate-500">{formatBytes(totalSessionBytes)}</span>
+        </div>
+        <p className="mt-1 text-[11px] leading-4 text-slate-500">
+          {sessionUsage.length === 0
+            ? 'No persistent role sessions yet.'
+            : `${sessionUsage.length} persistent role partition${sessionUsage.length === 1 ? '' : 's'}.`}
+        </p>
       </div>
 
       <div className="mt-3 grid grid-cols-2 gap-2">
@@ -94,4 +111,16 @@ export function WorkspacePersistencePanel({
       )}
     </section>
   )
+}
+
+function formatBytes(bytes: number): string {
+  if (bytes <= 0) {
+    return '0 B'
+  }
+
+  const units = ['B', 'KB', 'MB', 'GB']
+  const unitIndex = Math.min(Math.floor(Math.log(bytes) / Math.log(1024)), units.length - 1)
+  const value = bytes / 1024 ** unitIndex
+
+  return `${value >= 10 || unitIndex === 0 ? value.toFixed(0) : value.toFixed(1)} ${units[unitIndex]}`
 }
