@@ -34,4 +34,6 @@ export type BrowserTab = {
   url: string
   loading: boolean
   sessionPartition: string
+  faviconUrl?: string
+  loadError?: string
 }

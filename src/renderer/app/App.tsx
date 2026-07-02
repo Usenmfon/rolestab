@@ -336,6 +336,12 @@ function App() {
     })
   }
 
+  function updateTab(tabId: string, updates: Partial<BrowserTab>) {
+    setTabs((currentTabs) =>
+      currentTabs.map((tab) => (tab.id === tabId ? { ...tab, ...updates } : tab)),
+    )
+  }
+
   return (
     <DesktopLayout
       projects={projects}
@@ -375,6 +381,7 @@ function App() {
           closeTab(activeTabId)
         }
       }}
+      onUpdateTab={updateTab}
     />
   )
 }

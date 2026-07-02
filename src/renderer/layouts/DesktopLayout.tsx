@@ -37,6 +37,7 @@ type DesktopLayoutProps = {
   onSelectTab: (tabId: string) => void
   onCloseTab: (tabId: string) => void
   onCloseActiveTab: () => void
+  onUpdateTab: (tabId: string, updates: Partial<BrowserTab>) => void
 }
 
 export function DesktopLayout({
@@ -67,6 +68,7 @@ export function DesktopLayout({
   onSelectTab,
   onCloseTab,
   onCloseActiveTab,
+  onUpdateTab,
 }: DesktopLayoutProps) {
   return (
     <main className="flex h-screen overflow-hidden bg-slate-100 text-slate-900">
@@ -105,11 +107,14 @@ export function DesktopLayout({
         />
         <WebviewArea
           activeProject={activeProject}
+          tabs={tabs}
           activeTab={activeTab}
+          activeTabId={activeTabId}
           roleProfiles={activeProjectRoleProfiles}
           onCreateProject={onCreateProject}
           onCreateRoleProfile={onCreateRoleProfile}
           onOpenRoleProfile={onOpenRoleProfile}
+          onUpdateTab={onUpdateTab}
         />
       </section>
 

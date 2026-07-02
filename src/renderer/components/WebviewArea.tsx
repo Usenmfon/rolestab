@@ -1,22 +1,29 @@
 import { Globe2, MonitorUp } from 'lucide-react'
 import type { BrowserTab, ProjectSummary, RoleProfile } from '../../shared/workspace'
+import { BrowserWebview } from './BrowserWebview'
 
 type WebviewAreaProps = {
   activeProject: ProjectSummary | null
+  tabs: BrowserTab[]
   activeTab: BrowserTab | null
+  activeTabId: string | null
   roleProfiles: RoleProfile[]
   onCreateProject: () => void
   onCreateRoleProfile: () => void
   onOpenRoleProfile: (roleProfileId: string) => void
+  onUpdateTab: (tabId: string, updates: Partial<BrowserTab>) => void
 }
 
 export function WebviewArea({
   activeProject,
+  tabs,
   activeTab,
+  activeTabId,
   roleProfiles,
   onCreateProject,
   onCreateRoleProfile,
   onOpenRoleProfile,
+  onUpdateTab,
 }: WebviewAreaProps) {
   if (!activeProject) {
     return (
@@ -86,17 +93,29 @@ export function WebviewArea({
   return (
     <div className="flex min-h-0 flex-1 flex-col bg-white">
       <div className="flex h-9 shrink-0 items-center justify-between border-b border-slate-200 px-4 text-xs text-slate-500">
-        <span>{activeTab.roleName} session preview</span>
-        <span>{activeTab.loading ? 'Loading' : 'Ready'}</span>
+        <span>
+          {activeTab.roleName} session
+          <span className="ml-2 font-mono text-[11px] text-slate-400">
+            {activeTab.sessionPartition}
+          </span>
+        </span>
+        <span>{activeTab.loading ? 'Loading' : activeTab.loadError ? 'Load failed' : 'Ready'}</span>
       </div>
-      <div className="grid min-h-0 flex-1 place-items-center bg-[linear-gradient(45deg,#f8fafc_25%,transparent_25%),linear-gradient(-45deg,#f8fafc_25%,transparent_25%),linear-gradient(45deg,transparent_75%,#f8fafc_75%),linear-gradient(-45deg,transparent_75%,#f8fafc_75%)] bg-[length:24px_24px] bg-[position:0_0,0_12px,12px_-12px,-12px_0px]">
-        <div className="rounded-lg border border-slate-200 bg-white px-8 py-6 text-center shadow-sm">
-          <p className="text-sm font-semibold text-slate-950">{activeTab.title}</p>
-          <p className="mt-2 max-w-lg truncate text-sm text-slate-500">{activeTab.url}</p>
-          <p className="mt-4 text-xs text-slate-400">
-            Electron webviews are wired in Phase 5 after project and role data exist.
-          </p>
-        </div>
+      <div className="relative min-h-0 flex-1 bg-white">
+        {tabs.map((tab) => (
+          <BrowserWebview
+            key={tab.id}
+            tab={tab}
+            active={tab.id === activeTabId}
+            onUpdate={onUpdateTab}
+          />
+        ))}
+
+        {activeTab.loadError ? (
+          <div className="pointer-events-none absolute inset-x-4 bottom-4 rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 shadow-sm">
+            {activeTab.loadError}
+          </div>
+        ) : null}
       </div>
     </div>
   )

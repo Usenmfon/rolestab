@@ -1,4 +1,4 @@
-import { X } from 'lucide-react'
+import { Loader2, X } from 'lucide-react'
 import type { BrowserTab } from '../../shared/workspace'
 
 type TabBarProps = {
@@ -31,12 +31,19 @@ export function TabBar({ tabs, activeTabId, onSelectTab, onCloseTab }: TabBarPro
                 onClick={() => onSelectTab(tab.id)}
                 className="flex min-w-0 flex-1 items-center gap-2 text-left"
               >
-                <span
-                  className="h-2.5 w-2.5 shrink-0 rounded-full"
-                  style={{ backgroundColor: tab.roleColor }}
-                />
+                {tab.faviconUrl ? (
+                  <img src={tab.faviconUrl} alt="" className="h-3.5 w-3.5 shrink-0" />
+                ) : (
+                  <span
+                    className="h-2.5 w-2.5 shrink-0 rounded-full"
+                    style={{ backgroundColor: tab.roleColor }}
+                  />
+                )}
                 <span className="truncate text-sm font-medium">{tab.title}</span>
               </button>
+              {tab.loading ? (
+                <Loader2 aria-hidden="true" size={13} className="shrink-0 animate-spin text-slate-400" />
+              ) : null}
               <button
                 type="button"
                 title="Close Tab"
