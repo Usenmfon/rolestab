@@ -22,6 +22,34 @@ export type AppSettings = {
   restoreTabsOnStartup: boolean
   confirmBeforeClearingSessions: boolean
   defaultHomepage: string
+  theme: 'light' | 'dark' | 'system'
+  defaultProjectId: string | null
+  defaultRoleColors: string[]
+  keyboardShortcuts: Record<string, string>
+}
+
+export const defaultRoleColors = ['#2563eb', '#059669', '#f59e0b', '#e11d48', '#7c3aed', '#0891b2']
+
+export const defaultKeyboardShortcuts: Record<string, string> = {
+  newTab: 'Ctrl+T',
+  closeTab: 'Ctrl+W',
+  reload: 'Ctrl+R',
+  focusUrlBar: 'Ctrl+L',
+  openDevTools: 'Ctrl+Shift+I',
+  nextTab: 'Ctrl+Tab',
+  previousTab: 'Ctrl+Shift+Tab',
+  openAllRoles: 'Ctrl+Shift+O',
+  clearActiveRoleSession: 'Ctrl+Shift+Backspace',
+}
+
+export const defaultAppSettings: AppSettings = {
+  restoreTabsOnStartup: true,
+  confirmBeforeClearingSessions: true,
+  defaultHomepage: '',
+  theme: 'system',
+  defaultProjectId: null,
+  defaultRoleColors,
+  keyboardShortcuts: defaultKeyboardShortcuts,
 }
 
 export type RecentUrl = {

@@ -4,6 +4,7 @@ import { TopBar } from '../components/TopBar'
 import { WebviewArea } from '../components/WebviewArea'
 import { ConfirmationDialog } from '../components/ConfirmationDialog'
 import { ProjectFormPanel, type ProjectDraft } from '../components/ProjectFormPanel'
+import { SettingsPanel } from '../components/SettingsPanel'
 import {
   RoleProfileFormPanel,
   type RoleProfileDraft,
@@ -40,6 +41,7 @@ type DesktopLayoutProps = {
   editingRoleProfile: RoleProfile | null
   projectFormOpen: boolean
   roleProfileFormOpen: boolean
+  settingsPanelOpen: boolean
   confirmationRequest: ConfirmationRequest | null
   onCreateProject: () => void
   onEditProject: (projectId: string) => void
@@ -57,6 +59,10 @@ type DesktopLayoutProps = {
   onOpenRecentUrl: (recentUrl: RecentUrl) => void
   onClearProjectSessions: () => void
   onClearAllSessions: () => void
+  onOpenSettings: () => void
+  onCloseSettings: () => void
+  onSaveSettings: (settings: AppSettings) => Promise<void>
+  onResetSettings: () => Promise<void>
   onCloseRoleProfileForm: () => void
   onSaveRoleProfile: (draft: RoleProfileDraft) => Promise<void>
   onSelectProject: (projectId: string) => void
@@ -99,6 +105,7 @@ export function DesktopLayout({
   editingRoleProfile,
   projectFormOpen,
   roleProfileFormOpen,
+  settingsPanelOpen,
   confirmationRequest,
   onCreateProject,
   onEditProject,
@@ -116,6 +123,10 @@ export function DesktopLayout({
   onOpenRecentUrl,
   onClearProjectSessions,
   onClearAllSessions,
+  onOpenSettings,
+  onCloseSettings,
+  onSaveSettings,
+  onResetSettings,
   onCloseRoleProfileForm,
   onSaveRoleProfile,
   onSelectProject,
@@ -165,6 +176,7 @@ export function DesktopLayout({
         onOpenRecentUrl={onOpenRecentUrl}
         onClearProjectSessions={onClearProjectSessions}
         onClearAllSessions={onClearAllSessions}
+        onOpenSettings={onOpenSettings}
       />
 
       <section className="flex min-w-0 flex-1 flex-col">
@@ -232,8 +244,19 @@ export function DesktopLayout({
           key={editingRoleProfile?.id ?? 'new-role-profile'}
           project={activeProject}
           roleProfile={editingRoleProfile}
+          presetColors={settings.defaultRoleColors}
           onClose={onCloseRoleProfileForm}
           onSubmit={onSaveRoleProfile}
+        />
+      ) : null}
+
+      {settingsPanelOpen ? (
+        <SettingsPanel
+          settings={settings}
+          projects={projects}
+          onClose={onCloseSettings}
+          onSubmit={onSaveSettings}
+          onReset={onResetSettings}
         />
       ) : null}
 

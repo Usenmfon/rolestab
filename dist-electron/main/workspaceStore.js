@@ -15,18 +15,14 @@ exports.saveRecentTabs = saveRecentTabs;
 const electron_1 = __importDefault(require("electron"));
 const promises_1 = require("node:fs/promises");
 const node_path_1 = __importDefault(require("node:path"));
+const workspace_js_1 = require("../shared/workspace.js");
 const { app } = electron_1.default;
 const workspaceSchemaVersion = 1;
-const defaultSettings = {
-    restoreTabsOnStartup: true,
-    confirmBeforeClearingSessions: true,
-    defaultHomepage: '',
-};
 const defaultWorkspace = {
     schemaVersion: workspaceSchemaVersion,
     projects: [],
     roleProfiles: [],
-    settings: defaultSettings,
+    settings: workspace_js_1.defaultAppSettings,
     recentUrls: [],
     recentTabs: [],
     lastActiveProjectId: null,
@@ -39,7 +35,7 @@ function sanitizeWorkspace(data) {
     const roleProfiles = Array.isArray(data.roleProfiles)
         ? data.roleProfiles.filter((roleProfile) => isValidRoleProfile(roleProfile, projects))
         : [];
-    const settings = sanitizeSettings(data.settings);
+    const settings = sanitizeSettings(data.settings, projects);
     const recentUrls = Array.isArray(data.recentUrls)
         ? data.recentUrls.filter((recentUrl) => isValidRecentUrl(recentUrl, projects, roleProfiles)).slice(0, 50)
         : [];
@@ -49,7 +45,7 @@ function sanitizeWorkspace(data) {
     const lastActiveProjectId = typeof data.lastActiveProjectId === 'string' &&
         projects.some((project) => project.id === data.lastActiveProjectId)
         ? data.lastActiveProjectId
-        : projects[0]?.id ?? null;
+        : settings.defaultProjectId ?? projects[0]?.id ?? null;
     return {
         schemaVersion: workspaceSchemaVersion,
         projects,
@@ -93,17 +89,35 @@ function isAllowedUrl(url) {
         return false;
     }
 }
-function sanitizeSettings(settings) {
+function sanitizeSettings(settings, projects) {
+    const defaultProjectId = typeof settings?.defaultProjectId === 'string' &&
+        projects.some((project) => project.id === settings.defaultProjectId)
+        ? settings.defaultProjectId
+        : null;
+    const defaultRoleColorSettings = Array.isArray(settings?.defaultRoleColors)
+        ? settings.defaultRoleColors.filter((color) => /^#[\da-f]{6}$/i.test(color)).slice(0, 8)
+        : [];
     return {
         restoreTabsOnStartup: typeof settings?.restoreTabsOnStartup === 'boolean'
             ? settings.restoreTabsOnStartup
-            : defaultSettings.restoreTabsOnStartup,
+            : workspace_js_1.defaultAppSettings.restoreTabsOnStartup,
         confirmBeforeClearingSessions: typeof settings?.confirmBeforeClearingSessions === 'boolean'
             ? settings.confirmBeforeClearingSessions
-            : defaultSettings.confirmBeforeClearingSessions,
+            : workspace_js_1.defaultAppSettings.confirmBeforeClearingSessions,
         defaultHomepage: typeof settings?.defaultHomepage === 'string' && (!settings.defaultHomepage || isAllowedUrl(settings.defaultHomepage))
             ? settings.defaultHomepage
-            : defaultSettings.defaultHomepage,
+            : workspace_js_1.defaultAppSettings.defaultHomepage,
+        theme: settings?.theme === 'light' || settings?.theme === 'dark' || settings?.theme === 'system'
+            ? settings.theme
+            : workspace_js_1.defaultAppSettings.theme,
+        defaultProjectId,
+        defaultRoleColors: defaultRoleColorSettings.length > 0 ? defaultRoleColorSettings : workspace_js_1.defaultRoleColors,
+        keyboardShortcuts: {
+            ...workspace_js_1.defaultKeyboardShortcuts,
+            ...(settings?.keyboardShortcuts && typeof settings.keyboardShortcuts === 'object'
+                ? settings.keyboardShortcuts
+                : {}),
+        },
     };
 }
 function isValidRecentUrl(recentUrl, projects, roleProfiles) {
@@ -211,7 +225,7 @@ async function deleteRoleProfile(roleProfileId) {
 }
 async function saveSettings(settings) {
     const workspace = await loadWorkspace();
-    return writeWorkspace({ ...workspace, settings: sanitizeSettings(settings) });
+    return writeWorkspace({ ...workspace, settings: sanitizeSettings(settings, workspace.projects) });
 }
 async function saveRecentUrl(recentUrl) {
     const workspace = await loadWorkspace();

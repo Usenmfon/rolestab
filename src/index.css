@@ -11,6 +11,19 @@ body {
     sans-serif;
 }
 
+html.theme-dark {
+  color-scheme: dark;
+}
+
+html.theme-dark body {
+  background: #0f172a;
+  color: #e2e8f0;
+}
+
+html.theme-light {
+  color-scheme: light;
+}
+
 #root {
   min-height: 100vh;
 }

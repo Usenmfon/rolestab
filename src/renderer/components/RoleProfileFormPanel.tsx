@@ -5,11 +5,10 @@ import { normalizeHttpUrl } from '../utils/url'
 
 export type RoleProfileDraft = Pick<RoleProfile, 'name' | 'color' | 'startUrl'>
 
-const presetColors = ['#2563eb', '#059669', '#f59e0b', '#e11d48', '#7c3aed', '#0891b2']
-
 type RoleProfileFormPanelProps = {
   project: ProjectSummary
   roleProfile: RoleProfile | null
+  presetColors: string[]
   onClose: () => void
   onSubmit: (draft: RoleProfileDraft) => Promise<void>
 }
@@ -17,11 +16,12 @@ type RoleProfileFormPanelProps = {
 export function RoleProfileFormPanel({
   project,
   roleProfile,
+  presetColors,
   onClose,
   onSubmit,
 }: RoleProfileFormPanelProps) {
   const [name, setName] = useState(roleProfile?.name ?? '')
-  const [color, setColor] = useState(roleProfile?.color ?? presetColors[0])
+  const [color, setColor] = useState(roleProfile?.color ?? presetColors[0] ?? '#2563eb')
   const [startUrl, setStartUrl] = useState(roleProfile?.startUrl ?? project.baseUrl)
   const [error, setError] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)

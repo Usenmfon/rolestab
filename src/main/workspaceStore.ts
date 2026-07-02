@@ -9,22 +9,17 @@ import type {
   SavedBrowserTab,
   WorkspaceData,
 } from '../shared/workspace.js'
+import { defaultAppSettings, defaultKeyboardShortcuts, defaultRoleColors } from '../shared/workspace.js'
 
 const { app } = electron
 
 const workspaceSchemaVersion = 1
 
-const defaultSettings: AppSettings = {
-  restoreTabsOnStartup: true,
-  confirmBeforeClearingSessions: true,
-  defaultHomepage: '',
-}
-
 const defaultWorkspace: WorkspaceData = {
   schemaVersion: workspaceSchemaVersion,
   projects: [],
   roleProfiles: [],
-  settings: defaultSettings,
+  settings: defaultAppSettings,
   recentUrls: [],
   recentTabs: [],
   lastActiveProjectId: null,
@@ -39,7 +34,7 @@ function sanitizeWorkspace(data: WorkspaceData): WorkspaceData {
   const roleProfiles = Array.isArray(data.roleProfiles)
     ? data.roleProfiles.filter((roleProfile) => isValidRoleProfile(roleProfile, projects))
     : []
-  const settings = sanitizeSettings(data.settings)
+  const settings = sanitizeSettings(data.settings, projects)
   const recentUrls = Array.isArray(data.recentUrls)
     ? data.recentUrls.filter((recentUrl) => isValidRecentUrl(recentUrl, projects, roleProfiles)).slice(0, 50)
     : []
@@ -50,7 +45,7 @@ function sanitizeWorkspace(data: WorkspaceData): WorkspaceData {
     typeof data.lastActiveProjectId === 'string' &&
     projects.some((project) => project.id === data.lastActiveProjectId)
       ? data.lastActiveProjectId
-      : projects[0]?.id ?? null
+      : settings.defaultProjectId ?? projects[0]?.id ?? null
 
   return {
     schemaVersion: workspaceSchemaVersion,
@@ -102,20 +97,41 @@ function isAllowedUrl(url: string): boolean {
   }
 }
 
-function sanitizeSettings(settings: AppSettings | undefined): AppSettings {
+function sanitizeSettings(settings: AppSettings | undefined, projects: ProjectSummary[]): AppSettings {
+  const defaultProjectId =
+    typeof settings?.defaultProjectId === 'string' &&
+    projects.some((project) => project.id === settings.defaultProjectId)
+      ? settings.defaultProjectId
+      : null
+  const defaultRoleColorSettings = Array.isArray(settings?.defaultRoleColors)
+    ? settings.defaultRoleColors.filter((color) => /^#[\da-f]{6}$/i.test(color)).slice(0, 8)
+    : []
+
   return {
     restoreTabsOnStartup:
       typeof settings?.restoreTabsOnStartup === 'boolean'
         ? settings.restoreTabsOnStartup
-        : defaultSettings.restoreTabsOnStartup,
+        : defaultAppSettings.restoreTabsOnStartup,
     confirmBeforeClearingSessions:
       typeof settings?.confirmBeforeClearingSessions === 'boolean'
         ? settings.confirmBeforeClearingSessions
-        : defaultSettings.confirmBeforeClearingSessions,
+        : defaultAppSettings.confirmBeforeClearingSessions,
     defaultHomepage:
       typeof settings?.defaultHomepage === 'string' && (!settings.defaultHomepage || isAllowedUrl(settings.defaultHomepage))
         ? settings.defaultHomepage
-        : defaultSettings.defaultHomepage,
+        : defaultAppSettings.defaultHomepage,
+    theme:
+      settings?.theme === 'light' || settings?.theme === 'dark' || settings?.theme === 'system'
+        ? settings.theme
+        : defaultAppSettings.theme,
+    defaultProjectId,
+    defaultRoleColors: defaultRoleColorSettings.length > 0 ? defaultRoleColorSettings : defaultRoleColors,
+    keyboardShortcuts: {
+      ...defaultKeyboardShortcuts,
+      ...(settings?.keyboardShortcuts && typeof settings.keyboardShortcuts === 'object'
+        ? settings.keyboardShortcuts
+        : {}),
+    },
   }
 }
 
@@ -259,7 +275,7 @@ export async function deleteRoleProfile(roleProfileId: string): Promise<Workspac
 export async function saveSettings(settings: AppSettings): Promise<WorkspaceData> {
   const workspace = await loadWorkspace()
 
-  return writeWorkspace({ ...workspace, settings: sanitizeSettings(settings) })
+  return writeWorkspace({ ...workspace, settings: sanitizeSettings(settings, workspace.projects) })
 }
 
 export async function saveRecentUrl(recentUrl: RecentUrl): Promise<WorkspaceData> {

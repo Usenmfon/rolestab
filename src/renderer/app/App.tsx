@@ -12,22 +12,11 @@ import type {
   SavedBrowserTab,
   WorkspaceData,
 } from '../../shared/workspace'
+import { defaultAppSettings } from '../../shared/workspace'
 import type { SessionUsage } from '../../shared/session'
 import { isProductionUrl, normalizeHttpUrl } from '../utils/url'
 
-const commonRoleTemplates = [
-  { name: 'Admin', color: '#2563eb' },
-  { name: 'Manager', color: '#059669' },
-  { name: 'Staff', color: '#e11d48' },
-  { name: 'Customer', color: '#f59e0b' },
-  { name: 'Guest', color: '#64748b' },
-]
-
-const defaultSettings: AppSettings = {
-  restoreTabsOnStartup: true,
-  confirmBeforeClearingSessions: true,
-  defaultHomepage: '',
-}
+const commonRoleNames = ['Admin', 'Manager', 'Staff', 'Customer', 'Guest']
 
 type ConfirmationRequest = {
   title: string
@@ -38,13 +27,14 @@ type ConfirmationRequest = {
 function App() {
   const [projects, setProjects] = useState<ProjectSummary[]>([])
   const [roleProfiles, setRoleProfiles] = useState<RoleProfile[]>([])
-  const [settings, setSettings] = useState<AppSettings>(defaultSettings)
+  const [settings, setSettings] = useState<AppSettings>(defaultAppSettings)
   const [recentUrls, setRecentUrls] = useState<RecentUrl[]>([])
   const [activeProjectId, setActiveProjectId] = useState<string | null>(null)
   const [tabs, setTabs] = useState<BrowserTab[]>([])
   const [activeTabId, setActiveTabId] = useState<string | null>(null)
   const [projectFormOpen, setProjectFormOpen] = useState(false)
   const [roleProfileFormOpen, setRoleProfileFormOpen] = useState(false)
+  const [settingsPanelOpen, setSettingsPanelOpen] = useState(false)
   const [editingProjectId, setEditingProjectId] = useState<string | null>(null)
   const [editingRoleProfileId, setEditingRoleProfileId] = useState<string | null>(null)
   const [workspaceError, setWorkspaceError] = useState<string | null>(null)
@@ -120,6 +110,14 @@ function App() {
       mounted = false
     }
   }, [])
+
+  useEffect(() => {
+    const root = document.documentElement
+
+    root.dataset.theme = settings.theme
+    root.classList.toggle('theme-dark', settings.theme === 'dark')
+    root.classList.toggle('theme-light', settings.theme === 'light')
+  }, [settings.theme])
 
   useEffect(() => {
     if (!workspaceLoaded) {
@@ -220,12 +218,14 @@ function App() {
   function openCreateProjectForm() {
     setEditingProjectId(null)
     setRoleProfileFormOpen(false)
+    setSettingsPanelOpen(false)
     setProjectFormOpen(true)
   }
 
   function openEditProjectForm(projectId: string) {
     setEditingProjectId(projectId)
     setRoleProfileFormOpen(false)
+    setSettingsPanelOpen(false)
     setProjectFormOpen(true)
   }
 
@@ -242,18 +242,32 @@ function App() {
 
     setEditingRoleProfileId(null)
     setProjectFormOpen(false)
+    setSettingsPanelOpen(false)
     setRoleProfileFormOpen(true)
   }
 
   function openEditRoleProfileForm(roleProfileId: string) {
     setEditingRoleProfileId(roleProfileId)
     setProjectFormOpen(false)
+    setSettingsPanelOpen(false)
     setRoleProfileFormOpen(true)
   }
 
   function closeRoleProfileForm() {
     setRoleProfileFormOpen(false)
     setEditingRoleProfileId(null)
+  }
+
+  function openSettingsPanel() {
+    setProjectFormOpen(false)
+    setRoleProfileFormOpen(false)
+    setEditingProjectId(null)
+    setEditingRoleProfileId(null)
+    setSettingsPanelOpen(true)
+  }
+
+  function closeSettingsPanel() {
+    setSettingsPanelOpen(false)
   }
 
   async function saveProject(draft: ProjectDraft) {
@@ -371,8 +385,8 @@ function App() {
     const existingNames = new Set(
       activeProjectRoleProfiles.map((roleProfile) => roleProfile.name.trim().toLowerCase()),
     )
-    const missingTemplates = commonRoleTemplates.filter(
-      (template) => !existingNames.has(template.name.toLowerCase()),
+    const missingTemplates = commonRoleNames.filter(
+      (roleName) => !existingNames.has(roleName.toLowerCase()),
     )
 
     if (missingTemplates.length === 0) {
@@ -382,7 +396,7 @@ function App() {
 
     let workspace: WorkspaceData | undefined
 
-    for (const template of missingTemplates) {
+    for (const [templateIndex, roleName] of missingTemplates.entries()) {
       const now = new Date().toISOString()
       const roleProfileId = crypto.randomUUID()
       const sessionPartition =
@@ -391,8 +405,8 @@ function App() {
       const roleProfile: RoleProfile = {
         id: roleProfileId,
         projectId: activeProject.id,
-        name: template.name,
-        color: template.color,
+        name: roleName,
+        color: settings.defaultRoleColors[templateIndex % settings.defaultRoleColors.length] ?? '#2563eb',
         startUrl: activeProject.baseUrl,
         sessionPartition,
         createdAt: now,
@@ -457,7 +471,7 @@ function App() {
     }
 
     const confirmed = window.confirm(
-      `Delete "${project.name}"? Open tabs for this project will close, but role sessions are kept until session management is added.`,
+      `Delete "${project.name}"? Open tabs for this project will close, but persisted role sessions are kept until you clear them.`,
     )
 
     if (!confirmed) {
@@ -564,11 +578,20 @@ function App() {
   }
 
   async function toggleRestoreTabs() {
-    const nextSettings = {
+    await saveAppSettings({
       ...settings,
       restoreTabsOnStartup: !settings.restoreTabsOnStartup,
-    }
+    })
+  }
 
+  async function toggleConfirmSessionClear() {
+    await saveAppSettings({
+      ...settings,
+      confirmBeforeClearingSessions: !settings.confirmBeforeClearingSessions,
+    })
+  }
+
+  async function saveAppSettings(nextSettings: AppSettings) {
     setSettings(nextSettings)
 
     try {
@@ -582,23 +605,11 @@ function App() {
     }
   }
 
-  async function toggleConfirmSessionClear() {
-    const nextSettings = {
-      ...settings,
-      confirmBeforeClearingSessions: !settings.confirmBeforeClearingSessions,
-    }
-
-    setSettings(nextSettings)
-
-    try {
-      const workspace = await window.rolesTab?.workspace.saveSettings(nextSettings)
-
-      if (workspace) {
-        applyWorkspace(workspace)
-      }
-    } catch (error) {
-      setWorkspaceError(error instanceof Error ? error.message : 'Unable to save settings.')
-    }
+  async function resetAppSettings() {
+    await saveAppSettings({
+      ...defaultAppSettings,
+      defaultProjectId: null,
+    })
   }
 
   async function shouldClearSessions(request: ConfirmationRequest): Promise<boolean> {
@@ -830,7 +841,10 @@ function App() {
     }
 
     const roleProfile = roleProfiles.find((currentRoleProfile) => currentRoleProfile.id === activeTab.roleProfileId)
-    sendBrowserCommand({ type: 'home', url: roleProfile?.startUrl ?? activeProject?.baseUrl ?? activeTab.url })
+    sendBrowserCommand({
+      type: 'home',
+      url: settings.defaultHomepage || roleProfile?.startUrl || activeProject?.baseUrl || activeTab.url,
+    })
   }
 
   async function copyActiveUrl() {
@@ -889,6 +903,7 @@ function App() {
       editingRoleProfile={editingRoleProfile}
       projectFormOpen={projectFormOpen}
       roleProfileFormOpen={roleProfileFormOpen}
+      settingsPanelOpen={settingsPanelOpen}
       confirmationRequest={confirmationRequest}
       onCreateProject={openCreateProjectForm}
       onEditProject={openEditProjectForm}
@@ -920,6 +935,10 @@ function App() {
       onClearAllSessions={() => {
         void clearAllSessions()
       }}
+      onOpenSettings={openSettingsPanel}
+      onCloseSettings={closeSettingsPanel}
+      onSaveSettings={saveAppSettings}
+      onResetSettings={resetAppSettings}
       onCloseRoleProfileForm={closeRoleProfileForm}
       onSaveRoleProfile={saveRoleProfile}
       onSelectProject={(projectId) => {

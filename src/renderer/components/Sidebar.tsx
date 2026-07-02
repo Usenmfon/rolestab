@@ -1,4 +1,4 @@
-import { FolderPlus, Pencil, Trash2, PanelsTopLeft } from 'lucide-react'
+import { FolderPlus, Pencil, Trash2, PanelsTopLeft, Settings } from 'lucide-react'
 import type { AppSettings, ProjectSummary, RecentUrl, RoleProfile } from '../../shared/workspace'
 import type { SessionUsage } from '../../shared/session'
 import { RoleProfileList } from './RoleProfileList'
@@ -26,6 +26,7 @@ type SidebarProps = {
   onOpenRecentUrl: (recentUrl: RecentUrl) => void
   onClearProjectSessions: () => void
   onClearAllSessions: () => void
+  onOpenSettings: () => void
 }
 
 export function Sidebar({
@@ -50,6 +51,7 @@ export function Sidebar({
   onOpenRecentUrl,
   onClearProjectSessions,
   onClearAllSessions,
+  onOpenSettings,
 }: SidebarProps) {
   return (
     <aside className="flex w-72 shrink-0 flex-col border-r border-slate-200 bg-white">
@@ -170,8 +172,15 @@ export function Sidebar({
         />
       </div>
 
-      <div className="border-t border-slate-200 px-4 py-3 text-xs text-slate-500">
-        Phase 3: projects persist locally
+      <div className="border-t border-slate-200 p-3">
+        <button
+          type="button"
+          onClick={onOpenSettings}
+          className="flex h-9 w-full items-center justify-center gap-2 rounded-md border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-700 hover:bg-slate-50"
+        >
+          <Settings aria-hidden="true" size={15} />
+          Settings
+        </button>
       </div>
     </aside>
   )
