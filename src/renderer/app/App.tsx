@@ -6,6 +6,14 @@ import type { BrowserCommand, BrowserCommandInput } from '../../shared/browser'
 import type { BrowserTab, ProjectSummary, RoleProfile, WorkspaceData } from '../../shared/workspace'
 import { normalizeHttpUrl } from '../utils/url'
 
+const commonRoleTemplates = [
+  { name: 'Admin', color: '#2563eb' },
+  { name: 'Manager', color: '#059669' },
+  { name: 'Staff', color: '#e11d48' },
+  { name: 'Customer', color: '#f59e0b' },
+  { name: 'Guest', color: '#64748b' },
+]
+
 function App() {
   const [projects, setProjects] = useState<ProjectSummary[]>([])
   const [roleProfiles, setRoleProfiles] = useState<RoleProfile[]>([])
@@ -194,6 +202,80 @@ function App() {
     setWorkspaceError(null)
   }
 
+  async function persistRoleProfile(roleProfile: RoleProfile) {
+    const workspace = await window.rolesTab?.workspace.saveRoleProfile(roleProfile)
+
+    if (workspace) {
+      applyWorkspace(workspace)
+    } else {
+      setRoleProfiles((currentRoleProfiles) => {
+        const existingIndex = currentRoleProfiles.findIndex(
+          (currentRoleProfile) => currentRoleProfile.id === roleProfile.id,
+        )
+        const nextRoleProfiles = [...currentRoleProfiles]
+
+        if (existingIndex >= 0) {
+          nextRoleProfiles[existingIndex] = roleProfile
+        } else {
+          nextRoleProfiles.unshift(roleProfile)
+        }
+
+        return nextRoleProfiles
+      })
+    }
+  }
+
+  async function createCommonRoles() {
+    if (!activeProject) {
+      openCreateProjectForm()
+      return
+    }
+
+    const existingNames = new Set(
+      activeProjectRoleProfiles.map((roleProfile) => roleProfile.name.trim().toLowerCase()),
+    )
+    const missingTemplates = commonRoleTemplates.filter(
+      (template) => !existingNames.has(template.name.toLowerCase()),
+    )
+
+    if (missingTemplates.length === 0) {
+      setWorkspaceError('Common roles already exist for this project.')
+      return
+    }
+
+    let workspace: WorkspaceData | undefined
+
+    for (const template of missingTemplates) {
+      const now = new Date().toISOString()
+      const roleProfileId = crypto.randomUUID()
+      const sessionPartition =
+        (await window.rolesTab?.sessions.createRolePartition(activeProject.id, roleProfileId)) ??
+        `persist:${activeProject.id}-${roleProfileId}`
+      const roleProfile: RoleProfile = {
+        id: roleProfileId,
+        projectId: activeProject.id,
+        name: template.name,
+        color: template.color,
+        startUrl: activeProject.baseUrl,
+        sessionPartition,
+        createdAt: now,
+        updatedAt: now,
+      }
+
+      workspace = await window.rolesTab?.workspace.saveRoleProfile(roleProfile)
+
+      if (!workspace) {
+        await persistRoleProfile(roleProfile)
+      }
+    }
+
+    if (workspace) {
+      applyWorkspace(workspace)
+    }
+
+    setWorkspaceError(null)
+  }
+
   async function deleteRoleProfile(roleProfileId: string) {
     const roleProfile = roleProfiles.find((currentRoleProfile) => currentRoleProfile.id === roleProfileId)
 
@@ -308,7 +390,11 @@ function App() {
       return
     }
 
-    const tabId = `tab-${Date.now()}`
+    openRoleProfileTab(roleProfile)
+  }
+
+  function openRoleProfileTab(roleProfile: RoleProfile, initialUrl = roleProfile.startUrl, title = roleProfile.name) {
+    const tabId = `tab-${crypto.randomUUID()}`
 
     setTabs((currentTabs) => [
       ...currentTabs,
@@ -318,13 +404,75 @@ function App() {
         roleProfileId: roleProfile.id,
         roleName: roleProfile.name,
         roleColor: roleProfile.color,
-        title: roleProfile.name,
-        url: roleProfile.startUrl,
+        title,
+        url: initialUrl,
         loading: false,
         sessionPartition: roleProfile.sessionPartition,
       },
     ])
     setActiveTabId(tabId)
+  }
+
+  function openAllRoles() {
+    if (activeProjectRoleProfiles.length === 0) {
+      openCreateRoleProfileForm()
+      return
+    }
+
+    activeProjectRoleProfiles.forEach((roleProfile) => openRoleProfileTab(roleProfile))
+  }
+
+  function duplicateActiveTab() {
+    if (!activeTab) {
+      return
+    }
+
+    const roleProfile = roleProfiles.find((currentRoleProfile) => currentRoleProfile.id === activeTab.roleProfileId)
+
+    if (roleProfile) {
+      openRoleProfileTab(roleProfile, activeTab.url, `${activeTab.roleName} Copy`)
+    }
+  }
+
+  function renameActiveTab() {
+    if (!activeTab) {
+      return
+    }
+
+    const nextTitle = window.prompt('Rename tab', activeTab.title)?.trim()
+
+    if (nextTitle) {
+      updateTab(activeTab.id, { title: nextTitle })
+    }
+  }
+
+  async function resetActiveRoleSession() {
+    if (!activeTab) {
+      return
+    }
+
+    const confirmed = window.confirm(
+      `Reset the persisted browser session for ${activeTab.roleName}? Cookies, cache, localStorage, and IndexedDB for this role partition will be cleared.`,
+    )
+
+    if (!confirmed) {
+      return
+    }
+
+    try {
+      await window.rolesTab?.sessions.clearRoleSession(activeTab.sessionPartition)
+      setTabs((currentTabs) =>
+        currentTabs.map((tab) =>
+          tab.roleProfileId === activeTab.roleProfileId
+            ? { ...tab, loadError: undefined, loading: tab.id === activeTab.id }
+            : tab,
+        ),
+      )
+      sendBrowserCommand({ type: 'reload' })
+      setWorkspaceError(null)
+    } catch (error) {
+      setWorkspaceError(error instanceof Error ? error.message : 'Unable to reset the active role session.')
+    }
   }
 
   function closeTab(tabId: string) {
@@ -424,6 +572,10 @@ function App() {
         void deleteRoleProfile(roleProfileId)
       }}
       onOpenRoleProfile={openRoleTab}
+      onCreateCommonRoles={() => {
+        void createCommonRoles()
+      }}
+      onOpenAllRoles={openAllRoles}
       onCloseRoleProfileForm={closeRoleProfileForm}
       onSaveRoleProfile={saveRoleProfile}
       onSelectProject={(projectId) => {
@@ -436,6 +588,11 @@ function App() {
         if (activeTabId) {
           closeTab(activeTabId)
         }
+      }}
+      onDuplicateTab={duplicateActiveTab}
+      onRenameTab={renameActiveTab}
+      onResetSession={() => {
+        void resetActiveRoleSession()
       }}
       onUpdateTab={updateTab}
       onBack={() => sendBrowserCommand({ type: 'back' })}

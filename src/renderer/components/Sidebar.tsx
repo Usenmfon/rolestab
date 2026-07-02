@@ -14,6 +14,8 @@ type SidebarProps = {
   onEditRoleProfile: (roleProfileId: string) => void
   onDeleteRoleProfile: (roleProfileId: string) => void
   onOpenRoleProfile: (roleProfileId: string) => void
+  onCreateCommonRoles: () => void
+  onOpenAllRoles: () => void
 }
 
 export function Sidebar({
@@ -28,6 +30,8 @@ export function Sidebar({
   onEditRoleProfile,
   onDeleteRoleProfile,
   onOpenRoleProfile,
+  onCreateCommonRoles,
+  onOpenAllRoles,
 }: SidebarProps) {
   return (
     <aside className="flex w-72 shrink-0 flex-col border-r border-slate-200 bg-white">
@@ -132,6 +136,8 @@ export function Sidebar({
           onEditRoleProfile={onEditRoleProfile}
           onDeleteRoleProfile={onDeleteRoleProfile}
           onOpenRoleProfile={onOpenRoleProfile}
+          onCreateCommonRoles={onCreateCommonRoles}
+          onOpenAllRoles={onOpenAllRoles}
         />
       </div>
 

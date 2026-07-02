@@ -1,4 +1,4 @@
-import { Plus, Pencil, Play, Trash2 } from 'lucide-react'
+import { Layers, Plus, Pencil, Play, Sparkles, Trash2 } from 'lucide-react'
 import type { RoleProfile } from '../../shared/workspace'
 
 type RoleProfileListProps = {
@@ -8,6 +8,8 @@ type RoleProfileListProps = {
   onEditRoleProfile: (roleProfileId: string) => void
   onDeleteRoleProfile: (roleProfileId: string) => void
   onOpenRoleProfile: (roleProfileId: string) => void
+  onCreateCommonRoles: () => void
+  onOpenAllRoles: () => void
 }
 
 export function RoleProfileList({
@@ -17,6 +19,8 @@ export function RoleProfileList({
   onEditRoleProfile,
   onDeleteRoleProfile,
   onOpenRoleProfile,
+  onCreateCommonRoles,
+  onOpenAllRoles,
 }: RoleProfileListProps) {
   return (
     <section className="min-h-0">
@@ -35,6 +39,28 @@ export function RoleProfileList({
           <Plus aria-hidden="true" size={14} />
         </button>
       </div>
+
+      {hasActiveProject ? (
+        <div className="mt-3 grid grid-cols-2 gap-2">
+          <button
+            type="button"
+            onClick={onCreateCommonRoles}
+            className="flex h-9 items-center justify-center gap-2 rounded-md border border-slate-200 bg-white px-2 text-xs font-semibold text-slate-700 hover:bg-slate-50"
+          >
+            <Sparkles aria-hidden="true" size={14} />
+            Common
+          </button>
+          <button
+            type="button"
+            onClick={onOpenAllRoles}
+            disabled={roleProfiles.length === 0}
+            className="flex h-9 items-center justify-center gap-2 rounded-md border border-slate-200 bg-white px-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:text-slate-300 disabled:hover:bg-white"
+          >
+            <Layers aria-hidden="true" size={14} />
+            Open All
+          </button>
+        </div>
+      ) : null}
 
       {!hasActiveProject ? (
         <div className="mt-3 rounded-md border border-dashed border-slate-300 bg-slate-50 p-4 text-sm leading-6 text-slate-500">

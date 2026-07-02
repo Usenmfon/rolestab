@@ -3,10 +3,13 @@ import {
   ArrowRight,
   Bug,
   Clipboard,
+  Copy,
   ExternalLink,
   Home,
+  PencilLine,
   Plus,
   RefreshCw,
+  RotateCcw,
   XCircle,
   X,
 } from 'lucide-react'
@@ -22,6 +25,9 @@ type TopBarProps = {
   hasActiveTab: boolean
   onNewTab: () => void
   onCloseTab: () => void
+  onDuplicateTab: () => void
+  onRenameTab: () => void
+  onResetSession: () => void
   onBack: () => void
   onForward: () => void
   onReload: () => void
@@ -42,6 +48,9 @@ export function TopBar({
   hasActiveTab,
   onNewTab,
   onCloseTab,
+  onDuplicateTab,
+  onRenameTab,
+  onResetSession,
   onBack,
   onForward,
   onReload,
@@ -90,6 +99,9 @@ export function TopBar({
       </form>
 
       <IconButton label="New Role Tab" icon={Plus} onClick={onNewTab} disabled={!hasActiveProject} />
+      <IconButton label="Duplicate Role Tab" icon={Copy} onClick={onDuplicateTab} disabled={!hasActiveTab} />
+      <IconButton label="Rename Tab" icon={PencilLine} onClick={onRenameTab} disabled={!hasActiveTab} />
+      <IconButton label="Reset Active Role Session" icon={RotateCcw} onClick={onResetSession} disabled={!hasActiveTab} />
       <IconButton label="Close Tab" icon={X} onClick={onCloseTab} disabled={!hasActiveTab} />
       <IconButton label="Copy Current URL" icon={Clipboard} onClick={onCopyUrl} disabled={!hasActiveTab} />
       <IconButton label="Open External Browser" icon={ExternalLink} onClick={onOpenExternal} disabled={!hasActiveTab} />

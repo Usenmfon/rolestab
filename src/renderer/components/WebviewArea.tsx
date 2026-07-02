@@ -102,7 +102,11 @@ export function WebviewArea({
             {activeTab.sessionPartition}
           </span>
         </span>
-        <span>{activeTab.loading ? 'Loading' : activeTab.loadError ? 'Load failed' : 'Ready'}</span>
+        <span>
+          {tabs.filter((tab) => tab.projectId === activeTab.projectId).length} active role tabs
+          <span className="mx-2 text-slate-300">/</span>
+          {activeTab.loading ? 'Loading' : activeTab.loadError ? 'Load failed' : 'Ready'}
+        </span>
       </div>
       <div className="relative min-h-0 flex-1 bg-white">
         {tabs.map((tab) => (

@@ -32,6 +32,8 @@ type DesktopLayoutProps = {
   onEditRoleProfile: (roleProfileId: string) => void
   onDeleteRoleProfile: (roleProfileId: string) => void
   onOpenRoleProfile: (roleProfileId: string) => void
+  onCreateCommonRoles: () => void
+  onOpenAllRoles: () => void
   onCloseRoleProfileForm: () => void
   onSaveRoleProfile: (draft: RoleProfileDraft) => Promise<void>
   onSelectProject: (projectId: string) => void
@@ -39,6 +41,9 @@ type DesktopLayoutProps = {
   onSelectTab: (tabId: string) => void
   onCloseTab: (tabId: string) => void
   onCloseActiveTab: () => void
+  onDuplicateTab: () => void
+  onRenameTab: () => void
+  onResetSession: () => void
   onUpdateTab: (tabId: string, updates: Partial<BrowserTab>) => void
   onBack: () => void
   onForward: () => void
@@ -73,6 +78,8 @@ export function DesktopLayout({
   onEditRoleProfile,
   onDeleteRoleProfile,
   onOpenRoleProfile,
+  onCreateCommonRoles,
+  onOpenAllRoles,
   onCloseRoleProfileForm,
   onSaveRoleProfile,
   onSelectProject,
@@ -80,6 +87,9 @@ export function DesktopLayout({
   onSelectTab,
   onCloseTab,
   onCloseActiveTab,
+  onDuplicateTab,
+  onRenameTab,
+  onResetSession,
   onUpdateTab,
   onBack,
   onForward,
@@ -105,6 +115,8 @@ export function DesktopLayout({
         onEditRoleProfile={onEditRoleProfile}
         onDeleteRoleProfile={onDeleteRoleProfile}
         onOpenRoleProfile={onOpenRoleProfile}
+        onCreateCommonRoles={onCreateCommonRoles}
+        onOpenAllRoles={onOpenAllRoles}
       />
 
       <section className="flex min-w-0 flex-1 flex-col">
@@ -122,6 +134,9 @@ export function DesktopLayout({
           hasActiveTab={Boolean(activeTab)}
           onNewTab={onNewTab}
           onCloseTab={onCloseActiveTab}
+          onDuplicateTab={onDuplicateTab}
+          onRenameTab={onRenameTab}
+          onResetSession={onResetSession}
           onBack={onBack}
           onForward={onForward}
           onReload={onReload}
