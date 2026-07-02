@@ -31,7 +31,10 @@ export function TabBar({ tabs, activeTabId, onSelectTab, onCloseTab }: TabBarPro
                 onClick={() => onSelectTab(tab.id)}
                 className="flex min-w-0 flex-1 items-center gap-2 text-left"
               >
-                <span className={`h-2.5 w-2.5 shrink-0 rounded-full ${tab.roleColor}`} />
+                <span
+                  className="h-2.5 w-2.5 shrink-0 rounded-full"
+                  style={{ backgroundColor: tab.roleColor }}
+                />
                 <span className="truncate text-sm font-medium">{tab.title}</span>
               </button>
               <button

@@ -109,6 +109,7 @@ export async function saveProject(project: ProjectSummary): Promise<WorkspaceDat
 
   return writeWorkspace({
     projects,
+    roleProfiles: workspace.roleProfiles,
     lastActiveProjectId: project.id,
   })
 }

@@ -29,6 +29,12 @@ const api = {
         setLastActiveProject(projectId) {
             return ipcRenderer.invoke('workspace:set-last-active-project', projectId);
         },
+        saveRoleProfile(roleProfile) {
+            return ipcRenderer.invoke('workspace:save-role-profile', roleProfile);
+        },
+        deleteRoleProfile(roleProfileId) {
+            return ipcRenderer.invoke('workspace:delete-role-profile', roleProfileId);
+        },
     },
 };
 contextBridge.exposeInMainWorld('rolesTab', api);

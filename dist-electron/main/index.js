@@ -1,7 +1,7 @@
 import { app, BrowserWindow, ipcMain } from 'electron';
 import { createAppWindow } from './browserWindow.js';
 import { clearRoleSession, createRolePartition } from './sessionManager.js';
-import { deleteProject, loadWorkspace, saveProject, setLastActiveProject } from './workspaceStore.js';
+import { deleteProject, deleteRoleProfile, loadWorkspace, saveProject, saveRoleProfile, setLastActiveProject, } from './workspaceStore.js';
 if (!app.requestSingleInstanceLock()) {
     app.quit();
 }
@@ -46,5 +46,11 @@ ipcMain.handle('workspace:delete-project', async (_event, projectId) => {
 });
 ipcMain.handle('workspace:set-last-active-project', async (_event, projectId) => {
     return setLastActiveProject(projectId);
+});
+ipcMain.handle('workspace:save-role-profile', async (_event, roleProfile) => {
+    return saveRoleProfile(roleProfile);
+});
+ipcMain.handle('workspace:delete-role-profile', async (_event, roleProfileId) => {
+    return deleteRoleProfile(roleProfileId);
 });
 //# sourceMappingURL=index.js.map

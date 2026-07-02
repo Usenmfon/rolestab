@@ -1,22 +1,33 @@
 import { FolderPlus, Pencil, Trash2, PanelsTopLeft } from 'lucide-react'
-import type { ProjectSummary } from '../../shared/workspace'
+import type { ProjectSummary, RoleProfile } from '../../shared/workspace'
+import { RoleProfileList } from './RoleProfileList'
 
 type SidebarProps = {
   projects: ProjectSummary[]
+  activeProjectRoleProfiles: RoleProfile[]
   activeProjectId: string | null
   onCreateProject: () => void
   onEditProject: (projectId: string) => void
   onDeleteProject: (projectId: string) => void
   onSelectProject: (projectId: string) => void
+  onCreateRoleProfile: () => void
+  onEditRoleProfile: (roleProfileId: string) => void
+  onDeleteRoleProfile: (roleProfileId: string) => void
+  onOpenRoleProfile: (roleProfileId: string) => void
 }
 
 export function Sidebar({
   projects,
+  activeProjectRoleProfiles,
   activeProjectId,
   onCreateProject,
   onEditProject,
   onDeleteProject,
   onSelectProject,
+  onCreateRoleProfile,
+  onEditRoleProfile,
+  onDeleteRoleProfile,
+  onOpenRoleProfile,
 }: SidebarProps) {
   return (
     <aside className="flex w-72 shrink-0 flex-col border-r border-slate-200 bg-white">
@@ -113,6 +124,15 @@ export function Sidebar({
             </div>
           )}
         </section>
+
+        <RoleProfileList
+          roleProfiles={activeProjectRoleProfiles}
+          hasActiveProject={Boolean(activeProjectId)}
+          onCreateRoleProfile={onCreateRoleProfile}
+          onEditRoleProfile={onEditRoleProfile}
+          onDeleteRoleProfile={onDeleteRoleProfile}
+          onOpenRoleProfile={onOpenRoleProfile}
+        />
       </div>
 
       <div className="border-t border-slate-200 px-4 py-3 text-xs text-slate-500">

@@ -3,6 +3,7 @@ import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 const defaultWorkspace = {
     projects: [],
+    roleProfiles: [],
     lastActiveProjectId: null,
 };
 function workspacePath() {
@@ -10,11 +11,14 @@ function workspacePath() {
 }
 function sanitizeWorkspace(data) {
     const projects = Array.isArray(data.projects) ? data.projects.filter(isValidProject) : [];
+    const roleProfiles = Array.isArray(data.roleProfiles)
+        ? data.roleProfiles.filter((roleProfile) => isValidRoleProfile(roleProfile, projects))
+        : [];
     const lastActiveProjectId = typeof data.lastActiveProjectId === 'string' &&
         projects.some((project) => project.id === data.lastActiveProjectId)
         ? data.lastActiveProjectId
         : projects[0]?.id ?? null;
-    return { projects, lastActiveProjectId };
+    return { projects, roleProfiles, lastActiveProjectId };
 }
 function isValidProject(project) {
     return (typeof project.id === 'string' &&
@@ -24,6 +28,21 @@ function isValidProject(project) {
         typeof project.createdAt === 'string' &&
         typeof project.updatedAt === 'string' &&
         isAllowedUrl(project.baseUrl));
+}
+function isValidRoleProfile(roleProfile, projects) {
+    return (typeof roleProfile.id === 'string' &&
+        typeof roleProfile.projectId === 'string' &&
+        projects.some((project) => project.id === roleProfile.projectId) &&
+        typeof roleProfile.name === 'string' &&
+        roleProfile.name.trim().length > 0 &&
+        typeof roleProfile.color === 'string' &&
+        /^#[\da-f]{6}$/i.test(roleProfile.color) &&
+        typeof roleProfile.startUrl === 'string' &&
+        isAllowedUrl(roleProfile.startUrl) &&
+        typeof roleProfile.sessionPartition === 'string' &&
+        roleProfile.sessionPartition.startsWith('persist:') &&
+        typeof roleProfile.createdAt === 'string' &&
+        typeof roleProfile.updatedAt === 'string');
 }
 function isAllowedUrl(url) {
     try {
@@ -70,14 +89,16 @@ export async function saveProject(project) {
     }
     return writeWorkspace({
         projects,
+        roleProfiles: workspace.roleProfiles,
         lastActiveProjectId: project.id,
     });
 }
 export async function deleteProject(projectId) {
     const workspace = await loadWorkspace();
     const projects = workspace.projects.filter((project) => project.id !== projectId);
+    const roleProfiles = workspace.roleProfiles.filter((roleProfile) => roleProfile.projectId !== projectId);
     const lastActiveProjectId = workspace.lastActiveProjectId === projectId ? projects[0]?.id ?? null : workspace.lastActiveProjectId;
-    return writeWorkspace({ projects, lastActiveProjectId });
+    return writeWorkspace({ projects, roleProfiles, lastActiveProjectId });
 }
 export async function setLastActiveProject(projectId) {
     const workspace = await loadWorkspace();
@@ -85,5 +106,25 @@ export async function setLastActiveProject(projectId) {
         ? projectId
         : null;
     return writeWorkspace({ ...workspace, lastActiveProjectId });
+}
+export async function saveRoleProfile(roleProfile) {
+    const workspace = await loadWorkspace();
+    if (!isValidRoleProfile(roleProfile, workspace.projects)) {
+        throw new Error('Role name, color, session partition, and a valid start URL are required.');
+    }
+    const existingIndex = workspace.roleProfiles.findIndex((currentRole) => currentRole.id === roleProfile.id);
+    const roleProfiles = [...workspace.roleProfiles];
+    if (existingIndex >= 0) {
+        roleProfiles[existingIndex] = roleProfile;
+    }
+    else {
+        roleProfiles.unshift(roleProfile);
+    }
+    return writeWorkspace({ ...workspace, roleProfiles });
+}
+export async function deleteRoleProfile(roleProfileId) {
+    const workspace = await loadWorkspace();
+    const roleProfiles = workspace.roleProfiles.filter((roleProfile) => roleProfile.id !== roleProfileId);
+    return writeWorkspace({ ...workspace, roleProfiles });
 }
 //# sourceMappingURL=workspaceStore.js.map

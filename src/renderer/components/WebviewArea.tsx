@@ -1,18 +1,22 @@
 import { Globe2, MonitorUp } from 'lucide-react'
-import type { BrowserTab, ProjectSummary } from '../../shared/workspace'
+import type { BrowserTab, ProjectSummary, RoleProfile } from '../../shared/workspace'
 
 type WebviewAreaProps = {
   activeProject: ProjectSummary | null
   activeTab: BrowserTab | null
+  roleProfiles: RoleProfile[]
   onCreateProject: () => void
-  onNewTab: () => void
+  onCreateRoleProfile: () => void
+  onOpenRoleProfile: (roleProfileId: string) => void
 }
 
 export function WebviewArea({
   activeProject,
   activeTab,
+  roleProfiles,
   onCreateProject,
-  onNewTab,
+  onCreateRoleProfile,
+  onOpenRoleProfile,
 }: WebviewAreaProps) {
   if (!activeProject) {
     return (
@@ -48,13 +52,32 @@ export function WebviewArea({
           <p className="mt-3 text-sm leading-6 text-slate-600">
             Role tabs will render isolated browser sessions for {activeProject.name}.
           </p>
-          <button
-            type="button"
-            onClick={onNewTab}
-            className="mt-6 rounded-md bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800"
-          >
-            New Role Tab
-          </button>
+          {roleProfiles.length === 0 ? (
+            <button
+              type="button"
+              onClick={onCreateRoleProfile}
+              className="mt-6 rounded-md bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800"
+            >
+              New Role Profile
+            </button>
+          ) : (
+            <div className="mt-6 flex flex-wrap justify-center gap-2">
+              {roleProfiles.map((roleProfile) => (
+                <button
+                  key={roleProfile.id}
+                  type="button"
+                  onClick={() => onOpenRoleProfile(roleProfile.id)}
+                  className="flex h-10 items-center gap-2 rounded-md border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+                >
+                  <span
+                    className="h-2.5 w-2.5 rounded-full"
+                    style={{ backgroundColor: roleProfile.color }}
+                  />
+                  {roleProfile.name}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     )
