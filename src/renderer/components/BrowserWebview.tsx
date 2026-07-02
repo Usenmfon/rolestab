@@ -33,6 +33,13 @@ type FailLoadEvent = Event & {
   validatedURL?: string
 }
 
+type ConsoleMessageEvent = Event & {
+  level?: number
+  message?: string
+  line?: number
+  sourceId?: string
+}
+
 type BrowserWebviewProps = {
   tab: BrowserTab
   active: boolean
@@ -114,6 +121,23 @@ export function BrowserWebview({ tab, active, command, onUpdate }: BrowserWebvie
       })
     }
 
+    function handleConsoleMessage(event: Event) {
+      const consoleEvent = event as ConsoleMessageEvent
+
+      if (consoleEvent.level !== 3 || !consoleEvent.message) {
+        return
+      }
+
+      const location = consoleEvent.sourceId
+        ? ` (${consoleEvent.sourceId}${consoleEvent.line ? `:${consoleEvent.line}` : ''})`
+        : ''
+      const nextError = `${consoleEvent.message}${location}`
+
+      onUpdate(tab.id, {
+        consoleErrors: [nextError, ...(tab.consoleErrors ?? [])].slice(0, 5),
+      })
+    }
+
     webviewElement.addEventListener('did-start-loading', handleStartLoading)
     webviewElement.addEventListener('did-stop-loading', handleStopLoading)
     webviewElement.addEventListener('page-title-updated', handleTitle)
@@ -121,6 +145,7 @@ export function BrowserWebview({ tab, active, command, onUpdate }: BrowserWebvie
     webviewElement.addEventListener('did-navigate-in-page', handleNavigation)
     webviewElement.addEventListener('page-favicon-updated', handleFavicon)
     webviewElement.addEventListener('did-fail-load', handleFailLoad)
+    webviewElement.addEventListener('console-message', handleConsoleMessage)
 
     return () => {
       webviewElement.removeEventListener('did-start-loading', handleStartLoading)
@@ -130,8 +155,9 @@ export function BrowserWebview({ tab, active, command, onUpdate }: BrowserWebvie
       webviewElement.removeEventListener('did-navigate-in-page', handleNavigation)
       webviewElement.removeEventListener('page-favicon-updated', handleFavicon)
       webviewElement.removeEventListener('did-fail-load', handleFailLoad)
+      webviewElement.removeEventListener('console-message', handleConsoleMessage)
     }
-  }, [onUpdate, tab.id])
+  }, [onUpdate, tab.consoleErrors, tab.id])
 
   useEffect(() => {
     const webview = webviewRef.current

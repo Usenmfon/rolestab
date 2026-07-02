@@ -1,6 +1,7 @@
-import { BrowserWindow, shell } from 'electron';
+import electron from 'electron';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+const { BrowserWindow, shell } = electron;
 const currentFile = fileURLToPath(import.meta.url);
 const currentDirectory = path.dirname(currentFile);
 const rendererDevServerUrl = process.env.VITE_DEV_SERVER_URL ?? 'http://localhost:5173';

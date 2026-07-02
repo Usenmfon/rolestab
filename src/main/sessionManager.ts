@@ -1,4 +1,6 @@
-import { session } from 'electron'
+import electron from 'electron'
+
+const { session } = electron
 
 export function createRolePartition(projectId: string, roleProfileId: string): string {
   return `persist:${projectId}-${roleProfileId}`

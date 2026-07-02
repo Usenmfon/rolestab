@@ -734,10 +734,20 @@ function App() {
 
     try {
       sendBrowserCommand({ type: 'navigate', url: normalizeHttpUrl(url) })
+      updateTab(activeTab.id, { consoleErrors: [], loadError: undefined })
       setWorkspaceError(null)
     } catch (error) {
       setWorkspaceError(error instanceof Error ? error.message : 'Enter a valid http(s) URL.')
     }
+  }
+
+  function retryActiveTab() {
+    if (!activeTab) {
+      return
+    }
+
+    sendBrowserCommand({ type: 'navigate', url: activeTab.url })
+    updateTab(activeTab.id, { consoleErrors: [], loadError: undefined, loading: true })
   }
 
   function homeActiveTab() {
@@ -846,6 +856,7 @@ function App() {
       onStop={() => sendBrowserCommand({ type: 'stop' })}
       onHome={homeActiveTab}
       onNavigate={navigateActiveTab}
+      onRetryActiveTab={retryActiveTab}
       onCopyUrl={() => {
         void copyActiveUrl()
       }}

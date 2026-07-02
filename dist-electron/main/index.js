@@ -1,7 +1,8 @@
-import { app, BrowserWindow, ipcMain, shell } from 'electron';
+import electron from 'electron';
 import { createAppWindow } from './browserWindow.js';
 import { clearRoleSession, clearRoleSessions, createRolePartition } from './sessionManager.js';
 import { deleteProject, deleteRoleProfile, loadWorkspace, saveRecentTabs, saveRecentUrl, saveSettings, saveProject, saveRoleProfile, setLastActiveProject, } from './workspaceStore.js';
+const { app, BrowserWindow, ipcMain, shell } = electron;
 if (!app.requestSingleInstanceLock()) {
     app.quit();
 }

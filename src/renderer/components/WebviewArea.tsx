@@ -3,6 +3,13 @@ import type { BrowserCommand } from '../../shared/browser'
 import type { BrowserTab, ProjectSummary, RoleProfile } from '../../shared/workspace'
 import { BrowserWebview } from './BrowserWebview'
 
+const localhostShortcuts = [
+  'http://localhost:3000',
+  'http://localhost:5173',
+  'http://localhost:8000',
+  'http://localhost:8080',
+]
+
 type WebviewAreaProps = {
   activeProject: ProjectSummary | null
   tabs: BrowserTab[]
@@ -13,6 +20,8 @@ type WebviewAreaProps = {
   onCreateProject: () => void
   onCreateRoleProfile: () => void
   onOpenRoleProfile: (roleProfileId: string) => void
+  onNavigate: (url: string) => void
+  onRetryActiveTab: () => void
   onUpdateTab: (tabId: string, updates: Partial<BrowserTab>) => void
 }
 
@@ -26,8 +35,12 @@ export function WebviewArea({
   onCreateProject,
   onCreateRoleProfile,
   onOpenRoleProfile,
+  onNavigate,
+  onRetryActiveTab,
   onUpdateTab,
 }: WebviewAreaProps) {
+  const environment = getEnvironment(activeTab?.url ?? activeProject?.baseUrl ?? '')
+
   if (!activeProject) {
     return (
       <div className="flex min-h-0 flex-1 items-center justify-center p-8">
@@ -96,8 +109,13 @@ export function WebviewArea({
   return (
     <div className="flex min-h-0 flex-1 flex-col bg-white">
       <div className="flex h-9 shrink-0 items-center justify-between border-b border-slate-200 px-4 text-xs text-slate-500">
-        <span>
-          {activeTab.roleName} session
+        <span className="flex min-w-0 items-center gap-2">
+          <span
+            className={`rounded px-2 py-0.5 text-[11px] font-semibold ${environment.className}`}
+          >
+            {environment.label}
+          </span>
+          <span className="truncate">{activeTab.roleName} session</span>
           <span className="ml-2 font-mono text-[11px] text-slate-400">
             {activeTab.sessionPartition}
           </span>
@@ -107,6 +125,21 @@ export function WebviewArea({
           <span className="mx-2 text-slate-300">/</span>
           {activeTab.loading ? 'Loading' : activeTab.loadError ? 'Load failed' : 'Ready'}
         </span>
+      </div>
+      <div className="flex h-10 shrink-0 items-center gap-2 border-b border-slate-200 bg-slate-50 px-4">
+        <span className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+          Shortcuts
+        </span>
+        {localhostShortcuts.map((shortcut) => (
+          <button
+            key={shortcut}
+            type="button"
+            onClick={() => onNavigate(shortcut)}
+            className="rounded border border-slate-200 bg-white px-2 py-1 text-xs font-medium text-slate-700 hover:bg-slate-100"
+          >
+            {shortcut.replace('http://', '')}
+          </button>
+        ))}
       </div>
       <div className="relative min-h-0 flex-1 bg-white">
         {tabs.map((tab) => (
@@ -120,11 +153,51 @@ export function WebviewArea({
         ))}
 
         {activeTab.loadError ? (
-          <div className="pointer-events-none absolute inset-x-4 bottom-4 rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 shadow-sm">
-            {activeTab.loadError}
+          <div className="absolute inset-x-4 bottom-4 rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 shadow-sm">
+            <div className="flex items-center justify-between gap-3">
+              <span>{activeTab.loadError}</span>
+              <button
+                type="button"
+                onClick={onRetryActiveTab}
+                className="rounded border border-red-200 bg-white px-3 py-1 text-xs font-semibold text-red-700 hover:bg-red-100"
+              >
+                Retry
+              </button>
+            </div>
+          </div>
+        ) : null}
+
+        {activeTab.consoleErrors && activeTab.consoleErrors.length > 0 ? (
+          <div className="absolute bottom-4 right-4 max-w-xl rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-xs text-amber-800 shadow-sm">
+            <p className="font-semibold">Console errors</p>
+            <ul className="mt-2 space-y-1">
+              {activeTab.consoleErrors.slice(0, 3).map((error) => (
+                <li key={error} className="truncate">
+                  {error}
+                </li>
+              ))}
+            </ul>
           </div>
         ) : null}
       </div>
     </div>
   )
+}
+
+function getEnvironment(url: string): { label: string; className: string } {
+  try {
+    const hostname = new URL(url).hostname.toLowerCase()
+
+    if (hostname === 'localhost' || hostname === '127.0.0.1' || hostname.endsWith('.test')) {
+      return { label: 'Local', className: 'bg-emerald-100 text-emerald-700' }
+    }
+
+    if (hostname.includes('staging') || hostname.includes('stage') || hostname.includes('dev')) {
+      return { label: 'Staging', className: 'bg-amber-100 text-amber-700' }
+    }
+
+    return { label: 'Production', className: 'bg-red-100 text-red-700' }
+  } catch {
+    return { label: 'Unknown', className: 'bg-slate-200 text-slate-700' }
+  }
 }

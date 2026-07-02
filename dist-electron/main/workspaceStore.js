@@ -1,6 +1,7 @@
-import { app } from 'electron';
+import electron from 'electron';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
+const { app } = electron;
 const workspaceSchemaVersion = 1;
 const defaultSettings = {
     restoreTabsOnStartup: true,

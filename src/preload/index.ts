@@ -1,4 +1,4 @@
-import { contextBridge, ipcRenderer } from 'electron'
+import electron from 'electron'
 import type {
   AppSettings,
   ProjectSummary,
@@ -7,6 +7,8 @@ import type {
   SavedBrowserTab,
   WorkspaceData,
 } from '../shared/workspace.js'
+
+const { contextBridge, ipcRenderer } = electron
 
 const api = {
   app: {

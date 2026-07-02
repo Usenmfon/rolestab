@@ -1,4 +1,4 @@
-import { app } from 'electron'
+import electron from 'electron'
 import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 import type {
@@ -9,6 +9,8 @@ import type {
   SavedBrowserTab,
   WorkspaceData,
 } from '../shared/workspace.js'
+
+const { app } = electron
 
 const workspaceSchemaVersion = 1
 

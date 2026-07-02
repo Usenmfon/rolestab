@@ -67,4 +67,5 @@ export type BrowserTab = {
   loadError?: string
   canGoBack?: boolean
   canGoForward?: boolean
+  consoleErrors?: string[]
 }

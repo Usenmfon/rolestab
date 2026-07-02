@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain, shell } from 'electron'
+import electron from 'electron'
 import { createAppWindow } from './browserWindow.js'
 import { clearRoleSession, clearRoleSessions, createRolePartition } from './sessionManager.js'
 import {
@@ -14,11 +14,15 @@ import {
 } from './workspaceStore.js'
 import type { AppSettings, ProjectSummary, RecentUrl, RoleProfile, SavedBrowserTab } from '../shared/workspace.js'
 
+const { app, BrowserWindow, ipcMain, shell } = electron
+
 if (!app.requestSingleInstanceLock()) {
   app.quit()
 }
 
-let mainWindow: BrowserWindow | null = null
+type AppBrowserWindow = InstanceType<typeof BrowserWindow>
+
+let mainWindow: AppBrowserWindow | null = null
 
 app.setName('RolesTab')
 

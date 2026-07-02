@@ -1,7 +1,8 @@
-import { BrowserWindow, shell } from 'electron'
+import electron from 'electron'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
+const { BrowserWindow, shell } = electron
 const currentFile = fileURLToPath(import.meta.url)
 const currentDirectory = path.dirname(currentFile)
 
@@ -9,7 +10,9 @@ const rendererDevServerUrl = process.env.VITE_DEV_SERVER_URL ?? 'http://localhos
 const rendererIndexPath = path.join(currentDirectory, '../../dist/index.html')
 const preloadPath = path.join(currentDirectory, '../preload/index.js')
 
-export function createAppWindow(): BrowserWindow {
+type AppBrowserWindow = InstanceType<typeof BrowserWindow>
+
+export function createAppWindow(): AppBrowserWindow {
   const window = new BrowserWindow({
     width: 1280,
     height: 820,

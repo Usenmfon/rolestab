@@ -64,6 +64,7 @@ type DesktopLayoutProps = {
   onStop: () => void
   onHome: () => void
   onNavigate: (url: string) => void
+  onRetryActiveTab: () => void
   onCopyUrl: () => void
   onOpenExternal: () => void
   onOpenDevTools: () => void
@@ -117,6 +118,7 @@ export function DesktopLayout({
   onStop,
   onHome,
   onNavigate,
+  onRetryActiveTab,
   onCopyUrl,
   onOpenExternal,
   onOpenDevTools,
@@ -190,6 +192,8 @@ export function DesktopLayout({
           onCreateProject={onCreateProject}
           onCreateRoleProfile={onCreateRoleProfile}
           onOpenRoleProfile={onOpenRoleProfile}
+          onNavigate={onNavigate}
+          onRetryActiveTab={onRetryActiveTab}
           onUpdateTab={onUpdateTab}
         />
       </section>
