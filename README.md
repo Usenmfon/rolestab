@@ -1,75 +1,69 @@
-# React + TypeScript + Vite
+# RolesTab
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+RolesTab is a desktop mini-browser for testing the same web application as multiple user roles at once. Each role profile opens in its own persistent Electron session partition, so cookies, localStorage, IndexedDB, cache, and login state stay isolated.
 
-Currently, two official plugins are available:
+## Current Stack
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- Electron
+- React
+- TypeScript
+- Vite
+- Tailwind CSS
+- Local JSON workspace storage
+- Electron Builder
 
-## React Compiler
+## Development
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+Install dependencies:
 
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-
+```bash
+npm install
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+Run the desktop app in development:
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-
+```bash
+npm run dev
 ```
+
+Build the renderer and Electron main/preload bundles:
+
+```bash
+npm run build
+```
+
+Create a distributable package:
+
+```bash
+npm run dist
+```
+
+## Project Structure
+
+```txt
+src/
+  main/       Electron main process, window setup, sessions, workspace storage
+  preload/    Safe IPC bridge exposed to the renderer
+  renderer/   React app, layouts, components, browser webviews
+  shared/     Shared TypeScript types
+public/       Browser and app icon assets
+```
+
+## MVP Capabilities
+
+- Create, edit, delete, and persist projects.
+- Create reusable role profiles per project.
+- Open isolated browser tabs per role profile.
+- Restore recent tabs and URLs.
+- Clear one role session, project sessions, or all role sessions.
+- Use browser controls for navigation, reload, home, external open, copy URL, and DevTools.
+
+## Local Data
+
+Workspace data is stored as JSON under Electron's `userData` directory. Role browser sessions use persistent Electron partitions named with this pattern:
+
+```txt
+persist:<projectId>-<roleProfileId>
+```
+
+The app stores role/session metadata, not passwords.

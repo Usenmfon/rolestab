@@ -12,6 +12,9 @@ const currentDirectory = __dirname;
 const rendererDevServerUrl = process.env.VITE_DEV_SERVER_URL ?? 'http://localhost:5173';
 const rendererIndexPath = node_path_1.default.join(currentDirectory, '../../dist/index.html');
 const preloadPath = node_path_1.default.join(currentDirectory, '../preload/index.js');
+const appIconPath = process.env.NODE_ENV === 'production'
+    ? node_path_1.default.join(currentDirectory, '../../dist/favicon.svg')
+    : node_path_1.default.join(currentDirectory, '../../public/favicon.svg');
 function isSafeExternalUrl(url) {
     try {
         const parsed = new URL(url);
@@ -29,6 +32,7 @@ function createAppWindow() {
         minHeight: 640,
         show: false,
         title: 'RolesTab',
+        icon: appIconPath,
         backgroundColor: '#f5f7fb',
         webPreferences: {
             preload: preloadPath,
