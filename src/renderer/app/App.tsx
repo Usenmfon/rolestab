@@ -547,6 +547,29 @@ function App() {
     }
   }
 
+  async function toggleConfirmSessionClear() {
+    const nextSettings = {
+      ...settings,
+      confirmBeforeClearingSessions: !settings.confirmBeforeClearingSessions,
+    }
+
+    setSettings(nextSettings)
+
+    try {
+      const workspace = await window.rolesTab?.workspace.saveSettings(nextSettings)
+
+      if (workspace) {
+        applyWorkspace(workspace)
+      }
+    } catch (error) {
+      setWorkspaceError(error instanceof Error ? error.message : 'Unable to save settings.')
+    }
+  }
+
+  function shouldClearSessions(message: string): boolean {
+    return !settings.confirmBeforeClearingSessions || window.confirm(message)
+  }
+
   function openRecentUrl(recentUrl: RecentUrl) {
     const roleProfile =
       roleProfiles.find((currentRole) => currentRole.id === recentUrl.roleProfileId) ??
@@ -595,11 +618,11 @@ function App() {
       return
     }
 
-    const confirmed = window.confirm(
-      `Reset the persisted browser session for ${activeTab.roleName}? Cookies, cache, localStorage, and IndexedDB for this role partition will be cleared.`,
-    )
-
-    if (!confirmed) {
+    if (
+      !shouldClearSessions(
+        `Reset the persisted browser session for ${activeTab.roleName}? Cookies, cache, localStorage, and IndexedDB for this role partition will be cleared.`,
+      )
+    ) {
       return
     }
 
@@ -616,6 +639,69 @@ function App() {
       setWorkspaceError(null)
     } catch (error) {
       setWorkspaceError(error instanceof Error ? error.message : 'Unable to reset the active role session.')
+    }
+  }
+
+  async function clearProjectSessions() {
+    if (!activeProject) {
+      return
+    }
+
+    const projectRoleProfiles = roleProfiles.filter((roleProfile) => roleProfile.projectId === activeProject.id)
+
+    if (projectRoleProfiles.length === 0) {
+      setWorkspaceError('This project has no role sessions to clear.')
+      return
+    }
+
+    if (
+      !shouldClearSessions(
+        `Clear sessions for all roles in ${activeProject.name}? Cookies, cache, localStorage, and IndexedDB for ${projectRoleProfiles.length} role partition(s) will be cleared.`,
+      )
+    ) {
+      return
+    }
+
+    try {
+      const partitions = projectRoleProfiles.map((roleProfile) => roleProfile.sessionPartition)
+      await window.rolesTab?.sessions.clearRoleSessions(partitions)
+      const remainingTabs = tabs.filter((tab) => tab.projectId !== activeProject.id)
+
+      setTabs(remainingTabs)
+      setActiveTabId((currentActiveTabId) => {
+        return remainingTabs.some((tab) => tab.id === currentActiveTabId)
+          ? currentActiveTabId
+          : remainingTabs.at(-1)?.id ?? null
+      })
+      setWorkspaceError(null)
+    } catch (error) {
+      setWorkspaceError(error instanceof Error ? error.message : 'Unable to clear project sessions.')
+    }
+  }
+
+  async function clearAllSessions() {
+    const partitions = roleProfiles.map((roleProfile) => roleProfile.sessionPartition)
+
+    if (partitions.length === 0) {
+      setWorkspaceError('There are no role sessions to clear.')
+      return
+    }
+
+    if (
+      !shouldClearSessions(
+        `Clear all app role sessions? Cookies, cache, localStorage, and IndexedDB for ${partitions.length} role partition(s) will be cleared.`,
+      )
+    ) {
+      return
+    }
+
+    try {
+      await window.rolesTab?.sessions.clearRoleSessions(partitions)
+      setTabs([])
+      setActiveTabId(null)
+      setWorkspaceError(null)
+    } catch (error) {
+      setWorkspaceError(error instanceof Error ? error.message : 'Unable to clear all sessions.')
     }
   }
 
@@ -725,7 +811,16 @@ function App() {
       onToggleRestoreTabs={() => {
         void toggleRestoreTabs()
       }}
+      onToggleConfirmSessionClear={() => {
+        void toggleConfirmSessionClear()
+      }}
       onOpenRecentUrl={openRecentUrl}
+      onClearProjectSessions={() => {
+        void clearProjectSessions()
+      }}
+      onClearAllSessions={() => {
+        void clearAllSessions()
+      }}
       onCloseRoleProfileForm={closeRoleProfileForm}
       onSaveRoleProfile={saveRoleProfile}
       onSelectProject={(projectId) => {

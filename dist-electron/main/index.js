@@ -1,6 +1,6 @@
 import { app, BrowserWindow, ipcMain, shell } from 'electron';
 import { createAppWindow } from './browserWindow.js';
-import { clearRoleSession, createRolePartition } from './sessionManager.js';
+import { clearRoleSession, clearRoleSessions, createRolePartition } from './sessionManager.js';
 import { deleteProject, deleteRoleProfile, loadWorkspace, saveRecentTabs, saveRecentUrl, saveSettings, saveProject, saveRoleProfile, setLastActiveProject, } from './workspaceStore.js';
 if (!app.requestSingleInstanceLock()) {
     app.quit();
@@ -41,6 +41,9 @@ ipcMain.handle('session:create-role-partition', (_event, projectId, roleProfileI
 });
 ipcMain.handle('session:clear-role-session', async (_event, partition) => {
     await clearRoleSession(partition);
+});
+ipcMain.handle('session:clear-role-sessions', async (_event, partitions) => {
+    await clearRoleSessions(partitions);
 });
 ipcMain.handle('workspace:load', async () => {
     return loadWorkspace();

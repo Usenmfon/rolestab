@@ -20,7 +20,10 @@ type SidebarProps = {
   onCreateCommonRoles: () => void
   onOpenAllRoles: () => void
   onToggleRestoreTabs: () => void
+  onToggleConfirmSessionClear: () => void
   onOpenRecentUrl: (recentUrl: RecentUrl) => void
+  onClearProjectSessions: () => void
+  onClearAllSessions: () => void
 }
 
 export function Sidebar({
@@ -40,7 +43,10 @@ export function Sidebar({
   onCreateCommonRoles,
   onOpenAllRoles,
   onToggleRestoreTabs,
+  onToggleConfirmSessionClear,
   onOpenRecentUrl,
+  onClearProjectSessions,
+  onClearAllSessions,
 }: SidebarProps) {
   return (
     <aside className="flex w-72 shrink-0 flex-col border-r border-slate-200 bg-white">
@@ -153,7 +159,10 @@ export function Sidebar({
           settings={settings}
           recentUrls={recentUrls}
           onToggleRestoreTabs={onToggleRestoreTabs}
+          onToggleConfirmSessionClear={onToggleConfirmSessionClear}
           onOpenRecentUrl={onOpenRecentUrl}
+          onClearProjectSessions={onClearProjectSessions}
+          onClearAllSessions={onClearAllSessions}
         />
       </div>
 

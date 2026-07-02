@@ -11,4 +11,8 @@ export async function clearRoleSession(partition) {
         }),
     ]);
 }
+export async function clearRoleSessions(partitions) {
+    const uniquePartitions = [...new Set(partitions.filter((partition) => partition.startsWith('persist:')))];
+    await Promise.all(uniquePartitions.map((partition) => clearRoleSession(partition)));
+}
 //# sourceMappingURL=sessionManager.js.map

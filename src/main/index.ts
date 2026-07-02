@@ -1,6 +1,6 @@
 import { app, BrowserWindow, ipcMain, shell } from 'electron'
 import { createAppWindow } from './browserWindow.js'
-import { clearRoleSession, createRolePartition } from './sessionManager.js'
+import { clearRoleSession, clearRoleSessions, createRolePartition } from './sessionManager.js'
 import {
   deleteProject,
   deleteRoleProfile,
@@ -66,6 +66,10 @@ ipcMain.handle('session:create-role-partition', (_event, projectId: string, role
 
 ipcMain.handle('session:clear-role-session', async (_event, partition: string) => {
   await clearRoleSession(partition)
+})
+
+ipcMain.handle('session:clear-role-sessions', async (_event, partitions: string[]) => {
+  await clearRoleSessions(partitions)
 })
 
 ipcMain.handle('workspace:load', async () => {

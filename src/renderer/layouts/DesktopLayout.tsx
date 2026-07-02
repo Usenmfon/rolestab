@@ -43,7 +43,10 @@ type DesktopLayoutProps = {
   onCreateCommonRoles: () => void
   onOpenAllRoles: () => void
   onToggleRestoreTabs: () => void
+  onToggleConfirmSessionClear: () => void
   onOpenRecentUrl: (recentUrl: RecentUrl) => void
+  onClearProjectSessions: () => void
+  onClearAllSessions: () => void
   onCloseRoleProfileForm: () => void
   onSaveRoleProfile: (draft: RoleProfileDraft) => Promise<void>
   onSelectProject: (projectId: string) => void
@@ -93,7 +96,10 @@ export function DesktopLayout({
   onCreateCommonRoles,
   onOpenAllRoles,
   onToggleRestoreTabs,
+  onToggleConfirmSessionClear,
   onOpenRecentUrl,
+  onClearProjectSessions,
+  onClearAllSessions,
   onCloseRoleProfileForm,
   onSaveRoleProfile,
   onSelectProject,
@@ -134,7 +140,10 @@ export function DesktopLayout({
         onCreateCommonRoles={onCreateCommonRoles}
         onOpenAllRoles={onOpenAllRoles}
         onToggleRestoreTabs={onToggleRestoreTabs}
+        onToggleConfirmSessionClear={onToggleConfirmSessionClear}
         onOpenRecentUrl={onOpenRecentUrl}
+        onClearProjectSessions={onClearProjectSessions}
+        onClearAllSessions={onClearAllSessions}
       />
 
       <section className="flex min-w-0 flex-1 flex-col">

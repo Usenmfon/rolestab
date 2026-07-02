@@ -1,18 +1,24 @@
-import { Clock3 } from 'lucide-react'
+import { Clock3, RotateCcw, ShieldAlert } from 'lucide-react'
 import type { AppSettings, RecentUrl } from '../../shared/workspace'
 
 type WorkspacePersistencePanelProps = {
   settings: AppSettings
   recentUrls: RecentUrl[]
   onToggleRestoreTabs: () => void
+  onToggleConfirmSessionClear: () => void
   onOpenRecentUrl: (recentUrl: RecentUrl) => void
+  onClearProjectSessions: () => void
+  onClearAllSessions: () => void
 }
 
 export function WorkspacePersistencePanel({
   settings,
   recentUrls,
   onToggleRestoreTabs,
+  onToggleConfirmSessionClear,
   onOpenRecentUrl,
+  onClearProjectSessions,
+  onClearAllSessions,
 }: WorkspacePersistencePanelProps) {
   return (
     <section className="min-h-0">
@@ -25,6 +31,40 @@ export function WorkspacePersistencePanel({
         />
         Restore tabs on startup
       </label>
+
+      <label className="mt-2 flex items-center gap-2 rounded-md border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700">
+        <input
+          type="checkbox"
+          checked={settings.confirmBeforeClearingSessions}
+          onChange={onToggleConfirmSessionClear}
+          className="h-4 w-4"
+        />
+        Confirm session clears
+      </label>
+
+      <div className="mt-4 flex items-center gap-2 px-1 text-xs font-semibold uppercase tracking-wide text-slate-500">
+        <ShieldAlert aria-hidden="true" size={14} />
+        Sessions
+      </div>
+
+      <div className="mt-3 grid grid-cols-2 gap-2">
+        <button
+          type="button"
+          onClick={onClearProjectSessions}
+          className="flex h-9 items-center justify-center gap-2 rounded-md border border-slate-200 bg-white px-2 text-xs font-semibold text-slate-700 hover:bg-slate-50"
+        >
+          <RotateCcw aria-hidden="true" size={14} />
+          Project
+        </button>
+        <button
+          type="button"
+          onClick={onClearAllSessions}
+          className="flex h-9 items-center justify-center gap-2 rounded-md border border-slate-200 bg-white px-2 text-xs font-semibold text-slate-700 hover:bg-slate-50"
+        >
+          <RotateCcw aria-hidden="true" size={14} />
+          All
+        </button>
+      </div>
 
       <div className="mt-4 flex items-center gap-2 px-1 text-xs font-semibold uppercase tracking-wide text-slate-500">
         <Clock3 aria-hidden="true" size={14} />

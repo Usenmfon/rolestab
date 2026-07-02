@@ -27,6 +27,9 @@ const api = {
     clearRoleSession(partition: string): Promise<void> {
       return ipcRenderer.invoke('session:clear-role-session', partition)
     },
+    clearRoleSessions(partitions: string[]): Promise<void> {
+      return ipcRenderer.invoke('session:clear-role-sessions', partitions)
+    },
   },
   workspace: {
     load(): Promise<WorkspaceData> {
