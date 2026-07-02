@@ -36,4 +36,6 @@ export type BrowserTab = {
   sessionPartition: string
   faviconUrl?: string
   loadError?: string
+  canGoBack?: boolean
+  canGoForward?: boolean
 }

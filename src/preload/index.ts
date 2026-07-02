@@ -9,6 +9,9 @@ const api = {
       chrome: process.versions.chrome,
       node: process.versions.node,
     },
+    openExternal(url: string): Promise<void> {
+      return ipcRenderer.invoke('app:open-external', url)
+    },
   },
   sessions: {
     createRolePartition(projectId: string, roleProfileId: string): Promise<string> {

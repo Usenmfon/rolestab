@@ -2,7 +2,9 @@ import { useEffect, useMemo, useState } from 'react'
 import { DesktopLayout } from '../layouts/DesktopLayout'
 import type { ProjectDraft } from '../components/ProjectFormPanel'
 import type { RoleProfileDraft } from '../components/RoleProfileFormPanel'
+import type { BrowserCommand, BrowserCommandInput } from '../../shared/browser'
 import type { BrowserTab, ProjectSummary, RoleProfile, WorkspaceData } from '../../shared/workspace'
+import { normalizeHttpUrl } from '../utils/url'
 
 function App() {
   const [projects, setProjects] = useState<ProjectSummary[]>([])
@@ -15,6 +17,7 @@ function App() {
   const [editingProjectId, setEditingProjectId] = useState<string | null>(null)
   const [editingRoleProfileId, setEditingRoleProfileId] = useState<string | null>(null)
   const [workspaceError, setWorkspaceError] = useState<string | null>(null)
+  const [browserCommand, setBrowserCommand] = useState<BrowserCommand | null>(null)
 
   const activeProject = useMemo(
     () => projects.find((project) => project.id === activeProjectId) ?? null,
@@ -342,6 +345,58 @@ function App() {
     )
   }
 
+  function sendBrowserCommand(command: BrowserCommandInput) {
+    setBrowserCommand({ ...command, id: Date.now() } as BrowserCommand)
+  }
+
+  function navigateActiveTab(url: string) {
+    if (!activeTab) {
+      return
+    }
+
+    try {
+      sendBrowserCommand({ type: 'navigate', url: normalizeHttpUrl(url) })
+      setWorkspaceError(null)
+    } catch (error) {
+      setWorkspaceError(error instanceof Error ? error.message : 'Enter a valid http(s) URL.')
+    }
+  }
+
+  function homeActiveTab() {
+    if (!activeTab) {
+      return
+    }
+
+    const roleProfile = roleProfiles.find((currentRoleProfile) => currentRoleProfile.id === activeTab.roleProfileId)
+    sendBrowserCommand({ type: 'home', url: roleProfile?.startUrl ?? activeProject?.baseUrl ?? activeTab.url })
+  }
+
+  async function copyActiveUrl() {
+    if (!activeTab) {
+      return
+    }
+
+    try {
+      await navigator.clipboard.writeText(activeTab.url)
+      setWorkspaceError(null)
+    } catch {
+      setWorkspaceError('Unable to copy the current URL.')
+    }
+  }
+
+  async function openActiveUrlExternal() {
+    if (!activeTab) {
+      return
+    }
+
+    try {
+      await window.rolesTab?.app.openExternal(activeTab.url)
+      setWorkspaceError(null)
+    } catch (error) {
+      setWorkspaceError(error instanceof Error ? error.message : 'Unable to open the current URL externally.')
+    }
+  }
+
   return (
     <DesktopLayout
       projects={projects}
@@ -350,6 +405,7 @@ function App() {
       tabs={tabs}
       activeTab={activeTab}
       activeTabId={activeTabId}
+      browserCommand={browserCommand}
       workspaceError={workspaceError}
       editingProject={editingProject}
       editingRoleProfile={editingRoleProfile}
@@ -382,6 +438,19 @@ function App() {
         }
       }}
       onUpdateTab={updateTab}
+      onBack={() => sendBrowserCommand({ type: 'back' })}
+      onForward={() => sendBrowserCommand({ type: 'forward' })}
+      onReload={() => sendBrowserCommand({ type: 'reload' })}
+      onStop={() => sendBrowserCommand({ type: 'stop' })}
+      onHome={homeActiveTab}
+      onNavigate={navigateActiveTab}
+      onCopyUrl={() => {
+        void copyActiveUrl()
+      }}
+      onOpenExternal={() => {
+        void openActiveUrlExternal()
+      }}
+      onOpenDevTools={() => sendBrowserCommand({ type: 'open-devtools' })}
     />
   )
 }

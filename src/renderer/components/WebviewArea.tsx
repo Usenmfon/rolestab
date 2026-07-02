@@ -1,4 +1,5 @@
 import { Globe2, MonitorUp } from 'lucide-react'
+import type { BrowserCommand } from '../../shared/browser'
 import type { BrowserTab, ProjectSummary, RoleProfile } from '../../shared/workspace'
 import { BrowserWebview } from './BrowserWebview'
 
@@ -8,6 +9,7 @@ type WebviewAreaProps = {
   activeTab: BrowserTab | null
   activeTabId: string | null
   roleProfiles: RoleProfile[]
+  command: BrowserCommand | null
   onCreateProject: () => void
   onCreateRoleProfile: () => void
   onOpenRoleProfile: (roleProfileId: string) => void
@@ -20,6 +22,7 @@ export function WebviewArea({
   activeTab,
   activeTabId,
   roleProfiles,
+  command,
   onCreateProject,
   onCreateRoleProfile,
   onOpenRoleProfile,
@@ -107,6 +110,7 @@ export function WebviewArea({
             key={tab.id}
             tab={tab}
             active={tab.id === activeTabId}
+            command={command}
             onUpdate={onUpdateTab}
           />
         ))}

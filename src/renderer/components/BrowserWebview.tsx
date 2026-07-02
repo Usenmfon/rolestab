@@ -1,9 +1,18 @@
 import { useEffect, useRef, useState } from 'react'
+import type { BrowserCommand } from '../../shared/browser'
 import type { BrowserTab } from '../../shared/workspace'
 
 type WebviewDomElement = HTMLElement & {
   getTitle?: () => string
   getURL?: () => string
+  canGoBack?: () => boolean
+  canGoForward?: () => boolean
+  goBack?: () => void
+  goForward?: () => void
+  reload?: () => void
+  stop?: () => void
+  loadURL?: (url: string) => void
+  openDevTools?: () => void
 }
 
 type PageTitleEvent = Event & {
@@ -27,12 +36,14 @@ type FailLoadEvent = Event & {
 type BrowserWebviewProps = {
   tab: BrowserTab
   active: boolean
+  command: BrowserCommand | null
   onUpdate: (tabId: string, updates: Partial<BrowserTab>) => void
 }
 
-export function BrowserWebview({ tab, active, onUpdate }: BrowserWebviewProps) {
+export function BrowserWebview({ tab, active, command, onUpdate }: BrowserWebviewProps) {
   const webviewRef = useRef<WebviewDomElement | null>(null)
   const [initialUrl] = useState(tab.url)
+  const lastCommandIdRef = useRef<number | null>(null)
 
   useEffect(() => {
     const webview = webviewRef.current
@@ -50,6 +61,8 @@ export function BrowserWebview({ tab, active, onUpdate }: BrowserWebviewProps) {
       onUpdate(tab.id, {
         ...(title ? { title } : {}),
         ...(url ? { url } : {}),
+        canGoBack: webviewElement.canGoBack?.() ?? false,
+        canGoForward: webviewElement.canGoForward?.() ?? false,
       })
     }
 
@@ -119,6 +132,44 @@ export function BrowserWebview({ tab, active, onUpdate }: BrowserWebviewProps) {
       webviewElement.removeEventListener('did-fail-load', handleFailLoad)
     }
   }, [onUpdate, tab.id])
+
+  useEffect(() => {
+    const webview = webviewRef.current
+
+    if (!active || !command || !webview || lastCommandIdRef.current === command.id) {
+      return
+    }
+
+    lastCommandIdRef.current = command.id
+
+    switch (command.type) {
+      case 'back':
+        if (webview.canGoBack?.()) {
+          webview.goBack?.()
+        }
+        break
+      case 'forward':
+        if (webview.canGoForward?.()) {
+          webview.goForward?.()
+        }
+        break
+      case 'reload':
+        webview.reload?.()
+        break
+      case 'stop':
+        webview.stop?.()
+        onUpdate(tab.id, { loading: false })
+        break
+      case 'home':
+      case 'navigate':
+        webview.loadURL?.(command.url)
+        onUpdate(tab.id, { url: command.url, loading: true, loadError: undefined })
+        break
+      case 'open-devtools':
+        webview.openDevTools?.()
+        break
+    }
+  }, [active, command, onUpdate, tab.id])
 
   return (
     <webview

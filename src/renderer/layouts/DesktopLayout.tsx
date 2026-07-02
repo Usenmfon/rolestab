@@ -7,6 +7,7 @@ import {
   RoleProfileFormPanel,
   type RoleProfileDraft,
 } from '../components/RoleProfileFormPanel'
+import type { BrowserCommand } from '../../shared/browser'
 import type { BrowserTab, ProjectSummary, RoleProfile } from '../../shared/workspace'
 
 type DesktopLayoutProps = {
@@ -16,6 +17,7 @@ type DesktopLayoutProps = {
   tabs: BrowserTab[]
   activeTab: BrowserTab | null
   activeTabId: string | null
+  browserCommand: BrowserCommand | null
   workspaceError: string | null
   editingProject: ProjectSummary | null
   editingRoleProfile: RoleProfile | null
@@ -38,6 +40,15 @@ type DesktopLayoutProps = {
   onCloseTab: (tabId: string) => void
   onCloseActiveTab: () => void
   onUpdateTab: (tabId: string, updates: Partial<BrowserTab>) => void
+  onBack: () => void
+  onForward: () => void
+  onReload: () => void
+  onStop: () => void
+  onHome: () => void
+  onNavigate: (url: string) => void
+  onCopyUrl: () => void
+  onOpenExternal: () => void
+  onOpenDevTools: () => void
 }
 
 export function DesktopLayout({
@@ -47,6 +58,7 @@ export function DesktopLayout({
   tabs,
   activeTab,
   activeTabId,
+  browserCommand,
   workspaceError,
   editingProject,
   editingRoleProfile,
@@ -69,6 +81,15 @@ export function DesktopLayout({
   onCloseTab,
   onCloseActiveTab,
   onUpdateTab,
+  onBack,
+  onForward,
+  onReload,
+  onStop,
+  onHome,
+  onNavigate,
+  onCopyUrl,
+  onOpenExternal,
+  onOpenDevTools,
 }: DesktopLayoutProps) {
   return (
     <main className="flex h-screen overflow-hidden bg-slate-100 text-slate-900">
@@ -94,10 +115,22 @@ export function DesktopLayout({
         ) : null}
         <TopBar
           currentUrl={activeTab?.url ?? activeProject?.baseUrl ?? ''}
+          canGoBack={activeTab?.canGoBack ?? false}
+          canGoForward={activeTab?.canGoForward ?? false}
+          isLoading={activeTab?.loading ?? false}
           hasActiveProject={Boolean(activeProject)}
           hasActiveTab={Boolean(activeTab)}
           onNewTab={onNewTab}
           onCloseTab={onCloseActiveTab}
+          onBack={onBack}
+          onForward={onForward}
+          onReload={onReload}
+          onStop={onStop}
+          onHome={onHome}
+          onNavigate={onNavigate}
+          onCopyUrl={onCopyUrl}
+          onOpenExternal={onOpenExternal}
+          onOpenDevTools={onOpenDevTools}
         />
         <TabBar
           tabs={tabs}
@@ -111,6 +144,7 @@ export function DesktopLayout({
           activeTab={activeTab}
           activeTabId={activeTabId}
           roleProfiles={activeProjectRoleProfiles}
+          command={browserCommand}
           onCreateProject={onCreateProject}
           onCreateRoleProfile={onCreateRoleProfile}
           onOpenRoleProfile={onOpenRoleProfile}

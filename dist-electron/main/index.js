@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain } from 'electron';
+import { app, BrowserWindow, ipcMain, shell } from 'electron';
 import { createAppWindow } from './browserWindow.js';
 import { clearRoleSession, createRolePartition } from './sessionManager.js';
 import { deleteProject, deleteRoleProfile, loadWorkspace, saveProject, saveRoleProfile, setLastActiveProject, } from './workspaceStore.js';
@@ -28,6 +28,13 @@ app.on('window-all-closed', () => {
     if (process.platform !== 'darwin') {
         app.quit();
     }
+});
+ipcMain.handle('app:open-external', async (_event, url) => {
+    const parsed = new URL(url);
+    if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
+        throw new Error('Only http and https URLs can be opened externally.');
+    }
+    await shell.openExternal(parsed.toString());
 });
 ipcMain.handle('session:create-role-partition', (_event, projectId, roleProfileId) => {
     return createRolePartition(projectId, roleProfileId);
