@@ -683,7 +683,12 @@ function App() {
       setTabs((currentTabs) =>
         currentTabs.map((tab) =>
           tab.roleProfileId === activeTab.roleProfileId
-            ? { ...tab, loadError: undefined, loading: tab.id === activeTab.id }
+            ? {
+                ...tab,
+                loadError: undefined,
+                loadErrorDetails: undefined,
+                loading: tab.id === activeTab.id,
+              }
             : tab,
         ),
       )
@@ -798,7 +803,7 @@ function App() {
       }
 
       sendBrowserCommand({ type: 'navigate', url: normalizedUrl })
-      updateTab(activeTab.id, { consoleErrors: [], loadError: undefined })
+      updateTab(activeTab.id, { consoleErrors: [], loadError: undefined, loadErrorDetails: undefined })
       setWorkspaceError(null)
     } catch (error) {
       setWorkspaceError(error instanceof Error ? error.message : 'Enter a valid http(s) URL.')
@@ -811,7 +816,12 @@ function App() {
     }
 
     sendBrowserCommand({ type: 'navigate', url: activeTab.url })
-    updateTab(activeTab.id, { consoleErrors: [], loadError: undefined, loading: true })
+    updateTab(activeTab.id, {
+      consoleErrors: [],
+      loadError: undefined,
+      loadErrorDetails: undefined,
+      loading: true,
+    })
   }
 
   function homeActiveTab() {
@@ -943,6 +953,7 @@ function App() {
         void openActiveUrlExternal()
       }}
       onOpenDevTools={() => sendBrowserCommand({ type: 'open-devtools' })}
+      onInspectElement={() => sendBrowserCommand({ type: 'inspect-element' })}
       onConfirmAction={() => resolveConfirmation(true)}
       onCancelAction={() => resolveConfirmation(false)}
     />

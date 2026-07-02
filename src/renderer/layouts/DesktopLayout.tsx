@@ -78,6 +78,7 @@ type DesktopLayoutProps = {
   onCopyUrl: () => void
   onOpenExternal: () => void
   onOpenDevTools: () => void
+  onInspectElement: () => void
   onConfirmAction: () => void
   onCancelAction: () => void
 }
@@ -136,6 +137,7 @@ export function DesktopLayout({
   onCopyUrl,
   onOpenExternal,
   onOpenDevTools,
+  onInspectElement,
   onConfirmAction,
   onCancelAction,
 }: DesktopLayoutProps) {
@@ -192,6 +194,7 @@ export function DesktopLayout({
           onCopyUrl={onCopyUrl}
           onOpenExternal={onOpenExternal}
           onOpenDevTools={onOpenDevTools}
+          onInspectElement={onInspectElement}
         />
         <TabBar
           tabs={tabs}

@@ -65,6 +65,7 @@ export type BrowserTab = {
   sessionPartition: string
   faviconUrl?: string
   loadError?: string
+  loadErrorDetails?: string
   canGoBack?: boolean
   canGoForward?: boolean
   consoleErrors?: string[]

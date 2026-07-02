@@ -154,12 +154,19 @@ export function WebviewArea({
 
         {activeTab.loadError ? (
           <div className="absolute inset-x-4 bottom-4 rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 shadow-sm">
-            <div className="flex items-center justify-between gap-3">
-              <span>{activeTab.loadError}</span>
+            <div className="flex items-start justify-between gap-3">
+              <span className="min-w-0">
+                <span className="block font-semibold">{activeTab.loadError}</span>
+                {activeTab.loadErrorDetails ? (
+                  <span className="mt-1 block truncate font-mono text-[11px] text-red-600">
+                    {activeTab.loadErrorDetails}
+                  </span>
+                ) : null}
+              </span>
               <button
                 type="button"
                 onClick={onRetryActiveTab}
-                className="rounded border border-red-200 bg-white px-3 py-1 text-xs font-semibold text-red-700 hover:bg-red-100"
+                className="shrink-0 rounded border border-red-200 bg-white px-3 py-1 text-xs font-semibold text-red-700 hover:bg-red-100"
               >
                 Retry
               </button>

@@ -10,6 +10,7 @@ import {
   Plus,
   RefreshCw,
   RotateCcw,
+  Search,
   XCircle,
   X,
 } from 'lucide-react'
@@ -37,6 +38,7 @@ type TopBarProps = {
   onCopyUrl: () => void
   onOpenExternal: () => void
   onOpenDevTools: () => void
+  onInspectElement: () => void
 }
 
 export function TopBar({
@@ -60,6 +62,7 @@ export function TopBar({
   onCopyUrl,
   onOpenExternal,
   onOpenDevTools,
+  onInspectElement,
 }: TopBarProps) {
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -106,6 +109,7 @@ export function TopBar({
       <IconButton label="Copy Current URL" icon={Clipboard} onClick={onCopyUrl} disabled={!hasActiveTab} />
       <IconButton label="Open External Browser" icon={ExternalLink} onClick={onOpenExternal} disabled={!hasActiveTab} />
       <IconButton label="Open DevTools" icon={Bug} onClick={onOpenDevTools} disabled={!hasActiveTab} />
+      <IconButton label="Inspect Element" icon={Search} onClick={onInspectElement} disabled={!hasActiveTab} />
 
       {isLoading ? (
         <div className="absolute inset-x-0 bottom-0 h-0.5 overflow-hidden bg-slate-100">
