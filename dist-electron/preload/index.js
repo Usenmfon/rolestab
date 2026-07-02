@@ -38,6 +38,15 @@ const api = {
         deleteRoleProfile(roleProfileId) {
             return ipcRenderer.invoke('workspace:delete-role-profile', roleProfileId);
         },
+        saveSettings(settings) {
+            return ipcRenderer.invoke('workspace:save-settings', settings);
+        },
+        saveRecentUrl(recentUrl) {
+            return ipcRenderer.invoke('workspace:save-recent-url', recentUrl);
+        },
+        saveRecentTabs(recentTabs) {
+            return ipcRenderer.invoke('workspace:save-recent-tabs', recentTabs);
+        },
     },
 };
 contextBridge.exposeInMainWorld('rolesTab', api);

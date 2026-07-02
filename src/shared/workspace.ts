@@ -18,9 +18,38 @@ export type RoleProfile = {
   updatedAt: string
 }
 
+export type AppSettings = {
+  restoreTabsOnStartup: boolean
+  confirmBeforeClearingSessions: boolean
+  defaultHomepage: string
+}
+
+export type RecentUrl = {
+  id: string
+  url: string
+  title: string
+  projectId: string | null
+  roleProfileId: string | null
+  visitedAt: string
+}
+
+export type SavedBrowserTab = {
+  id: string
+  projectId: string
+  roleProfileId: string
+  title: string
+  url: string
+  sessionPartition: string
+  savedAt: string
+}
+
 export type WorkspaceData = {
+  schemaVersion: number
   projects: ProjectSummary[]
   roleProfiles: RoleProfile[]
+  settings: AppSettings
+  recentUrls: RecentUrl[]
+  recentTabs: SavedBrowserTab[]
   lastActiveProjectId: string | null
 }
 

@@ -1,11 +1,30 @@
 import { app } from 'electron'
 import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import path from 'node:path'
-import type { ProjectSummary, RoleProfile, WorkspaceData } from '../shared/workspace.js'
+import type {
+  AppSettings,
+  ProjectSummary,
+  RecentUrl,
+  RoleProfile,
+  SavedBrowserTab,
+  WorkspaceData,
+} from '../shared/workspace.js'
+
+const workspaceSchemaVersion = 1
+
+const defaultSettings: AppSettings = {
+  restoreTabsOnStartup: true,
+  confirmBeforeClearingSessions: true,
+  defaultHomepage: '',
+}
 
 const defaultWorkspace: WorkspaceData = {
+  schemaVersion: workspaceSchemaVersion,
   projects: [],
   roleProfiles: [],
+  settings: defaultSettings,
+  recentUrls: [],
+  recentTabs: [],
   lastActiveProjectId: null,
 }
 
@@ -18,13 +37,28 @@ function sanitizeWorkspace(data: WorkspaceData): WorkspaceData {
   const roleProfiles = Array.isArray(data.roleProfiles)
     ? data.roleProfiles.filter((roleProfile) => isValidRoleProfile(roleProfile, projects))
     : []
+  const settings = sanitizeSettings(data.settings)
+  const recentUrls = Array.isArray(data.recentUrls)
+    ? data.recentUrls.filter((recentUrl) => isValidRecentUrl(recentUrl, projects, roleProfiles)).slice(0, 50)
+    : []
+  const recentTabs = Array.isArray(data.recentTabs)
+    ? data.recentTabs.filter((recentTab) => isValidSavedTab(recentTab, projects, roleProfiles)).slice(0, 20)
+    : []
   const lastActiveProjectId =
     typeof data.lastActiveProjectId === 'string' &&
     projects.some((project) => project.id === data.lastActiveProjectId)
       ? data.lastActiveProjectId
       : projects[0]?.id ?? null
 
-  return { projects, roleProfiles, lastActiveProjectId }
+  return {
+    schemaVersion: workspaceSchemaVersion,
+    projects,
+    roleProfiles,
+    settings,
+    recentUrls,
+    recentTabs,
+    lastActiveProjectId,
+  }
 }
 
 function isValidProject(project: ProjectSummary): boolean {
@@ -64,6 +98,58 @@ function isAllowedUrl(url: string): boolean {
   } catch {
     return false
   }
+}
+
+function sanitizeSettings(settings: AppSettings | undefined): AppSettings {
+  return {
+    restoreTabsOnStartup:
+      typeof settings?.restoreTabsOnStartup === 'boolean'
+        ? settings.restoreTabsOnStartup
+        : defaultSettings.restoreTabsOnStartup,
+    confirmBeforeClearingSessions:
+      typeof settings?.confirmBeforeClearingSessions === 'boolean'
+        ? settings.confirmBeforeClearingSessions
+        : defaultSettings.confirmBeforeClearingSessions,
+    defaultHomepage:
+      typeof settings?.defaultHomepage === 'string' && (!settings.defaultHomepage || isAllowedUrl(settings.defaultHomepage))
+        ? settings.defaultHomepage
+        : defaultSettings.defaultHomepage,
+  }
+}
+
+function isValidRecentUrl(
+  recentUrl: RecentUrl,
+  projects: ProjectSummary[],
+  roleProfiles: RoleProfile[],
+): boolean {
+  return (
+    typeof recentUrl.id === 'string' &&
+    typeof recentUrl.url === 'string' &&
+    isAllowedUrl(recentUrl.url) &&
+    typeof recentUrl.title === 'string' &&
+    (recentUrl.projectId === null || projects.some((project) => project.id === recentUrl.projectId)) &&
+    (recentUrl.roleProfileId === null ||
+      roleProfiles.some((roleProfile) => roleProfile.id === recentUrl.roleProfileId)) &&
+    typeof recentUrl.visitedAt === 'string'
+  )
+}
+
+function isValidSavedTab(
+  recentTab: SavedBrowserTab,
+  projects: ProjectSummary[],
+  roleProfiles: RoleProfile[],
+): boolean {
+  return (
+    typeof recentTab.id === 'string' &&
+    projects.some((project) => project.id === recentTab.projectId) &&
+    roleProfiles.some((roleProfile) => roleProfile.id === recentTab.roleProfileId) &&
+    typeof recentTab.title === 'string' &&
+    typeof recentTab.url === 'string' &&
+    isAllowedUrl(recentTab.url) &&
+    typeof recentTab.sessionPartition === 'string' &&
+    recentTab.sessionPartition.startsWith('persist:') &&
+    typeof recentTab.savedAt === 'string'
+  )
 }
 
 async function writeWorkspace(workspace: WorkspaceData): Promise<WorkspaceData> {
@@ -110,7 +196,11 @@ export async function saveProject(project: ProjectSummary): Promise<WorkspaceDat
   return writeWorkspace({
     projects,
     roleProfiles: workspace.roleProfiles,
+    settings: workspace.settings,
+    recentUrls: workspace.recentUrls,
+    recentTabs: workspace.recentTabs,
     lastActiveProjectId: project.id,
+    schemaVersion: workspaceSchemaVersion,
   })
 }
 
@@ -121,7 +211,10 @@ export async function deleteProject(projectId: string): Promise<WorkspaceData> {
   const lastActiveProjectId =
     workspace.lastActiveProjectId === projectId ? projects[0]?.id ?? null : workspace.lastActiveProjectId
 
-  return writeWorkspace({ projects, roleProfiles, lastActiveProjectId })
+  const recentUrls = workspace.recentUrls.filter((recentUrl) => recentUrl.projectId !== projectId)
+  const recentTabs = workspace.recentTabs.filter((recentTab) => recentTab.projectId !== projectId)
+
+  return writeWorkspace({ ...workspace, projects, roleProfiles, recentUrls, recentTabs, lastActiveProjectId })
 }
 
 export async function setLastActiveProject(projectId: string | null): Promise<WorkspaceData> {
@@ -155,6 +248,39 @@ export async function saveRoleProfile(roleProfile: RoleProfile): Promise<Workspa
 export async function deleteRoleProfile(roleProfileId: string): Promise<WorkspaceData> {
   const workspace = await loadWorkspace()
   const roleProfiles = workspace.roleProfiles.filter((roleProfile) => roleProfile.id !== roleProfileId)
+  const recentUrls = workspace.recentUrls.filter((recentUrl) => recentUrl.roleProfileId !== roleProfileId)
+  const recentTabs = workspace.recentTabs.filter((recentTab) => recentTab.roleProfileId !== roleProfileId)
 
-  return writeWorkspace({ ...workspace, roleProfiles })
+  return writeWorkspace({ ...workspace, roleProfiles, recentUrls, recentTabs })
+}
+
+export async function saveSettings(settings: AppSettings): Promise<WorkspaceData> {
+  const workspace = await loadWorkspace()
+
+  return writeWorkspace({ ...workspace, settings: sanitizeSettings(settings) })
+}
+
+export async function saveRecentUrl(recentUrl: RecentUrl): Promise<WorkspaceData> {
+  const workspace = await loadWorkspace()
+  const nextRecentUrl = {
+    ...recentUrl,
+    visitedAt: recentUrl.visitedAt || new Date().toISOString(),
+  }
+
+  if (!isValidRecentUrl(nextRecentUrl, workspace.projects, workspace.roleProfiles)) {
+    throw new Error('Recent URL must be a valid http(s) URL for an existing project and role.')
+  }
+
+  const recentUrls = [
+    nextRecentUrl,
+    ...workspace.recentUrls.filter((currentUrl) => currentUrl.url !== nextRecentUrl.url),
+  ].slice(0, 50)
+
+  return writeWorkspace({ ...workspace, recentUrls })
+}
+
+export async function saveRecentTabs(recentTabs: SavedBrowserTab[]): Promise<WorkspaceData> {
+  const workspace = await loadWorkspace()
+
+  return writeWorkspace({ ...workspace, recentTabs })
 }

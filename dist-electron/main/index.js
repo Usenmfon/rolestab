@@ -1,7 +1,7 @@
 import { app, BrowserWindow, ipcMain, shell } from 'electron';
 import { createAppWindow } from './browserWindow.js';
 import { clearRoleSession, createRolePartition } from './sessionManager.js';
-import { deleteProject, deleteRoleProfile, loadWorkspace, saveProject, saveRoleProfile, setLastActiveProject, } from './workspaceStore.js';
+import { deleteProject, deleteRoleProfile, loadWorkspace, saveRecentTabs, saveRecentUrl, saveSettings, saveProject, saveRoleProfile, setLastActiveProject, } from './workspaceStore.js';
 if (!app.requestSingleInstanceLock()) {
     app.quit();
 }
@@ -59,5 +59,14 @@ ipcMain.handle('workspace:save-role-profile', async (_event, roleProfile) => {
 });
 ipcMain.handle('workspace:delete-role-profile', async (_event, roleProfileId) => {
     return deleteRoleProfile(roleProfileId);
+});
+ipcMain.handle('workspace:save-settings', async (_event, settings) => {
+    return saveSettings(settings);
+});
+ipcMain.handle('workspace:save-recent-url', async (_event, recentUrl) => {
+    return saveRecentUrl(recentUrl);
+});
+ipcMain.handle('workspace:save-recent-tabs', async (_event, recentTabs) => {
+    return saveRecentTabs(recentTabs);
 });
 //# sourceMappingURL=index.js.map

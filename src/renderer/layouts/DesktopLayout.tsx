@@ -8,11 +8,19 @@ import {
   type RoleProfileDraft,
 } from '../components/RoleProfileFormPanel'
 import type { BrowserCommand } from '../../shared/browser'
-import type { BrowserTab, ProjectSummary, RoleProfile } from '../../shared/workspace'
+import type {
+  AppSettings,
+  BrowserTab,
+  ProjectSummary,
+  RecentUrl,
+  RoleProfile,
+} from '../../shared/workspace'
 
 type DesktopLayoutProps = {
   projects: ProjectSummary[]
   activeProjectRoleProfiles: RoleProfile[]
+  settings: AppSettings
+  recentUrls: RecentUrl[]
   activeProject: ProjectSummary | null
   tabs: BrowserTab[]
   activeTab: BrowserTab | null
@@ -34,6 +42,8 @@ type DesktopLayoutProps = {
   onOpenRoleProfile: (roleProfileId: string) => void
   onCreateCommonRoles: () => void
   onOpenAllRoles: () => void
+  onToggleRestoreTabs: () => void
+  onOpenRecentUrl: (recentUrl: RecentUrl) => void
   onCloseRoleProfileForm: () => void
   onSaveRoleProfile: (draft: RoleProfileDraft) => Promise<void>
   onSelectProject: (projectId: string) => void
@@ -59,6 +69,8 @@ type DesktopLayoutProps = {
 export function DesktopLayout({
   projects,
   activeProjectRoleProfiles,
+  settings,
+  recentUrls,
   activeProject,
   tabs,
   activeTab,
@@ -80,6 +92,8 @@ export function DesktopLayout({
   onOpenRoleProfile,
   onCreateCommonRoles,
   onOpenAllRoles,
+  onToggleRestoreTabs,
+  onOpenRecentUrl,
   onCloseRoleProfileForm,
   onSaveRoleProfile,
   onSelectProject,
@@ -106,6 +120,8 @@ export function DesktopLayout({
       <Sidebar
         projects={projects}
         activeProjectRoleProfiles={activeProjectRoleProfiles}
+        settings={settings}
+        recentUrls={recentUrls}
         activeProjectId={activeProject?.id ?? null}
         onCreateProject={onCreateProject}
         onEditProject={onEditProject}
@@ -117,6 +133,8 @@ export function DesktopLayout({
         onOpenRoleProfile={onOpenRoleProfile}
         onCreateCommonRoles={onCreateCommonRoles}
         onOpenAllRoles={onOpenAllRoles}
+        onToggleRestoreTabs={onToggleRestoreTabs}
+        onOpenRecentUrl={onOpenRecentUrl}
       />
 
       <section className="flex min-w-0 flex-1 flex-col">

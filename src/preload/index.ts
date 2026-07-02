@@ -1,5 +1,12 @@
 import { contextBridge, ipcRenderer } from 'electron'
-import type { ProjectSummary, RoleProfile, WorkspaceData } from '../shared/workspace.js'
+import type {
+  AppSettings,
+  ProjectSummary,
+  RecentUrl,
+  RoleProfile,
+  SavedBrowserTab,
+  WorkspaceData,
+} from '../shared/workspace.js'
 
 const api = {
   app: {
@@ -39,6 +46,15 @@ const api = {
     },
     deleteRoleProfile(roleProfileId: string): Promise<WorkspaceData> {
       return ipcRenderer.invoke('workspace:delete-role-profile', roleProfileId)
+    },
+    saveSettings(settings: AppSettings): Promise<WorkspaceData> {
+      return ipcRenderer.invoke('workspace:save-settings', settings)
+    },
+    saveRecentUrl(recentUrl: RecentUrl): Promise<WorkspaceData> {
+      return ipcRenderer.invoke('workspace:save-recent-url', recentUrl)
+    },
+    saveRecentTabs(recentTabs: SavedBrowserTab[]): Promise<WorkspaceData> {
+      return ipcRenderer.invoke('workspace:save-recent-tabs', recentTabs)
     },
   },
 }

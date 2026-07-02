@@ -1,10 +1,13 @@
 import { FolderPlus, Pencil, Trash2, PanelsTopLeft } from 'lucide-react'
-import type { ProjectSummary, RoleProfile } from '../../shared/workspace'
+import type { AppSettings, ProjectSummary, RecentUrl, RoleProfile } from '../../shared/workspace'
 import { RoleProfileList } from './RoleProfileList'
+import { WorkspacePersistencePanel } from './WorkspacePersistencePanel'
 
 type SidebarProps = {
   projects: ProjectSummary[]
   activeProjectRoleProfiles: RoleProfile[]
+  settings: AppSettings
+  recentUrls: RecentUrl[]
   activeProjectId: string | null
   onCreateProject: () => void
   onEditProject: (projectId: string) => void
@@ -16,11 +19,15 @@ type SidebarProps = {
   onOpenRoleProfile: (roleProfileId: string) => void
   onCreateCommonRoles: () => void
   onOpenAllRoles: () => void
+  onToggleRestoreTabs: () => void
+  onOpenRecentUrl: (recentUrl: RecentUrl) => void
 }
 
 export function Sidebar({
   projects,
   activeProjectRoleProfiles,
+  settings,
+  recentUrls,
   activeProjectId,
   onCreateProject,
   onEditProject,
@@ -32,6 +39,8 @@ export function Sidebar({
   onOpenRoleProfile,
   onCreateCommonRoles,
   onOpenAllRoles,
+  onToggleRestoreTabs,
+  onOpenRecentUrl,
 }: SidebarProps) {
   return (
     <aside className="flex w-72 shrink-0 flex-col border-r border-slate-200 bg-white">
@@ -138,6 +147,13 @@ export function Sidebar({
           onOpenRoleProfile={onOpenRoleProfile}
           onCreateCommonRoles={onCreateCommonRoles}
           onOpenAllRoles={onOpenAllRoles}
+        />
+
+        <WorkspacePersistencePanel
+          settings={settings}
+          recentUrls={recentUrls}
+          onToggleRestoreTabs={onToggleRestoreTabs}
+          onOpenRecentUrl={onOpenRecentUrl}
         />
       </div>
 

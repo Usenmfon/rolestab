@@ -3,7 +3,15 @@ import { DesktopLayout } from '../layouts/DesktopLayout'
 import type { ProjectDraft } from '../components/ProjectFormPanel'
 import type { RoleProfileDraft } from '../components/RoleProfileFormPanel'
 import type { BrowserCommand, BrowserCommandInput } from '../../shared/browser'
-import type { BrowserTab, ProjectSummary, RoleProfile, WorkspaceData } from '../../shared/workspace'
+import type {
+  AppSettings,
+  BrowserTab,
+  ProjectSummary,
+  RecentUrl,
+  RoleProfile,
+  SavedBrowserTab,
+  WorkspaceData,
+} from '../../shared/workspace'
 import { normalizeHttpUrl } from '../utils/url'
 
 const commonRoleTemplates = [
@@ -14,9 +22,17 @@ const commonRoleTemplates = [
   { name: 'Guest', color: '#64748b' },
 ]
 
+const defaultSettings: AppSettings = {
+  restoreTabsOnStartup: true,
+  confirmBeforeClearingSessions: true,
+  defaultHomepage: '',
+}
+
 function App() {
   const [projects, setProjects] = useState<ProjectSummary[]>([])
   const [roleProfiles, setRoleProfiles] = useState<RoleProfile[]>([])
+  const [settings, setSettings] = useState<AppSettings>(defaultSettings)
+  const [recentUrls, setRecentUrls] = useState<RecentUrl[]>([])
   const [activeProjectId, setActiveProjectId] = useState<string | null>(null)
   const [tabs, setTabs] = useState<BrowserTab[]>([])
   const [activeTabId, setActiveTabId] = useState<string | null>(null)
@@ -26,6 +42,7 @@ function App() {
   const [editingRoleProfileId, setEditingRoleProfileId] = useState<string | null>(null)
   const [workspaceError, setWorkspaceError] = useState<string | null>(null)
   const [browserCommand, setBrowserCommand] = useState<BrowserCommand | null>(null)
+  const [workspaceLoaded, setWorkspaceLoaded] = useState(false)
 
   const activeProject = useMemo(
     () => projects.find((project) => project.id === activeProjectId) ?? null,
@@ -60,9 +77,18 @@ function App() {
         }
 
         applyWorkspace(workspace)
+
+        if (workspace.settings.restoreTabsOnStartup) {
+          const restoredTabs = restoreTabsFromWorkspace(workspace)
+          setTabs(restoredTabs)
+          setActiveTabId(restoredTabs.at(-1)?.id ?? null)
+        }
+
+        setWorkspaceLoaded(true)
       } catch (error) {
         if (mounted) {
           setWorkspaceError(error instanceof Error ? error.message : 'Unable to load workspace.')
+          setWorkspaceLoaded(true)
         }
       }
     }
@@ -74,10 +100,90 @@ function App() {
     }
   }, [])
 
+  useEffect(() => {
+    if (!workspaceLoaded) {
+      return
+    }
+
+    const recentTabs: SavedBrowserTab[] = tabs.map((tab) => ({
+      id: tab.id,
+      projectId: tab.projectId,
+      roleProfileId: tab.roleProfileId,
+      title: tab.title,
+      url: tab.url,
+      sessionPartition: tab.sessionPartition,
+      savedAt: new Date().toISOString(),
+    }))
+
+    void window.rolesTab?.workspace.saveRecentTabs(recentTabs)
+  }, [tabs, workspaceLoaded])
+
+  useEffect(() => {
+    const currentActiveTab = activeTab
+
+    if (!workspaceLoaded || !currentActiveTab || currentActiveTab.loading || currentActiveTab.loadError) {
+      return
+    }
+
+    const recentUrl: RecentUrl = {
+      id: crypto.randomUUID(),
+      url: currentActiveTab.url,
+      title: currentActiveTab.title,
+      projectId: currentActiveTab.projectId,
+      roleProfileId: currentActiveTab.roleProfileId,
+      visitedAt: new Date().toISOString(),
+    }
+
+    async function persistRecentUrl() {
+      try {
+        const workspace = await window.rolesTab?.workspace.saveRecentUrl(recentUrl)
+
+        if (workspace) {
+          setRecentUrls(workspace.recentUrls)
+        }
+      } catch {
+        setRecentUrls((currentRecentUrls) => [
+          recentUrl,
+          ...currentRecentUrls.filter((currentRecentUrl) => currentRecentUrl.url !== recentUrl.url),
+        ].slice(0, 50))
+      }
+    }
+
+    void persistRecentUrl()
+  }, [activeTab, workspaceLoaded])
+
   function applyWorkspace(workspace: WorkspaceData) {
     setProjects(workspace.projects)
     setRoleProfiles(workspace.roleProfiles)
+    setSettings(workspace.settings)
+    setRecentUrls(workspace.recentUrls)
     setActiveProjectId(workspace.lastActiveProjectId)
+  }
+
+  function restoreTabsFromWorkspace(workspace: WorkspaceData): BrowserTab[] {
+    return workspace.recentTabs
+      .map((savedTab) => {
+        const roleProfile = workspace.roleProfiles.find((currentRole) => currentRole.id === savedTab.roleProfileId)
+
+        if (!roleProfile) {
+          return null
+        }
+
+        const restoredTab: BrowserTab = {
+          id: `tab-${crypto.randomUUID()}`,
+          projectId: savedTab.projectId,
+          roleProfileId: savedTab.roleProfileId,
+          roleName: roleProfile.name,
+          roleColor: roleProfile.color,
+          title: savedTab.title,
+          url: savedTab.url,
+          loading: false,
+          sessionPartition: savedTab.sessionPartition,
+        }
+
+        return restoredTab
+      })
+      .filter((tab): tab is BrowserTab => Boolean(tab))
   }
 
   function openCreateProjectForm() {
@@ -422,6 +528,44 @@ function App() {
     activeProjectRoleProfiles.forEach((roleProfile) => openRoleProfileTab(roleProfile))
   }
 
+  async function toggleRestoreTabs() {
+    const nextSettings = {
+      ...settings,
+      restoreTabsOnStartup: !settings.restoreTabsOnStartup,
+    }
+
+    setSettings(nextSettings)
+
+    try {
+      const workspace = await window.rolesTab?.workspace.saveSettings(nextSettings)
+
+      if (workspace) {
+        applyWorkspace(workspace)
+      }
+    } catch (error) {
+      setWorkspaceError(error instanceof Error ? error.message : 'Unable to save settings.')
+    }
+  }
+
+  function openRecentUrl(recentUrl: RecentUrl) {
+    const roleProfile =
+      roleProfiles.find((currentRole) => currentRole.id === recentUrl.roleProfileId) ??
+      activeProjectRoleProfiles[0] ??
+      roleProfiles.find((currentRole) => currentRole.projectId === recentUrl.projectId)
+
+    if (!roleProfile) {
+      setWorkspaceError('Create a role profile before reopening recent URLs.')
+      return
+    }
+
+    if (activeProjectId !== roleProfile.projectId) {
+      setActiveProjectId(roleProfile.projectId)
+    }
+
+    openRoleProfileTab(roleProfile, recentUrl.url, recentUrl.title || roleProfile.name)
+    setWorkspaceError(null)
+  }
+
   function duplicateActiveTab() {
     if (!activeTab) {
       return
@@ -549,6 +693,8 @@ function App() {
     <DesktopLayout
       projects={projects}
       activeProjectRoleProfiles={activeProjectRoleProfiles}
+      settings={settings}
+      recentUrls={recentUrls}
       activeProject={activeProject}
       tabs={tabs}
       activeTab={activeTab}
@@ -576,6 +722,10 @@ function App() {
         void createCommonRoles()
       }}
       onOpenAllRoles={openAllRoles}
+      onToggleRestoreTabs={() => {
+        void toggleRestoreTabs()
+      }}
+      onOpenRecentUrl={openRecentUrl}
       onCloseRoleProfileForm={closeRoleProfileForm}
       onSaveRoleProfile={saveRoleProfile}
       onSelectProject={(projectId) => {

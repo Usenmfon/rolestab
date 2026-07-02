@@ -5,11 +5,14 @@ import {
   deleteProject,
   deleteRoleProfile,
   loadWorkspace,
+  saveRecentTabs,
+  saveRecentUrl,
+  saveSettings,
   saveProject,
   saveRoleProfile,
   setLastActiveProject,
 } from './workspaceStore.js'
-import type { ProjectSummary, RoleProfile } from '../shared/workspace.js'
+import type { AppSettings, ProjectSummary, RecentUrl, RoleProfile, SavedBrowserTab } from '../shared/workspace.js'
 
 if (!app.requestSingleInstanceLock()) {
   app.quit()
@@ -87,4 +90,16 @@ ipcMain.handle('workspace:save-role-profile', async (_event, roleProfile: RolePr
 
 ipcMain.handle('workspace:delete-role-profile', async (_event, roleProfileId: string) => {
   return deleteRoleProfile(roleProfileId)
+})
+
+ipcMain.handle('workspace:save-settings', async (_event, settings: AppSettings) => {
+  return saveSettings(settings)
+})
+
+ipcMain.handle('workspace:save-recent-url', async (_event, recentUrl: RecentUrl) => {
+  return saveRecentUrl(recentUrl)
+})
+
+ipcMain.handle('workspace:save-recent-tabs', async (_event, recentTabs: SavedBrowserTab[]) => {
+  return saveRecentTabs(recentTabs)
 })
