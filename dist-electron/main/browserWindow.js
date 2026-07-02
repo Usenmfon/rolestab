@@ -24,6 +24,25 @@ function isSafeExternalUrl(url) {
         return false;
     }
 }
+function isExpectedAppUrl(url) {
+    if (process.env.NODE_ENV === 'production') {
+        try {
+            const parsed = new URL(url);
+            return parsed.protocol === 'file:' && node_path_1.default.normalize(parsed.pathname).endsWith(node_path_1.default.normalize('/dist/index.html'));
+        }
+        catch {
+            return false;
+        }
+    }
+    try {
+        const parsedUrl = new URL(url);
+        const expectedUrl = new URL(rendererDevServerUrl);
+        return parsedUrl.origin === expectedUrl.origin;
+    }
+    catch {
+        return false;
+    }
+}
 function createAppWindow() {
     const window = new BrowserWindow({
         width: 1280,
@@ -54,8 +73,7 @@ function createAppWindow() {
         return { action: 'deny' };
     });
     window.webContents.on('will-navigate', (event, url) => {
-        const expectedUrl = process.env.NODE_ENV === 'production' ? `file://${rendererIndexPath}` : rendererDevServerUrl;
-        if (!url.startsWith(expectedUrl)) {
+        if (!isExpectedAppUrl(url)) {
             event.preventDefault();
         }
     });

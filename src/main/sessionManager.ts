@@ -6,11 +6,14 @@ import type { SessionUsage } from '../shared/session.js'
 const { session } = electron
 
 export function createRolePartition(projectId: string, roleProfileId: string): string {
-  return `persist:${projectId}-${roleProfileId}`
+  const partition = `persist:${projectId}-${roleProfileId}`
+  getRoleSession(partition)
+
+  return partition
 }
 
 export async function clearRoleSession(partition: string): Promise<void> {
-  const roleSession = session.fromPartition(partition)
+  const roleSession = getRoleSession(partition)
 
   await Promise.all([
     roleSession.clearCache(),
@@ -29,7 +32,7 @@ export async function clearRoleSessions(partitions: string[]): Promise<void> {
 }
 
 export async function getRoleSessionUsage(partition: string): Promise<SessionUsage> {
-  const roleSession = session.fromPartition(partition)
+  const roleSession = getRoleSession(partition)
   const [cacheBytes, storageBytes] = await Promise.all([
     roleSession.getCacheSize(),
     getDirectorySize(roleSession.getStoragePath()),
@@ -42,6 +45,18 @@ export async function getRoleSessionUsage(partition: string): Promise<SessionUsa
     totalBytes: Math.max(cacheBytes, storageBytes),
     persistent: roleSession.isPersistent(),
   }
+}
+
+function getRoleSession(partition: string): Electron.Session {
+  const roleSession = session.fromPartition(partition)
+
+  roleSession.setPermissionRequestHandler((_webContents, _permission, callback) => {
+    callback(false)
+  })
+
+  roleSession.setPermissionCheckHandler(() => false)
+
+  return roleSession
 }
 
 export async function getRoleSessionsUsage(partitions: string[]): Promise<SessionUsage[]> {

@@ -24,6 +24,26 @@ function isSafeExternalUrl(url: string): boolean {
   }
 }
 
+function isExpectedAppUrl(url: string): boolean {
+  if (process.env.NODE_ENV === 'production') {
+    try {
+      const parsed = new URL(url)
+      return parsed.protocol === 'file:' && path.normalize(parsed.pathname).endsWith(path.normalize('/dist/index.html'))
+    } catch {
+      return false
+    }
+  }
+
+  try {
+    const parsedUrl = new URL(url)
+    const expectedUrl = new URL(rendererDevServerUrl)
+
+    return parsedUrl.origin === expectedUrl.origin
+  } catch {
+    return false
+  }
+}
+
 export function createAppWindow(): AppBrowserWindow {
   const window = new BrowserWindow({
     width: 1280,
@@ -58,9 +78,7 @@ export function createAppWindow(): AppBrowserWindow {
   })
 
   window.webContents.on('will-navigate', (event, url) => {
-    const expectedUrl = process.env.NODE_ENV === 'production' ? `file://${rendererIndexPath}` : rendererDevServerUrl
-
-    if (!url.startsWith(expectedUrl)) {
+    if (!isExpectedAppUrl(url)) {
       event.preventDefault()
     }
   })

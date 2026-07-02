@@ -28,6 +28,9 @@ if (!app.requestSingleInstanceLock()) {
 }
 
 type AppBrowserWindow = InstanceType<typeof BrowserWindow>
+type IpcEvent = Electron.IpcMainInvokeEvent
+
+const trustedDevServerUrl = process.env.VITE_DEV_SERVER_URL ?? 'http://localhost:5173'
 
 let mainWindow: AppBrowserWindow | null = null
 
@@ -65,13 +68,16 @@ app.on('window-all-closed', () => {
   }
 })
 
-ipcMain.handle('app:open-external', async (_event, url: string) => {
+ipcMain.handle('app:open-external', async (event, url: string) => {
+  assertTrustedSender(event)
   const parsed = parseHttpUrl(url)
 
   await shell.openExternal(parsed.toString())
 })
 
-ipcMain.handle('session:create-role-partition', (_event, projectId: string, roleProfileId: string) => {
+ipcMain.handle('session:create-role-partition', (event, projectId: string, roleProfileId: string) => {
+  assertTrustedSender(event)
+
   if (!isSafeIdentifier(projectId) || !isSafeIdentifier(roleProfileId)) {
     throw new Error('Project and role identifiers must be safe partition identifiers.')
   }
@@ -79,7 +85,9 @@ ipcMain.handle('session:create-role-partition', (_event, projectId: string, role
   return createRolePartition(projectId, roleProfileId)
 })
 
-ipcMain.handle('session:clear-role-session', async (_event, partition: string) => {
+ipcMain.handle('session:clear-role-session', async (event, partition: string) => {
+  assertTrustedSender(event)
+
   if (!isSafePartition(partition)) {
     throw new Error('Invalid session partition.')
   }
@@ -87,11 +95,14 @@ ipcMain.handle('session:clear-role-session', async (_event, partition: string) =
   await clearRoleSession(partition)
 })
 
-ipcMain.handle('session:clear-role-sessions', async (_event, partitions: string[]) => {
+ipcMain.handle('session:clear-role-sessions', async (event, partitions: string[]) => {
+  assertTrustedSender(event)
   await clearRoleSessions(partitions.filter(isSafePartition))
 })
 
-ipcMain.handle('session:get-role-session-usage', async (_event, partition: string) => {
+ipcMain.handle('session:get-role-session-usage', async (event, partition: string) => {
+  assertTrustedSender(event)
+
   if (!isSafePartition(partition)) {
     throw new Error('Invalid session partition.')
   }
@@ -99,43 +110,53 @@ ipcMain.handle('session:get-role-session-usage', async (_event, partition: strin
   return getRoleSessionUsage(partition)
 })
 
-ipcMain.handle('session:get-role-sessions-usage', async (_event, partitions: string[]) => {
+ipcMain.handle('session:get-role-sessions-usage', async (event, partitions: string[]) => {
+  assertTrustedSender(event)
   return getRoleSessionsUsage(partitions.filter(isSafePartition))
 })
 
-ipcMain.handle('workspace:load', async () => {
+ipcMain.handle('workspace:load', async (event) => {
+  assertTrustedSender(event)
   return loadWorkspace()
 })
 
-ipcMain.handle('workspace:save-project', async (_event, project: ProjectSummary) => {
+ipcMain.handle('workspace:save-project', async (event, project: ProjectSummary) => {
+  assertTrustedSender(event)
   return saveProject(project)
 })
 
-ipcMain.handle('workspace:delete-project', async (_event, projectId: string) => {
+ipcMain.handle('workspace:delete-project', async (event, projectId: string) => {
+  assertTrustedSender(event)
   return deleteProject(projectId)
 })
 
-ipcMain.handle('workspace:set-last-active-project', async (_event, projectId: string | null) => {
+ipcMain.handle('workspace:set-last-active-project', async (event, projectId: string | null) => {
+  assertTrustedSender(event)
   return setLastActiveProject(projectId)
 })
 
-ipcMain.handle('workspace:save-role-profile', async (_event, roleProfile: RoleProfile) => {
+ipcMain.handle('workspace:save-role-profile', async (event, roleProfile: RoleProfile) => {
+  assertTrustedSender(event)
   return saveRoleProfile(roleProfile)
 })
 
-ipcMain.handle('workspace:delete-role-profile', async (_event, roleProfileId: string) => {
+ipcMain.handle('workspace:delete-role-profile', async (event, roleProfileId: string) => {
+  assertTrustedSender(event)
   return deleteRoleProfile(roleProfileId)
 })
 
-ipcMain.handle('workspace:save-settings', async (_event, settings: AppSettings) => {
+ipcMain.handle('workspace:save-settings', async (event, settings: AppSettings) => {
+  assertTrustedSender(event)
   return saveSettings(settings)
 })
 
-ipcMain.handle('workspace:save-recent-url', async (_event, recentUrl: RecentUrl) => {
+ipcMain.handle('workspace:save-recent-url', async (event, recentUrl: RecentUrl) => {
+  assertTrustedSender(event)
   return saveRecentUrl(recentUrl)
 })
 
-ipcMain.handle('workspace:save-recent-tabs', async (_event, recentTabs: SavedBrowserTab[]) => {
+ipcMain.handle('workspace:save-recent-tabs', async (event, recentTabs: SavedBrowserTab[]) => {
+  assertTrustedSender(event)
   return saveRecentTabs(recentTabs)
 })
 
@@ -155,4 +176,26 @@ function isSafeIdentifier(value: string): boolean {
 
 function isSafePartition(partition: string): boolean {
   return /^persist:[\w-]+-[\w-]+$/.test(partition)
+}
+
+function assertTrustedSender(event: IpcEvent): void {
+  const senderUrl = event.senderFrame?.url
+
+  if (!senderUrl || !isTrustedAppUrl(senderUrl)) {
+    throw new Error('Blocked IPC call from an untrusted sender.')
+  }
+}
+
+function isTrustedAppUrl(url: string): boolean {
+  try {
+    const parsed = new URL(url)
+
+    if (process.env.NODE_ENV === 'production') {
+      return parsed.protocol === 'file:'
+    }
+
+    return parsed.origin === new URL(trustedDevServerUrl).origin
+  } catch {
+    return false
+  }
 }

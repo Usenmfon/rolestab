@@ -13,10 +13,12 @@ const promises_1 = require("node:fs/promises");
 const node_path_1 = __importDefault(require("node:path"));
 const { session } = electron_1.default;
 function createRolePartition(projectId, roleProfileId) {
-    return `persist:${projectId}-${roleProfileId}`;
+    const partition = `persist:${projectId}-${roleProfileId}`;
+    getRoleSession(partition);
+    return partition;
 }
 async function clearRoleSession(partition) {
-    const roleSession = session.fromPartition(partition);
+    const roleSession = getRoleSession(partition);
     await Promise.all([
         roleSession.clearCache(),
         roleSession.clearAuthCache(),
@@ -31,7 +33,7 @@ async function clearRoleSessions(partitions) {
     await Promise.all(uniquePartitions.map((partition) => clearRoleSession(partition)));
 }
 async function getRoleSessionUsage(partition) {
-    const roleSession = session.fromPartition(partition);
+    const roleSession = getRoleSession(partition);
     const [cacheBytes, storageBytes] = await Promise.all([
         roleSession.getCacheSize(),
         getDirectorySize(roleSession.getStoragePath()),
@@ -43,6 +45,14 @@ async function getRoleSessionUsage(partition) {
         totalBytes: Math.max(cacheBytes, storageBytes),
         persistent: roleSession.isPersistent(),
     };
+}
+function getRoleSession(partition) {
+    const roleSession = session.fromPartition(partition);
+    roleSession.setPermissionRequestHandler((_webContents, _permission, callback) => {
+        callback(false);
+    });
+    roleSession.setPermissionCheckHandler(() => false);
+    return roleSession;
 }
 async function getRoleSessionsUsage(partitions) {
     const uniquePartitions = [...new Set(partitions.filter((partition) => partition.startsWith('persist:')))];
