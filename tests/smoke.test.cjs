@@ -153,3 +153,15 @@ test('role launcher focuses existing tabs instead of creating duplicates', () =>
   assert.match(appSource, /setActiveTabId\(existingTab\.id\)/)
   assert.match(appSource, /!tabs\.some\(\(tab\) => tab\.roleProfileId === roleProfile\.id\)/)
 })
+
+test('sidebar can be shown and hidden from the browser toolbar', () => {
+  const appSource = readProjectFile('src/renderer/app/App.tsx')
+  const layoutSource = readProjectFile('src/renderer/layouts/DesktopLayout.tsx')
+  const topBarSource = readProjectFile('src/renderer/components/TopBar.tsx')
+
+  assert.match(appSource, /sidebarOpen/)
+  assert.match(appSource, /setSidebarOpen/)
+  assert.match(layoutSource, /sidebarOpen \?/)
+  assert.match(topBarSource, /Hide Sidebar/)
+  assert.match(topBarSource, /Show Sidebar/)
+})

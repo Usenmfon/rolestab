@@ -55,6 +55,7 @@ function App() {
   const [browserCommand, setBrowserCommand] = useState<BrowserCommand | null>(null)
   const [workspaceLoaded, setWorkspaceLoaded] = useState(false)
   const [sessionUsage, setSessionUsage] = useState<SessionUsage[]>([])
+  const [sidebarOpen, setSidebarOpen] = useState(true)
   const [confirmationRequest, setConfirmationRequest] = useState<ConfirmationRequest | null>(null)
   const confirmationResolverRef = useRef<((confirmed: boolean) => void) | null>(null)
   const urlInputRef = useRef<HTMLInputElement | null>(null)
@@ -1081,8 +1082,10 @@ function App() {
       activeTab={activeTab}
       activeTabId={activeTabId}
       browserCommand={browserCommand}
+      sidebarOpen={sidebarOpen}
       workspaceError={workspaceError}
       onClearWorkspaceError={() => setWorkspaceError(null)}
+      onToggleSidebar={() => setSidebarOpen((currentSidebarOpen) => !currentSidebarOpen)}
       editingProject={editingProject}
       editingRoleProfile={editingRoleProfile}
       projectFormOpen={projectFormOpen}

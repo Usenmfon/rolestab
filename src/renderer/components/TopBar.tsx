@@ -11,6 +11,7 @@ import {
   RefreshCw,
   RotateCcw,
   Search,
+  Sidebar,
   XCircle,
   X,
 } from 'lucide-react'
@@ -24,6 +25,7 @@ type TopBarProps = {
   isLoading: boolean
   hasActiveProject: boolean
   hasActiveTab: boolean
+  sidebarOpen: boolean
   onNewTab: () => void
   onCloseTab: () => void
   onDuplicateTab: () => void
@@ -39,6 +41,7 @@ type TopBarProps = {
   onOpenExternal: () => void
   onOpenDevTools: () => void
   onInspectElement: () => void
+  onToggleSidebar: () => void
   urlInputRef: RefObject<HTMLInputElement | null>
 }
 
@@ -49,6 +52,7 @@ export function TopBar({
   isLoading,
   hasActiveProject,
   hasActiveTab,
+  sidebarOpen,
   onNewTab,
   onCloseTab,
   onDuplicateTab,
@@ -64,6 +68,7 @@ export function TopBar({
   onOpenExternal,
   onOpenDevTools,
   onInspectElement,
+  onToggleSidebar,
   urlInputRef,
 }: TopBarProps) {
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -78,6 +83,12 @@ export function TopBar({
 
   return (
     <header className="relative flex h-12 shrink-0 items-center gap-1 border-b border-[#d7dce3] bg-white px-3">
+      <IconButton
+        label={sidebarOpen ? 'Hide Sidebar' : 'Show Sidebar'}
+        icon={Sidebar}
+        onClick={onToggleSidebar}
+      />
+      <div className="mx-1 h-6 w-px bg-slate-200" />
       <IconButton label="Back" icon={ArrowLeft} onClick={onBack} disabled={!hasActiveTab || !canGoBack} />
       <IconButton
         label="Forward"

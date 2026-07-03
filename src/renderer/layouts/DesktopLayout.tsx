@@ -37,8 +37,10 @@ type DesktopLayoutProps = {
   activeTab: BrowserTab | null
   activeTabId: string | null
   browserCommand: BrowserCommand | null
+  sidebarOpen: boolean
   workspaceError: string | null
   onClearWorkspaceError: () => void
+  onToggleSidebar: () => void
   editingProject: ProjectSummary | null
   editingRoleProfile: RoleProfile | null
   projectFormOpen: boolean
@@ -105,8 +107,10 @@ export function DesktopLayout({
   activeTab,
   activeTabId,
   browserCommand,
+  sidebarOpen,
   workspaceError,
   onClearWorkspaceError,
+  onToggleSidebar,
   editingProject,
   editingRoleProfile,
   projectFormOpen,
@@ -163,32 +167,34 @@ export function DesktopLayout({
 }: DesktopLayoutProps) {
   return (
     <main className="flex h-screen overflow-hidden bg-[#f1f3f4] text-slate-900">
-      <Sidebar
-        projects={projects}
-        activeProjectRoleProfiles={activeProjectRoleProfiles}
-        settings={settings}
-        recentUrls={recentUrls}
-        sessionUsage={sessionUsage}
-        activeProjectId={activeProject?.id ?? null}
-        onCreateProject={onCreateProject}
-        onEditProject={onEditProject}
-        onDeleteProject={onDeleteProject}
-        onSelectProject={onSelectProject}
-        onCreateRoleProfile={onCreateRoleProfile}
-        onEditRoleProfile={onEditRoleProfile}
-        onDeleteRoleProfile={onDeleteRoleProfile}
-        onOpenRoleProfile={onOpenRoleProfile}
-        onCreateCommonRoles={onCreateCommonRoles}
-        onOpenAllRoles={onOpenAllRoles}
-        onToggleRestoreTabs={onToggleRestoreTabs}
-        onToggleConfirmSessionClear={onToggleConfirmSessionClear}
-        onOpenRecentUrl={onOpenRecentUrl}
-        onClearProjectSessions={onClearProjectSessions}
-        onClearAllSessions={onClearAllSessions}
-        onExportProjectConfig={onExportProjectConfig}
-        onImportProjectConfig={onImportProjectConfig}
-        onOpenSettings={onOpenSettings}
-      />
+      {sidebarOpen ? (
+        <Sidebar
+          projects={projects}
+          activeProjectRoleProfiles={activeProjectRoleProfiles}
+          settings={settings}
+          recentUrls={recentUrls}
+          sessionUsage={sessionUsage}
+          activeProjectId={activeProject?.id ?? null}
+          onCreateProject={onCreateProject}
+          onEditProject={onEditProject}
+          onDeleteProject={onDeleteProject}
+          onSelectProject={onSelectProject}
+          onCreateRoleProfile={onCreateRoleProfile}
+          onEditRoleProfile={onEditRoleProfile}
+          onDeleteRoleProfile={onDeleteRoleProfile}
+          onOpenRoleProfile={onOpenRoleProfile}
+          onCreateCommonRoles={onCreateCommonRoles}
+          onOpenAllRoles={onOpenAllRoles}
+          onToggleRestoreTabs={onToggleRestoreTabs}
+          onToggleConfirmSessionClear={onToggleConfirmSessionClear}
+          onOpenRecentUrl={onOpenRecentUrl}
+          onClearProjectSessions={onClearProjectSessions}
+          onClearAllSessions={onClearAllSessions}
+          onExportProjectConfig={onExportProjectConfig}
+          onImportProjectConfig={onImportProjectConfig}
+          onOpenSettings={onOpenSettings}
+        />
+      ) : null}
 
       <section className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden bg-white">
         {workspaceError ? (
@@ -216,6 +222,7 @@ export function DesktopLayout({
           isLoading={activeTab?.loading ?? false}
           hasActiveProject={Boolean(activeProject)}
           hasActiveTab={Boolean(activeTab)}
+          sidebarOpen={sidebarOpen}
           onNewTab={onNewTab}
           onCloseTab={onCloseActiveTab}
           onDuplicateTab={onDuplicateTab}
@@ -231,6 +238,7 @@ export function DesktopLayout({
           onOpenExternal={onOpenExternal}
           onOpenDevTools={onOpenDevTools}
           onInspectElement={onInspectElement}
+          onToggleSidebar={onToggleSidebar}
           urlInputRef={urlInputRef}
         />
         <WebviewArea
