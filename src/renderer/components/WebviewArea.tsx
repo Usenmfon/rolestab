@@ -1,4 +1,5 @@
-import { Globe2, MonitorUp } from 'lucide-react'
+import { ChevronDown, ChevronUp, Globe2, MonitorUp } from 'lucide-react'
+import { useState } from 'react'
 import type { BrowserCommand } from '../../shared/browser'
 import type { BrowserTab, ProjectSummary, RoleProfile } from '../../shared/workspace'
 import { BrowserWebview } from './BrowserWebview'
@@ -42,6 +43,7 @@ export function WebviewArea({
   onUpdateTab,
 }: WebviewAreaProps) {
   const environment = getEnvironment(activeTab?.url ?? activeProject?.baseUrl ?? '')
+  const [sessionPanelOpen, setSessionPanelOpen] = useState(true)
 
   if (!activeProject) {
     return (
@@ -118,31 +120,48 @@ export function WebviewArea({
             {environment.label}
           </span>
           <span className="truncate">{activeTab.roleName} session</span>
-          <span className="ml-2 font-mono text-[11px] text-slate-400">
-            {activeTab.sessionPartition}
-          </span>
+          {sessionPanelOpen ? (
+            <span className="ml-2 font-mono text-[11px] text-slate-400">
+              {activeTab.sessionPartition}
+            </span>
+          ) : null}
         </span>
         <span>
           {tabs.filter((tab) => tab.projectId === activeTab.projectId).length} active role tabs
           <span className="mx-2 text-slate-300">/</span>
           {activeTab.loading ? 'Loading' : activeTab.loadError ? 'Load failed' : 'Ready'}
-        </span>
-      </div>
-      <div className="flex h-9 shrink-0 items-center gap-2 border-b border-slate-200 bg-[#f8fafd] px-4">
-        <span className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-          Shortcuts
-        </span>
-        {localhostShortcuts.map((shortcut) => (
           <button
-            key={shortcut}
             type="button"
-            onClick={() => onNavigate(shortcut)}
-            className="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-medium text-slate-700 hover:bg-slate-100"
+            title={sessionPanelOpen ? 'Hide session toolbar' : 'Show session toolbar'}
+            aria-label={sessionPanelOpen ? 'Hide session toolbar' : 'Show session toolbar'}
+            onClick={() => setSessionPanelOpen((currentSessionPanelOpen) => !currentSessionPanelOpen)}
+            className="ml-3 inline-grid h-6 w-6 place-items-center rounded-full text-slate-500 hover:bg-slate-100 hover:text-slate-800"
           >
-            {shortcut.replace('http://', '')}
+            {sessionPanelOpen ? (
+              <ChevronUp aria-hidden="true" size={15} />
+            ) : (
+              <ChevronDown aria-hidden="true" size={15} />
+            )}
           </button>
-        ))}
+        </span>
       </div>
+      {sessionPanelOpen ? (
+        <div className="flex h-9 shrink-0 items-center gap-2 border-b border-slate-200 bg-[#f8fafd] px-4">
+          <span className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+            Shortcuts
+          </span>
+          {localhostShortcuts.map((shortcut) => (
+            <button
+              key={shortcut}
+              type="button"
+              onClick={() => onNavigate(shortcut)}
+              className="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-medium text-slate-700 hover:bg-slate-100"
+            >
+              {shortcut.replace('http://', '')}
+            </button>
+          ))}
+        </div>
+      ) : null}
       <div className="roles-tab-webview-frame relative min-h-0 flex-1 overflow-hidden bg-white">
         {tabs.map((tab) => (
           <BrowserWebview

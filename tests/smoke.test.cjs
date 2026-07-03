@@ -165,3 +165,12 @@ test('sidebar can be shown and hidden from the browser toolbar', () => {
   assert.match(topBarSource, /Hide Sidebar/)
   assert.match(topBarSource, /Show Sidebar/)
 })
+
+test('session toolbar can be collapsed from the webview area', () => {
+  const webviewAreaSource = readProjectFile('src/renderer/components/WebviewArea.tsx')
+
+  assert.match(webviewAreaSource, /sessionPanelOpen/)
+  assert.match(webviewAreaSource, /setSessionPanelOpen/)
+  assert.match(webviewAreaSource, /Hide session toolbar/)
+  assert.match(webviewAreaSource, /Show session toolbar/)
+})
