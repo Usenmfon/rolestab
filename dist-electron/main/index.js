@@ -5,6 +5,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const electron_1 = __importDefault(require("electron"));
 const browserWindow_js_1 = require("./browserWindow.js");
+const errorLogger_js_1 = require("./errorLogger.js");
 const sessionManager_js_1 = require("./sessionManager.js");
 const workspaceStore_js_1 = require("./workspaceStore.js");
 const { app, BrowserWindow, ipcMain } = electron_1.default;
@@ -44,6 +45,10 @@ ipcMain.handle('app:open-external', async (event, url) => {
     assertTrustedSender(event);
     const parsed = parseHttpUrl(url);
     await shell.openExternal(parsed.toString());
+});
+ipcMain.handle('app:log-error', async (event, entry) => {
+    assertTrustedSender(event);
+    await (0, errorLogger_js_1.logInternalError)(entry);
 });
 ipcMain.handle('session:create-role-partition', (event, projectId, roleProfileId) => {
     assertTrustedSender(event);

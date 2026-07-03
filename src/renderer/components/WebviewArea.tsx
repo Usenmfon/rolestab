@@ -22,6 +22,7 @@ type WebviewAreaProps = {
   onOpenRoleProfile: (roleProfileId: string) => void
   onNavigate: (url: string) => void
   onRetryActiveTab: () => void
+  onCloseActiveTab: () => void
   onUpdateTab: (tabId: string, updates: Partial<BrowserTab>) => void
 }
 
@@ -37,6 +38,7 @@ export function WebviewArea({
   onOpenRoleProfile,
   onNavigate,
   onRetryActiveTab,
+  onCloseActiveTab,
   onUpdateTab,
 }: WebviewAreaProps) {
   const environment = getEnvironment(activeTab?.url ?? activeProject?.baseUrl ?? '')
@@ -163,13 +165,22 @@ export function WebviewArea({
                   </span>
                 ) : null}
               </span>
-              <button
-                type="button"
-                onClick={onRetryActiveTab}
-                className="shrink-0 rounded border border-red-200 bg-white px-3 py-1 text-xs font-semibold text-red-700 hover:bg-red-100"
-              >
-                Retry
-              </button>
+              <div className="flex shrink-0 gap-2">
+                <button
+                  type="button"
+                  onClick={onRetryActiveTab}
+                  className="rounded border border-red-200 bg-white px-3 py-1 text-xs font-semibold text-red-700 hover:bg-red-100"
+                >
+                  Retry
+                </button>
+                <button
+                  type="button"
+                  onClick={onCloseActiveTab}
+                  className="rounded border border-red-200 bg-white px-3 py-1 text-xs font-semibold text-red-700 hover:bg-red-100"
+                >
+                  Close
+                </button>
+              </div>
             </div>
           </div>
         ) : null}

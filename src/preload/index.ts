@@ -22,6 +22,9 @@ const api = {
     openExternal(url: string): Promise<void> {
       return ipcRenderer.invoke('app:open-external', url)
     },
+    logError(entry: { scope: string; message: string; stack?: string; details?: string }): Promise<void> {
+      return ipcRenderer.invoke('app:log-error', entry)
+    },
   },
   sessions: {
     createRolePartition(projectId: string, roleProfileId: string): Promise<string> {

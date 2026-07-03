@@ -1,5 +1,6 @@
 import electron from 'electron'
 import { createAppWindow } from './browserWindow.js'
+import { logInternalError } from './errorLogger.js'
 import {
   clearRoleSession,
   clearRoleSessions,
@@ -74,6 +75,23 @@ ipcMain.handle('app:open-external', async (event, url: string) => {
 
   await shell.openExternal(parsed.toString())
 })
+
+ipcMain.handle(
+  'app:log-error',
+  async (
+    event,
+    entry: {
+      scope: string
+      message: string
+      stack?: string
+      details?: string
+    },
+  ) => {
+    assertTrustedSender(event)
+
+    await logInternalError(entry)
+  },
+)
 
 ipcMain.handle('session:create-role-partition', (event, projectId: string, roleProfileId: string) => {
   assertTrustedSender(event)

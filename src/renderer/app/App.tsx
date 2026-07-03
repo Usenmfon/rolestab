@@ -88,7 +88,7 @@ function App() {
       const usage = await window.rolesTab?.sessions.getRoleSessionsUsage(partitions)
       setSessionUsage(usage ?? [])
     } catch (error) {
-      setWorkspaceError(error instanceof Error ? error.message : 'Unable to read session usage.')
+      reportError('session-usage', 'Unable to read session usage.', error, setWorkspaceError)
     }
   }, [roleProfiles])
 
@@ -114,7 +114,7 @@ function App() {
         setWorkspaceLoaded(true)
       } catch (error) {
         if (mounted) {
-          setWorkspaceError(error instanceof Error ? error.message : 'Unable to load workspace.')
+          reportError('workspace-load', 'Unable to load workspace.', error, setWorkspaceError)
           setWorkspaceLoaded(true)
         }
       }
@@ -124,6 +124,24 @@ function App() {
 
     return () => {
       mounted = false
+    }
+  }, [])
+
+  useEffect(() => {
+    function handleError(event: ErrorEvent) {
+      void logError('renderer-error', event.message, event.error)
+    }
+
+    function handleUnhandledRejection(event: PromiseRejectionEvent) {
+      void logError('renderer-unhandled-rejection', 'Unhandled promise rejection.', event.reason)
+    }
+
+    window.addEventListener('error', handleError)
+    window.addEventListener('unhandledrejection', handleUnhandledRejection)
+
+    return () => {
+      window.removeEventListener('error', handleError)
+      window.removeEventListener('unhandledrejection', handleUnhandledRejection)
     }
   }, [])
 
@@ -554,7 +572,7 @@ function App() {
         applyWorkspace(workspace)
       }
     } catch (error) {
-      setWorkspaceError(error instanceof Error ? error.message : 'Unable to save active project.')
+      reportError('project-select', 'Unable to save active project.', error, setWorkspaceError)
     }
   }
 
@@ -581,14 +599,15 @@ function App() {
       return
     }
 
-    openRoleProfileTab(roleProfile)
+    void openRoleProfileTab(roleProfile)
   }
 
-  function openRoleProfileTab(roleProfile: RoleProfile, initialUrl = roleProfile.startUrl, title = roleProfile.name) {
+  async function openRoleProfileTab(roleProfile: RoleProfile, initialUrl = roleProfile.startUrl, title = roleProfile.name) {
     if (!confirmProductionUrl(initialUrl)) {
       return
     }
 
+    const sessionPartition = await ensureRoleProfileSession(roleProfile)
     const tabId = `tab-${crypto.randomUUID()}`
 
     setTabs((currentTabs) => [
@@ -602,7 +621,7 @@ function App() {
         title,
         url: initialUrl,
         loading: false,
-        sessionPartition: roleProfile.sessionPartition,
+        sessionPartition,
       },
     ])
     setActiveTabId(tabId)
@@ -614,7 +633,34 @@ function App() {
       return
     }
 
-    activeProjectRoleProfiles.forEach((roleProfile) => openRoleProfileTab(roleProfile))
+    activeProjectRoleProfiles.forEach((roleProfile) => {
+      void openRoleProfileTab(roleProfile)
+    })
+  }
+
+  async function ensureRoleProfileSession(roleProfile: RoleProfile): Promise<string> {
+    if (isValidRolePartition(roleProfile.sessionPartition)) {
+      return roleProfile.sessionPartition
+    }
+
+    try {
+      const sessionPartition =
+        (await window.rolesTab?.sessions.createRolePartition(roleProfile.projectId, roleProfile.id)) ??
+        `persist:${roleProfile.projectId}-${roleProfile.id}`
+      const repairedRoleProfile = {
+        ...roleProfile,
+        sessionPartition,
+        updatedAt: new Date().toISOString(),
+      }
+
+      await persistRoleProfile(repairedRoleProfile)
+      await logError('session-partition-repair', `Repaired missing session partition for ${roleProfile.name}.`)
+
+      return sessionPartition
+    } catch (error) {
+      reportError('session-partition-repair', 'Unable to repair the role session partition.', error, setWorkspaceError)
+      throw error
+    }
   }
 
   async function toggleRestoreTabs() {
@@ -641,7 +687,7 @@ function App() {
         applyWorkspace(workspace)
       }
     } catch (error) {
-      setWorkspaceError(error instanceof Error ? error.message : 'Unable to save settings.')
+      reportError('settings-save', 'Unable to save settings.', error, setWorkspaceError)
     }
   }
 
@@ -684,7 +730,7 @@ function App() {
       setActiveProjectId(roleProfile.projectId)
     }
 
-    openRoleProfileTab(roleProfile, recentUrl.url, recentUrl.title || roleProfile.name)
+    void openRoleProfileTab(roleProfile, recentUrl.url, recentUrl.title || roleProfile.name)
     setWorkspaceError(null)
   }
 
@@ -696,7 +742,7 @@ function App() {
     const roleProfile = roleProfiles.find((currentRoleProfile) => currentRoleProfile.id === activeTab.roleProfileId)
 
     if (roleProfile) {
-      openRoleProfileTab(roleProfile, activeTab.url, `${activeTab.roleName} Copy`)
+      void openRoleProfileTab(roleProfile, activeTab.url, `${activeTab.roleName} Copy`)
     }
   }
 
@@ -746,7 +792,7 @@ function App() {
       sendBrowserCommand({ type: 'reload' })
       setWorkspaceError(null)
     } catch (error) {
-      setWorkspaceError(error instanceof Error ? error.message : 'Unable to reset the active role session.')
+      reportError('session-reset', 'Unable to reset the active role session.', error, setWorkspaceError)
     }
   }
 
@@ -786,7 +832,7 @@ function App() {
       })
       setWorkspaceError(null)
     } catch (error) {
-      setWorkspaceError(error instanceof Error ? error.message : 'Unable to clear project sessions.')
+      reportError('session-clear-project', 'Unable to clear project sessions.', error, setWorkspaceError)
     }
   }
 
@@ -815,7 +861,7 @@ function App() {
       setActiveTabId(null)
       setWorkspaceError(null)
     } catch (error) {
-      setWorkspaceError(error instanceof Error ? error.message : 'Unable to clear all sessions.')
+      reportError('session-clear-all', 'Unable to clear all sessions.', error, setWorkspaceError)
     }
   }
 
@@ -914,7 +960,7 @@ function App() {
       await navigator.clipboard.writeText(activeTab.url)
       setWorkspaceError(null)
     } catch {
-      setWorkspaceError('Unable to copy the current URL.')
+      reportError('clipboard-copy', 'Unable to copy the current URL.', null, setWorkspaceError)
     }
   }
 
@@ -931,7 +977,7 @@ function App() {
       await window.rolesTab?.app.openExternal(activeTab.url)
       setWorkspaceError(null)
     } catch (error) {
-      setWorkspaceError(error instanceof Error ? error.message : 'Unable to open the current URL externally.')
+      reportError('open-external', 'Unable to open the current URL externally.', error, setWorkspaceError)
     }
   }
 
@@ -976,6 +1022,7 @@ function App() {
       activeTabId={activeTabId}
       browserCommand={browserCommand}
       workspaceError={workspaceError}
+      onClearWorkspaceError={() => setWorkspaceError(null)}
       editingProject={editingProject}
       editingRoleProfile={editingRoleProfile}
       projectFormOpen={projectFormOpen}
@@ -1159,4 +1206,38 @@ function normalizeKey(key: string): string {
   }
 
   return aliases[normalized] ?? normalized
+}
+
+function isValidRolePartition(partition: string): boolean {
+  return /^persist:[\w-]+-[\w-]+$/.test(partition)
+}
+
+function reportError(
+  scope: string,
+  fallbackMessage: string,
+  error: unknown,
+  setWorkspaceError: (message: string) => void,
+) {
+  const message = error instanceof Error ? error.message : fallbackMessage
+
+  setWorkspaceError(message)
+  void logError(scope, message, error)
+}
+
+async function logError(scope: string, message: string, error?: unknown) {
+  try {
+    await window.rolesTab?.app.logError({
+      scope,
+      message,
+      stack: error instanceof Error ? error.stack : undefined,
+      details:
+        error && !(error instanceof Error)
+          ? typeof error === 'string'
+            ? error
+            : JSON.stringify(error)
+          : undefined,
+    })
+  } catch {
+    // Logging must never interrupt the user workflow.
+  }
 }

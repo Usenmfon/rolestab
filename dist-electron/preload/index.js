@@ -16,6 +16,9 @@ const api = {
         openExternal(url) {
             return ipcRenderer.invoke('app:open-external', url);
         },
+        logError(entry) {
+            return ipcRenderer.invoke('app:log-error', entry);
+        },
     },
     sessions: {
         createRolePartition(projectId, roleProfileId) {
