@@ -15,6 +15,7 @@ const shortcutLabels: Record<string, string> = {
   newTab: 'New tab',
   closeTab: 'Close tab',
   reload: 'Reload',
+  hardReload: 'Hard reload',
   focusUrlBar: 'Focus URL',
   openDevTools: 'Open DevTools',
   nextTab: 'Next tab',

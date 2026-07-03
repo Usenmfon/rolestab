@@ -10,6 +10,7 @@ import {
   type RoleProfileDraft,
 } from '../components/RoleProfileFormPanel'
 import type { BrowserCommand } from '../../shared/browser'
+import type { RefObject } from 'react'
 import type {
   AppSettings,
   BrowserTab,
@@ -87,6 +88,7 @@ type DesktopLayoutProps = {
   onInspectElement: () => void
   onConfirmAction: () => void
   onCancelAction: () => void
+  urlInputRef: RefObject<HTMLInputElement | null>
 }
 
 export function DesktopLayout({
@@ -151,6 +153,7 @@ export function DesktopLayout({
   onInspectElement,
   onConfirmAction,
   onCancelAction,
+  urlInputRef,
 }: DesktopLayoutProps) {
   return (
     <main className="flex h-screen overflow-hidden bg-slate-100 text-slate-900">
@@ -207,6 +210,7 @@ export function DesktopLayout({
           onOpenExternal={onOpenExternal}
           onOpenDevTools={onOpenDevTools}
           onInspectElement={onInspectElement}
+          urlInputRef={urlInputRef}
         />
         <TabBar
           tabs={tabs}

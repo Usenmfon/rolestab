@@ -6,6 +6,7 @@ exports.defaultKeyboardShortcuts = {
     newTab: 'Ctrl+T',
     closeTab: 'Ctrl+W',
     reload: 'Ctrl+R',
+    hardReload: 'Ctrl+Shift+R',
     focusUrlBar: 'Ctrl+L',
     openDevTools: 'Ctrl+Shift+I',
     nextTab: 'Ctrl+Tab',

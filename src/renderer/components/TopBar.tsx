@@ -14,7 +14,7 @@ import {
   XCircle,
   X,
 } from 'lucide-react'
-import { type FormEvent } from 'react'
+import { type FormEvent, type RefObject } from 'react'
 import { IconButton } from './IconButton'
 
 type TopBarProps = {
@@ -39,6 +39,7 @@ type TopBarProps = {
   onOpenExternal: () => void
   onOpenDevTools: () => void
   onInspectElement: () => void
+  urlInputRef: RefObject<HTMLInputElement | null>
 }
 
 export function TopBar({
@@ -63,6 +64,7 @@ export function TopBar({
   onOpenExternal,
   onOpenDevTools,
   onInspectElement,
+  urlInputRef,
 }: TopBarProps) {
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -92,6 +94,7 @@ export function TopBar({
 
       <form onSubmit={handleSubmit} className="mx-2 min-w-0 flex-1">
         <input
+          ref={urlInputRef}
           key={currentUrl}
           name="url"
           defaultValue={currentUrl}

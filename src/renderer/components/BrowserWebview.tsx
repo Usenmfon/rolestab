@@ -10,6 +10,7 @@ type WebviewDomElement = HTMLElement & {
   goBack?: () => void
   goForward?: () => void
   reload?: () => void
+  reloadIgnoringCache?: () => void
   stop?: () => void
   loadURL?: (url: string) => void
   openDevTools?: () => void
@@ -263,6 +264,9 @@ export function BrowserWebview({ tab, active, command, onUpdate }: BrowserWebvie
         break
       case 'reload':
         webview.reload?.()
+        break
+      case 'hard-reload':
+        webview.reloadIgnoringCache?.()
         break
       case 'stop':
         webview.stop?.()

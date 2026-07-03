@@ -24,6 +24,20 @@ type ConfirmationRequest = {
   confirmLabel: string
 }
 
+type ShortcutAction =
+  | 'newTab'
+  | 'closeTab'
+  | 'reload'
+  | 'hardReload'
+  | 'focusUrlBar'
+  | 'openDevTools'
+  | 'nextTab'
+  | 'previousTab'
+  | 'openAllRoles'
+  | 'clearActiveRoleSession'
+
+type ShortcutHandlers = Record<ShortcutAction, () => void>
+
 function App() {
   const [projects, setProjects] = useState<ProjectSummary[]>([])
   const [roleProfiles, setRoleProfiles] = useState<RoleProfile[]>([])
@@ -43,6 +57,8 @@ function App() {
   const [sessionUsage, setSessionUsage] = useState<SessionUsage[]>([])
   const [confirmationRequest, setConfirmationRequest] = useState<ConfirmationRequest | null>(null)
   const confirmationResolverRef = useRef<((confirmed: boolean) => void) | null>(null)
+  const urlInputRef = useRef<HTMLInputElement | null>(null)
+  const shortcutHandlersRef = useRef<ShortcutHandlers | null>(null)
 
   const activeProject = useMemo(
     () => projects.find((project) => project.id === activeProjectId) ?? null,
@@ -180,6 +196,30 @@ function App() {
 
     void persistRecentUrl()
   }, [activeTab, workspaceLoaded])
+
+  useEffect(() => {
+    function handleKeyDown(event: KeyboardEvent) {
+      if (shouldIgnoreShortcut(event)) {
+        return
+      }
+
+      const matchedShortcut = getShortcutAction(event, settings.keyboardShortcuts)
+
+      if (!matchedShortcut) {
+        return
+      }
+
+      event.preventDefault()
+
+      shortcutHandlersRef.current?.[matchedShortcut]()
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [settings.keyboardShortcuts])
 
   function applyWorkspace(workspace: WorkspaceData) {
     setProjects(workspace.projects)
@@ -791,6 +831,24 @@ function App() {
     })
   }
 
+  function selectAdjacentTab(direction: 1 | -1) {
+    if (tabs.length === 0) {
+      return
+    }
+
+    const currentIndex = Math.max(
+      0,
+      tabs.findIndex((tab) => tab.id === activeTabId),
+    )
+    const nextIndex = (currentIndex + direction + tabs.length) % tabs.length
+    setActiveTabId(tabs[nextIndex]?.id ?? null)
+  }
+
+  function focusUrlBar() {
+    urlInputRef.current?.focus()
+    urlInputRef.current?.select()
+  }
+
   function updateTab(tabId: string, updates: Partial<BrowserTab>) {
     setTabs((currentTabs) =>
       currentTabs.map((tab) => (tab.id === tabId ? { ...tab, ...updates } : tab)),
@@ -886,6 +944,25 @@ function App() {
     )
   }
 
+  shortcutHandlersRef.current = {
+    newTab: createRoleTab,
+    closeTab: () => {
+      if (activeTabId) {
+        closeTab(activeTabId)
+      }
+    },
+    reload: () => sendBrowserCommand({ type: 'reload' }),
+    hardReload: () => sendBrowserCommand({ type: 'hard-reload' }),
+    focusUrlBar,
+    openDevTools: () => sendBrowserCommand({ type: 'open-devtools' }),
+    nextTab: () => selectAdjacentTab(1),
+    previousTab: () => selectAdjacentTab(-1),
+    openAllRoles,
+    clearActiveRoleSession: () => {
+      void resetActiveRoleSession()
+    },
+  }
+
   return (
     <DesktopLayout
       projects={projects}
@@ -975,8 +1052,111 @@ function App() {
       onInspectElement={() => sendBrowserCommand({ type: 'inspect-element' })}
       onConfirmAction={() => resolveConfirmation(true)}
       onCancelAction={() => resolveConfirmation(false)}
+      urlInputRef={urlInputRef}
     />
   )
 }
 
 export default App
+
+function shouldIgnoreShortcut(event: KeyboardEvent): boolean {
+  if (event.defaultPrevented || event.isComposing) {
+    return true
+  }
+
+  const target = event.target
+
+  if (!(target instanceof HTMLElement)) {
+    return false
+  }
+
+  const editable =
+    target instanceof HTMLInputElement ||
+    target instanceof HTMLTextAreaElement ||
+    target instanceof HTMLSelectElement ||
+    target.isContentEditable
+
+  return editable && normalizeKey(event.key) !== 'escape'
+}
+
+function getShortcutAction(
+  event: KeyboardEvent,
+  shortcuts: Record<string, string>,
+): ShortcutAction | null {
+  const entries: Array<[ShortcutAction, string | undefined]> = [
+    ['newTab', shortcuts.newTab],
+    ['closeTab', shortcuts.closeTab],
+    ['reload', shortcuts.reload],
+    ['hardReload', shortcuts.hardReload ?? 'Ctrl+Shift+R'],
+    ['focusUrlBar', shortcuts.focusUrlBar],
+    ['openDevTools', shortcuts.openDevTools],
+    ['nextTab', shortcuts.nextTab],
+    ['previousTab', shortcuts.previousTab],
+    ['openAllRoles', shortcuts.openAllRoles],
+    ['clearActiveRoleSession', shortcuts.clearActiveRoleSession],
+  ]
+
+  return entries.find(([, shortcut]) => shortcut && shortcutMatchesEvent(shortcut, event))?.[0] ?? null
+}
+
+function shortcutMatchesEvent(shortcut: string, event: KeyboardEvent): boolean {
+  const parsedShortcut = parseShortcut(shortcut)
+
+  if (!parsedShortcut) {
+    return false
+  }
+
+  return (
+    parsedShortcut.key === normalizeKey(event.key) &&
+    parsedShortcut.ctrl === event.ctrlKey &&
+    parsedShortcut.alt === event.altKey &&
+    parsedShortcut.shift === event.shiftKey &&
+    parsedShortcut.meta === event.metaKey
+  )
+}
+
+function parseShortcut(shortcut: string):
+  | {
+      key: string
+      ctrl: boolean
+      alt: boolean
+      shift: boolean
+      meta: boolean
+    }
+  | null {
+  const parts = shortcut
+    .split('+')
+    .map((part) => part.trim())
+    .filter(Boolean)
+
+  if (parts.length === 0) {
+    return null
+  }
+
+  const key = normalizeKey(parts.at(-1) ?? '')
+
+  return {
+    key,
+    ctrl: parts.slice(0, -1).some((part) => normalizeKey(part) === 'control'),
+    alt: parts.slice(0, -1).some((part) => normalizeKey(part) === 'alt'),
+    shift: parts.slice(0, -1).some((part) => normalizeKey(part) === 'shift'),
+    meta: parts.slice(0, -1).some((part) => normalizeKey(part) === 'meta'),
+  }
+}
+
+function normalizeKey(key: string): string {
+  const normalized = key.trim().toLowerCase()
+  const aliases: Record<string, string> = {
+    ctrl: 'control',
+    control: 'control',
+    cmd: 'meta',
+    command: 'meta',
+    win: 'meta',
+    windows: 'meta',
+    option: 'alt',
+    esc: 'escape',
+    space: ' ',
+  }
+
+  return aliases[normalized] ?? normalized
+}
