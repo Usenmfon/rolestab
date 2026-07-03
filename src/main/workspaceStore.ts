@@ -1,5 +1,5 @@
 import electron from 'electron'
-import { mkdir, readFile, writeFile } from 'node:fs/promises'
+import { mkdir, readFile, rename, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 import type {
   AppSettings,
@@ -26,6 +26,8 @@ const defaultWorkspace: WorkspaceData = {
   recentTabs: [],
   lastActiveProjectId: null,
 }
+
+let workspaceWriteQueue = Promise.resolve<WorkspaceData>(defaultWorkspace)
 
 function workspacePath(): string {
   return path.join(app.getPath('userData'), 'workspace.json')
@@ -175,18 +177,32 @@ function isValidSavedTab(
 async function writeWorkspace(workspace: WorkspaceData): Promise<WorkspaceData> {
   const nextWorkspace = sanitizeWorkspace(workspace)
   const filePath = workspacePath()
+  const temporaryPath = `${filePath}.tmp`
 
-  await mkdir(path.dirname(filePath), { recursive: true })
-  await writeFile(filePath, `${JSON.stringify(nextWorkspace, null, 2)}\n`, 'utf8')
+  workspaceWriteQueue = workspaceWriteQueue
+    .catch(() => defaultWorkspace)
+    .then(async () => {
+      await mkdir(path.dirname(filePath), { recursive: true })
+      await writeFile(temporaryPath, `${JSON.stringify(nextWorkspace, null, 2)}\n`, 'utf8')
+      await rename(temporaryPath, filePath)
 
-  return nextWorkspace
+      return nextWorkspace
+    })
+
+  return workspaceWriteQueue
 }
 
 export async function loadWorkspace(): Promise<WorkspaceData> {
   try {
     const raw = await readFile(workspacePath(), 'utf8')
-    const parsed = JSON.parse(raw) as WorkspaceData
-    return sanitizeWorkspace(parsed)
+    const parsed = parseWorkspaceJson(raw)
+    const workspace = sanitizeWorkspace(parsed)
+
+    if (raw.trim() !== `${JSON.stringify(workspace, null, 2)}`) {
+      void writeWorkspace(workspace)
+    }
+
+    return workspace
   } catch (error) {
     const code = (error as NodeJS.ErrnoException).code
 
@@ -196,6 +212,70 @@ export async function loadWorkspace(): Promise<WorkspaceData> {
 
     throw error
   }
+}
+
+function parseWorkspaceJson(raw: string): WorkspaceData {
+  try {
+    return JSON.parse(raw) as WorkspaceData
+  } catch (error) {
+    if (!(error instanceof SyntaxError)) {
+      throw error
+    }
+
+    const jsonPrefix = getFirstJsonObject(raw)
+
+    if (!jsonPrefix) {
+      throw error
+    }
+
+    return JSON.parse(jsonPrefix) as WorkspaceData
+  }
+}
+
+function getFirstJsonObject(raw: string): string | null {
+  let depth = 0
+  let objectStart = -1
+  let inString = false
+  let escaped = false
+
+  for (let index = 0; index < raw.length; index += 1) {
+    const character = raw[index]
+
+    if (objectStart < 0) {
+      if (character === '{') {
+        objectStart = index
+        depth = 1
+      }
+
+      continue
+    }
+
+    if (inString) {
+      if (escaped) {
+        escaped = false
+      } else if (character === '\\') {
+        escaped = true
+      } else if (character === '"') {
+        inString = false
+      }
+
+      continue
+    }
+
+    if (character === '"') {
+      inString = true
+    } else if (character === '{') {
+      depth += 1
+    } else if (character === '}') {
+      depth -= 1
+
+      if (depth === 0) {
+        return raw.slice(objectStart, index + 1)
+      }
+    }
+  }
+
+  return null
 }
 
 export async function saveProject(project: ProjectSummary): Promise<WorkspaceData> {

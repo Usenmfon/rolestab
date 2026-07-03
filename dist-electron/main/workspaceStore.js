@@ -30,6 +30,7 @@ const defaultWorkspace = {
     recentTabs: [],
     lastActiveProjectId: null,
 };
+let workspaceWriteQueue = Promise.resolve(defaultWorkspace);
 function workspacePath() {
     return node_path_1.default.join(app.getPath('userData'), 'workspace.json');
 }
@@ -147,15 +148,26 @@ function isValidSavedTab(recentTab, projects, roleProfiles) {
 async function writeWorkspace(workspace) {
     const nextWorkspace = sanitizeWorkspace(workspace);
     const filePath = workspacePath();
-    await (0, promises_1.mkdir)(node_path_1.default.dirname(filePath), { recursive: true });
-    await (0, promises_1.writeFile)(filePath, `${JSON.stringify(nextWorkspace, null, 2)}\n`, 'utf8');
-    return nextWorkspace;
+    const temporaryPath = `${filePath}.tmp`;
+    workspaceWriteQueue = workspaceWriteQueue
+        .catch(() => defaultWorkspace)
+        .then(async () => {
+        await (0, promises_1.mkdir)(node_path_1.default.dirname(filePath), { recursive: true });
+        await (0, promises_1.writeFile)(temporaryPath, `${JSON.stringify(nextWorkspace, null, 2)}\n`, 'utf8');
+        await (0, promises_1.rename)(temporaryPath, filePath);
+        return nextWorkspace;
+    });
+    return workspaceWriteQueue;
 }
 async function loadWorkspace() {
     try {
         const raw = await (0, promises_1.readFile)(workspacePath(), 'utf8');
-        const parsed = JSON.parse(raw);
-        return sanitizeWorkspace(parsed);
+        const parsed = parseWorkspaceJson(raw);
+        const workspace = sanitizeWorkspace(parsed);
+        if (raw.trim() !== `${JSON.stringify(workspace, null, 2)}`) {
+            void writeWorkspace(workspace);
+        }
+        return workspace;
     }
     catch (error) {
         const code = error.code;
@@ -164,6 +176,62 @@ async function loadWorkspace() {
         }
         throw error;
     }
+}
+function parseWorkspaceJson(raw) {
+    try {
+        return JSON.parse(raw);
+    }
+    catch (error) {
+        if (!(error instanceof SyntaxError)) {
+            throw error;
+        }
+        const jsonPrefix = getFirstJsonObject(raw);
+        if (!jsonPrefix) {
+            throw error;
+        }
+        return JSON.parse(jsonPrefix);
+    }
+}
+function getFirstJsonObject(raw) {
+    let depth = 0;
+    let objectStart = -1;
+    let inString = false;
+    let escaped = false;
+    for (let index = 0; index < raw.length; index += 1) {
+        const character = raw[index];
+        if (objectStart < 0) {
+            if (character === '{') {
+                objectStart = index;
+                depth = 1;
+            }
+            continue;
+        }
+        if (inString) {
+            if (escaped) {
+                escaped = false;
+            }
+            else if (character === '\\') {
+                escaped = true;
+            }
+            else if (character === '"') {
+                inString = false;
+            }
+            continue;
+        }
+        if (character === '"') {
+            inString = true;
+        }
+        else if (character === '{') {
+            depth += 1;
+        }
+        else if (character === '}') {
+            depth -= 1;
+            if (depth === 0) {
+                return raw.slice(objectStart, index + 1);
+            }
+        }
+    }
+    return null;
 }
 async function saveProject(project) {
     if (!isValidProject(project)) {
