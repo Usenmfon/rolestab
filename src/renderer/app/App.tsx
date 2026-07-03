@@ -561,6 +561,56 @@ function App() {
     setWorkspaceError(null)
   }
 
+  async function exportActiveProjectConfig() {
+    if (!activeProject) {
+      setWorkspaceError('Select a project before exporting.')
+      return
+    }
+
+    try {
+      const result = await window.rolesTab?.workspace.exportProjectConfig(activeProject.id)
+
+      if (!result?.canceled) {
+        setWorkspaceError(null)
+      }
+    } catch (error) {
+      reportError('project-export', 'Unable to export this project configuration.', error, setWorkspaceError)
+    }
+  }
+
+  async function importProjectConfig() {
+    try {
+      const result = await window.rolesTab?.workspace.importProjectConfig()
+
+      if (!result || result.canceled) {
+        return
+      }
+
+      if (result.workspace) {
+        applyWorkspace(result.workspace)
+      }
+
+      if (result.projectId) {
+        setTabs((currentTabs) => currentTabs.filter((tab) => tab.projectId !== result.projectId))
+        setActiveTabId((currentActiveTabId) => {
+          const nextTabs = tabs.filter((tab) => tab.projectId !== result.projectId)
+          return nextTabs.some((tab) => tab.id === currentActiveTabId)
+            ? currentActiveTabId
+            : nextTabs.at(-1)?.id ?? null
+        })
+      }
+
+      setProjectFormOpen(false)
+      setRoleProfileFormOpen(false)
+      setSettingsPanelOpen(false)
+      setEditingProjectId(null)
+      setEditingRoleProfileId(null)
+      setWorkspaceError(null)
+    } catch (error) {
+      reportError('project-import', 'Unable to import the project configuration.', error, setWorkspaceError)
+    }
+  }
+
   async function selectProject(projectId: string) {
     setActiveProjectId(projectId)
     setActiveTabId(null)
@@ -1058,6 +1108,12 @@ function App() {
       }}
       onClearAllSessions={() => {
         void clearAllSessions()
+      }}
+      onExportProjectConfig={() => {
+        void exportActiveProjectConfig()
+      }}
+      onImportProjectConfig={() => {
+        void importProjectConfig()
       }}
       onOpenSettings={openSettingsPanel}
       onCloseSettings={closeSettingsPanel}

@@ -65,6 +65,12 @@ const api = {
         saveRecentTabs(recentTabs) {
             return ipcRenderer.invoke('workspace:save-recent-tabs', recentTabs);
         },
+        exportProjectConfig(projectId) {
+            return ipcRenderer.invoke('workspace:export-project-config', projectId);
+        },
+        importProjectConfig() {
+            return ipcRenderer.invoke('workspace:import-project-config');
+        },
     },
 };
 contextBridge.exposeInMainWorld('rolesTab', api);

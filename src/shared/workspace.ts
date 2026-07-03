@@ -82,6 +82,25 @@ export type WorkspaceData = {
   lastActiveProjectId: string | null
 }
 
+export type ProjectExportData = {
+  app: 'RolesTab'
+  schemaVersion: number
+  exportedAt: string
+  project: ProjectSummary
+  roleProfiles: RoleProfile[]
+}
+
+export type WorkspaceFileResult = {
+  canceled: boolean
+  filePath?: string
+}
+
+export type WorkspaceImportResult = WorkspaceFileResult & {
+  workspace?: WorkspaceData
+  projectId?: string
+  importedRoleCount?: number
+}
+
 export type BrowserTab = {
   id: string
   projectId: string

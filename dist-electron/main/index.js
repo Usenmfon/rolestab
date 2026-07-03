@@ -9,7 +9,7 @@ const errorLogger_js_1 = require("./errorLogger.js");
 const sessionManager_js_1 = require("./sessionManager.js");
 const workspaceStore_js_1 = require("./workspaceStore.js");
 const { app, BrowserWindow, ipcMain } = electron_1.default;
-const { shell } = electron_1.default;
+const { dialog, shell } = electron_1.default;
 if (!app.requestSingleInstanceLock()) {
     app.quit();
 }
@@ -115,6 +115,56 @@ ipcMain.handle('workspace:save-recent-tabs', async (event, recentTabs) => {
     assertTrustedSender(event);
     return (0, workspaceStore_js_1.saveRecentTabs)(recentTabs);
 });
+ipcMain.handle('workspace:export-project-config', async (event, projectId) => {
+    assertTrustedSender(event);
+    if (!isSafeIdentifier(projectId)) {
+        throw new Error('Invalid project identifier.');
+    }
+    const projectName = await getProjectName(projectId);
+    const saveOptions = {
+        title: 'Export Project Configuration',
+        defaultPath: `${sanitizeFileBaseName(projectName)}.rolestab-project.json`,
+        filters: [
+            { name: 'RolesTab Project', extensions: ['json'] },
+            { name: 'JSON', extensions: ['json'] },
+        ],
+    };
+    const result = mainWindow
+        ? await dialog.showSaveDialog(mainWindow, saveOptions)
+        : await dialog.showSaveDialog(saveOptions);
+    if (result.canceled || !result.filePath) {
+        return { canceled: true };
+    }
+    await (0, workspaceStore_js_1.exportProjectConfig)(projectId, result.filePath);
+    return {
+        canceled: false,
+        filePath: result.filePath,
+    };
+});
+ipcMain.handle('workspace:import-project-config', async (event) => {
+    assertTrustedSender(event);
+    const openOptions = {
+        title: 'Import Project Configuration',
+        properties: ['openFile'],
+        filters: [
+            { name: 'RolesTab Project', extensions: ['json'] },
+            { name: 'JSON', extensions: ['json'] },
+        ],
+    };
+    const result = mainWindow
+        ? await dialog.showOpenDialog(mainWindow, openOptions)
+        : await dialog.showOpenDialog(openOptions);
+    const filePath = result.filePaths[0];
+    if (result.canceled || !filePath) {
+        return { canceled: true };
+    }
+    const importResult = await (0, workspaceStore_js_1.importProjectConfig)(filePath);
+    return {
+        canceled: false,
+        filePath,
+        ...importResult,
+    };
+});
 function parseHttpUrl(url) {
     const parsed = new URL(url);
     if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
@@ -127,6 +177,21 @@ function isSafeIdentifier(value) {
 }
 function isSafePartition(partition) {
     return /^persist:[\w-]+-[\w-]+$/.test(partition);
+}
+async function getProjectName(projectId) {
+    const workspace = await (0, workspaceStore_js_1.loadWorkspace)();
+    return workspace.projects.find((project) => project.id === projectId)?.name ?? 'rolestab-project';
+}
+function sanitizeFileBaseName(value) {
+    const normalized = value
+        .trim()
+        .replace(/[<>:"/\\|?*]/g, '-')
+        .split('')
+        .filter((character) => character.charCodeAt(0) >= 32)
+        .join('')
+        .replace(/\s+/g, '-')
+        .replace(/-+/g, '-');
+    return normalized || 'rolestab-project';
 }
 function assertTrustedSender(event) {
     const senderUrl = event.senderFrame?.url;

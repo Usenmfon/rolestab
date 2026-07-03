@@ -63,6 +63,7 @@ public/       Browser and app icon assets
 - Create reusable role profiles per project.
 - Open isolated browser tabs per role profile.
 - Restore recent tabs and URLs.
+- Import and export project configurations as JSON.
 - Clear one role session, project sessions, or all role sessions.
 - Use browser controls for navigation, reload, home, external open, copy URL, and DevTools.
 

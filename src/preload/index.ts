@@ -6,6 +6,8 @@ import type {
   RoleProfile,
   SavedBrowserTab,
   WorkspaceData,
+  WorkspaceFileResult,
+  WorkspaceImportResult,
 } from '../shared/workspace.js'
 import type { SessionUsage } from '../shared/session.js'
 
@@ -70,6 +72,12 @@ const api = {
     },
     saveRecentTabs(recentTabs: SavedBrowserTab[]): Promise<WorkspaceData> {
       return ipcRenderer.invoke('workspace:save-recent-tabs', recentTabs)
+    },
+    exportProjectConfig(projectId: string): Promise<WorkspaceFileResult> {
+      return ipcRenderer.invoke('workspace:export-project-config', projectId)
+    },
+    importProjectConfig(): Promise<WorkspaceImportResult> {
+      return ipcRenderer.invoke('workspace:import-project-config')
     },
   },
 }

@@ -61,6 +61,8 @@ type DesktopLayoutProps = {
   onOpenRecentUrl: (recentUrl: RecentUrl) => void
   onClearProjectSessions: () => void
   onClearAllSessions: () => void
+  onExportProjectConfig: () => void
+  onImportProjectConfig: () => void
   onOpenSettings: () => void
   onCloseSettings: () => void
   onSaveSettings: (settings: AppSettings) => Promise<void>
@@ -127,6 +129,8 @@ export function DesktopLayout({
   onOpenRecentUrl,
   onClearProjectSessions,
   onClearAllSessions,
+  onExportProjectConfig,
+  onImportProjectConfig,
   onOpenSettings,
   onCloseSettings,
   onSaveSettings,
@@ -181,6 +185,8 @@ export function DesktopLayout({
         onOpenRecentUrl={onOpenRecentUrl}
         onClearProjectSessions={onClearProjectSessions}
         onClearAllSessions={onClearAllSessions}
+        onExportProjectConfig={onExportProjectConfig}
+        onImportProjectConfig={onImportProjectConfig}
         onOpenSettings={onOpenSettings}
       />
 

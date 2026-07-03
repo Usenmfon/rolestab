@@ -11,6 +11,8 @@ import {
 import {
   deleteProject,
   deleteRoleProfile,
+  exportProjectConfig,
+  importProjectConfig,
   loadWorkspace,
   saveRecentTabs,
   saveRecentUrl,
@@ -22,7 +24,7 @@ import {
 import type { AppSettings, ProjectSummary, RecentUrl, RoleProfile, SavedBrowserTab } from '../shared/workspace.js'
 
 const { app, BrowserWindow, ipcMain } = electron
-const { shell } = electron
+const { dialog, shell } = electron
 
 if (!app.requestSingleInstanceLock()) {
   app.quit()
@@ -178,6 +180,68 @@ ipcMain.handle('workspace:save-recent-tabs', async (event, recentTabs: SavedBrow
   return saveRecentTabs(recentTabs)
 })
 
+ipcMain.handle('workspace:export-project-config', async (event, projectId: string) => {
+  assertTrustedSender(event)
+
+  if (!isSafeIdentifier(projectId)) {
+    throw new Error('Invalid project identifier.')
+  }
+
+  const projectName = await getProjectName(projectId)
+  const saveOptions: Electron.SaveDialogOptions = {
+    title: 'Export Project Configuration',
+    defaultPath: `${sanitizeFileBaseName(projectName)}.rolestab-project.json`,
+    filters: [
+      { name: 'RolesTab Project', extensions: ['json'] },
+      { name: 'JSON', extensions: ['json'] },
+    ],
+  }
+  const result = mainWindow
+    ? await dialog.showSaveDialog(mainWindow, saveOptions)
+    : await dialog.showSaveDialog(saveOptions)
+
+  if (result.canceled || !result.filePath) {
+    return { canceled: true }
+  }
+
+  await exportProjectConfig(projectId, result.filePath)
+
+  return {
+    canceled: false,
+    filePath: result.filePath,
+  }
+})
+
+ipcMain.handle('workspace:import-project-config', async (event) => {
+  assertTrustedSender(event)
+
+  const openOptions: Electron.OpenDialogOptions = {
+    title: 'Import Project Configuration',
+    properties: ['openFile'],
+    filters: [
+      { name: 'RolesTab Project', extensions: ['json'] },
+      { name: 'JSON', extensions: ['json'] },
+    ],
+  }
+  const result = mainWindow
+    ? await dialog.showOpenDialog(mainWindow, openOptions)
+    : await dialog.showOpenDialog(openOptions)
+
+  const filePath = result.filePaths[0]
+
+  if (result.canceled || !filePath) {
+    return { canceled: true }
+  }
+
+  const importResult = await importProjectConfig(filePath)
+
+  return {
+    canceled: false,
+    filePath,
+    ...importResult,
+  }
+})
+
 function parseHttpUrl(url: string): URL {
   const parsed = new URL(url)
 
@@ -194,6 +258,24 @@ function isSafeIdentifier(value: string): boolean {
 
 function isSafePartition(partition: string): boolean {
   return /^persist:[\w-]+-[\w-]+$/.test(partition)
+}
+
+async function getProjectName(projectId: string): Promise<string> {
+  const workspace = await loadWorkspace()
+  return workspace.projects.find((project) => project.id === projectId)?.name ?? 'rolestab-project'
+}
+
+function sanitizeFileBaseName(value: string): string {
+  const normalized = value
+    .trim()
+    .replace(/[<>:"/\\|?*]/g, '-')
+    .split('')
+    .filter((character) => character.charCodeAt(0) >= 32)
+    .join('')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
+
+  return normalized || 'rolestab-project'
 }
 
 function assertTrustedSender(event: IpcEvent): void {

@@ -3,6 +3,7 @@ import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 import type {
   AppSettings,
+  ProjectExportData,
   ProjectSummary,
   RecentUrl,
   RoleProfile,
@@ -14,6 +15,7 @@ import { defaultAppSettings, defaultKeyboardShortcuts, defaultRoleColors } from 
 const { app } = electron
 
 const workspaceSchemaVersion = 1
+const projectExportSchemaVersion = 1
 
 const defaultWorkspace: WorkspaceData = {
   schemaVersion: workspaceSchemaVersion,
@@ -301,4 +303,108 @@ export async function saveRecentTabs(recentTabs: SavedBrowserTab[]): Promise<Wor
   const workspace = await loadWorkspace()
 
   return writeWorkspace({ ...workspace, recentTabs })
+}
+
+export async function exportProjectConfig(projectId: string, filePath: string): Promise<void> {
+  const workspace = await loadWorkspace()
+  const project = workspace.projects.find((currentProject) => currentProject.id === projectId)
+
+  if (!project) {
+    throw new Error('Select an existing project before exporting.')
+  }
+
+  const projectExport: ProjectExportData = {
+    app: 'RolesTab',
+    schemaVersion: projectExportSchemaVersion,
+    exportedAt: new Date().toISOString(),
+    project,
+    roleProfiles: workspace.roleProfiles.filter((roleProfile) => roleProfile.projectId === projectId),
+  }
+
+  await writeFile(filePath, `${JSON.stringify(projectExport, null, 2)}\n`, 'utf8')
+}
+
+export async function importProjectConfig(filePath: string): Promise<{
+  workspace: WorkspaceData
+  projectId: string
+  importedRoleCount: number
+}> {
+  const raw = await readFile(filePath, 'utf8')
+  const projectExport = parseProjectExport(raw)
+  const workspace = await loadWorkspace()
+  const existingProjectIndex = workspace.projects.findIndex(
+    (currentProject) => currentProject.id === projectExport.project.id,
+  )
+  const importedProject =
+    existingProjectIndex >= 0
+      ? {
+          ...projectExport.project,
+          updatedAt: new Date().toISOString(),
+        }
+      : projectExport.project
+  const projects = [...workspace.projects]
+
+  if (existingProjectIndex >= 0) {
+    projects[existingProjectIndex] = importedProject
+  } else {
+    projects.unshift(importedProject)
+  }
+
+  const roleProfiles = [
+    ...projectExport.roleProfiles,
+    ...workspace.roleProfiles.filter((roleProfile) => roleProfile.projectId !== importedProject.id),
+  ]
+
+  const nextWorkspace = await writeWorkspace({
+    ...workspace,
+    projects,
+    roleProfiles,
+    recentUrls: workspace.recentUrls.filter((recentUrl) => recentUrl.projectId !== importedProject.id),
+    recentTabs: workspace.recentTabs.filter((recentTab) => recentTab.projectId !== importedProject.id),
+    lastActiveProjectId: importedProject.id,
+  })
+
+  return {
+    workspace: nextWorkspace,
+    projectId: importedProject.id,
+    importedRoleCount: projectExport.roleProfiles.length,
+  }
+}
+
+function parseProjectExport(raw: string): ProjectExportData {
+  let parsed: Partial<ProjectExportData>
+
+  try {
+    parsed = JSON.parse(raw) as Partial<ProjectExportData>
+  } catch {
+    throw new Error('Choose a valid RolesTab project export JSON file.')
+  }
+
+  if (
+    parsed.app !== 'RolesTab' ||
+    parsed.schemaVersion !== projectExportSchemaVersion ||
+    !parsed.project ||
+    !isValidProject(parsed.project)
+  ) {
+    throw new Error('This file is not a compatible RolesTab project export.')
+  }
+
+  const roleProfiles = Array.isArray(parsed.roleProfiles)
+    ? parsed.roleProfiles.filter(
+        (roleProfile) =>
+          roleProfile.projectId === parsed.project?.id && isValidRoleProfile(roleProfile, [parsed.project]),
+      )
+    : []
+
+  if (roleProfiles.length !== (parsed.roleProfiles?.length ?? 0)) {
+    throw new Error('The project export contains invalid role profile data.')
+  }
+
+  return {
+    app: 'RolesTab',
+    schemaVersion: projectExportSchemaVersion,
+    exportedAt: typeof parsed.exportedAt === 'string' ? parsed.exportedAt : new Date().toISOString(),
+    project: parsed.project,
+    roleProfiles,
+  }
 }

@@ -1,4 +1,4 @@
-import { FolderPlus, Pencil, Trash2, PanelsTopLeft, Settings } from 'lucide-react'
+import { Download, FolderPlus, Pencil, Trash2, PanelsTopLeft, Settings, Upload } from 'lucide-react'
 import type { AppSettings, ProjectSummary, RecentUrl, RoleProfile } from '../../shared/workspace'
 import type { SessionUsage } from '../../shared/session'
 import { RoleProfileList } from './RoleProfileList'
@@ -26,6 +26,8 @@ type SidebarProps = {
   onOpenRecentUrl: (recentUrl: RecentUrl) => void
   onClearProjectSessions: () => void
   onClearAllSessions: () => void
+  onExportProjectConfig: () => void
+  onImportProjectConfig: () => void
   onOpenSettings: () => void
 }
 
@@ -51,6 +53,8 @@ export function Sidebar({
   onOpenRecentUrl,
   onClearProjectSessions,
   onClearAllSessions,
+  onExportProjectConfig,
+  onImportProjectConfig,
   onOpenSettings,
 }: SidebarProps) {
   return (
@@ -172,7 +176,26 @@ export function Sidebar({
         />
       </div>
 
-      <div className="border-t border-slate-200 p-3">
+      <div className="space-y-2 border-t border-slate-200 p-3">
+        <div className="grid grid-cols-2 gap-2">
+          <button
+            type="button"
+            onClick={onExportProjectConfig}
+            disabled={!activeProjectId}
+            className="flex h-9 items-center justify-center gap-2 rounded-md border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            <Download aria-hidden="true" size={15} />
+            Export
+          </button>
+          <button
+            type="button"
+            onClick={onImportProjectConfig}
+            className="flex h-9 items-center justify-center gap-2 rounded-md border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-700 hover:bg-slate-50"
+          >
+            <Upload aria-hidden="true" size={15} />
+            Import
+          </button>
+        </div>
         <button
           type="button"
           onClick={onOpenSettings}
