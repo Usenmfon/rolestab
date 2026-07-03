@@ -71,6 +71,7 @@ type BrowserWebviewProps = {
 export function BrowserWebview({ tab, active, command, onUpdate }: BrowserWebviewProps) {
   const webviewRef = useRef<WebviewDomElement | null>(null)
   const [initialUrl] = useState(tab.url)
+  const [domReady, setDomReady] = useState(false)
   const lastCommandIdRef = useRef<number | null>(null)
   const lastInspectPointRef = useRef<{ x: number; y: number } | null>(null)
 
@@ -84,6 +85,10 @@ export function BrowserWebview({ tab, active, command, onUpdate }: BrowserWebvie
     const webviewElement = webview
 
     function updateFromWebview() {
+      if (!domReady) {
+        return
+      }
+
       const title = webviewElement.getTitle?.()
       const url = webviewElement.getURL?.()
 
@@ -97,6 +102,11 @@ export function BrowserWebview({ tab, active, command, onUpdate }: BrowserWebvie
 
     function handleStartLoading() {
       onUpdate(tab.id, { loading: true, loadError: undefined, loadErrorDetails: undefined })
+    }
+
+    function handleDomReady() {
+      setDomReady(true)
+      updateFromWebview()
     }
 
     function handleStopLoading() {
@@ -213,6 +223,7 @@ export function BrowserWebview({ tab, active, command, onUpdate }: BrowserWebvie
       })
     }
 
+    webviewElement.addEventListener('dom-ready', handleDomReady)
     webviewElement.addEventListener('did-start-loading', handleStartLoading)
     webviewElement.addEventListener('did-stop-loading', handleStopLoading)
     webviewElement.addEventListener('page-title-updated', handleTitle)
@@ -227,6 +238,7 @@ export function BrowserWebview({ tab, active, command, onUpdate }: BrowserWebvie
     webviewElement.addEventListener('render-process-gone', handleRenderProcessGone)
 
     return () => {
+      webviewElement.removeEventListener('dom-ready', handleDomReady)
       webviewElement.removeEventListener('did-start-loading', handleStartLoading)
       webviewElement.removeEventListener('did-stop-loading', handleStopLoading)
       webviewElement.removeEventListener('page-title-updated', handleTitle)
@@ -240,12 +252,12 @@ export function BrowserWebview({ tab, active, command, onUpdate }: BrowserWebvie
       webviewElement.removeEventListener('context-menu', handleContextMenu)
       webviewElement.removeEventListener('render-process-gone', handleRenderProcessGone)
     }
-  }, [onUpdate, tab.consoleErrors, tab.id])
+  }, [domReady, onUpdate, tab.consoleErrors, tab.id])
 
   useEffect(() => {
     const webview = webviewRef.current
 
-    if (!active || !command || !webview || lastCommandIdRef.current === command.id) {
+    if (!active || !command || !webview || !domReady || lastCommandIdRef.current === command.id) {
       return
     }
 
@@ -299,7 +311,7 @@ export function BrowserWebview({ tab, active, command, onUpdate }: BrowserWebvie
         break
       }
     }
-  }, [active, command, onUpdate, tab.id])
+  }, [active, command, domReady, onUpdate, tab.id])
 
   return (
     <webview
