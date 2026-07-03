@@ -643,6 +643,14 @@ function App() {
   }
 
   function openRoleTab(roleProfileId: string) {
+    const existingTab = tabs.find((tab) => tab.roleProfileId === roleProfileId)
+
+    if (existingTab) {
+      setActiveTabId(existingTab.id)
+      setWorkspaceError(null)
+      return
+    }
+
     const roleProfile = roleProfiles.find((currentRoleProfile) => currentRoleProfile.id === roleProfileId)
 
     if (!roleProfile) {
@@ -684,7 +692,9 @@ function App() {
     }
 
     activeProjectRoleProfiles.forEach((roleProfile) => {
-      void openRoleProfileTab(roleProfile)
+      if (!tabs.some((tab) => tab.roleProfileId === roleProfile.id)) {
+        void openRoleProfileTab(roleProfile)
+      }
     })
   }
 
