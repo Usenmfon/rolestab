@@ -23,7 +23,7 @@ export function RoleProfileList({
   onOpenAllRoles,
 }: RoleProfileListProps) {
   return (
-    <section className="min-h-0">
+    <section className="rounded-xl border border-slate-200 bg-white p-3">
       <div className="flex items-center justify-between gap-2 px-1">
         <h2 className="text-xs font-semibold uppercase tracking-wide text-slate-500">
           Role Profiles
@@ -63,19 +63,19 @@ export function RoleProfileList({
       ) : null}
 
       {!hasActiveProject ? (
-        <div className="mt-3 rounded-md border border-dashed border-slate-300 bg-slate-50 p-4 text-sm leading-6 text-slate-500">
+        <div className="mt-3 rounded-lg border border-dashed border-slate-300 bg-white p-4 text-sm leading-6 text-slate-500">
           Select a project before adding reusable role profiles.
         </div>
       ) : roleProfiles.length === 0 ? (
-        <div className="mt-3 rounded-md border border-dashed border-slate-300 bg-slate-50 p-4 text-sm leading-6 text-slate-500">
+        <div className="mt-3 rounded-lg border border-dashed border-slate-300 bg-white p-4 text-sm leading-6 text-slate-500">
           No roles yet. Add Admin, Staff, Customer, or any role you test often.
         </div>
       ) : (
-        <div className="mt-3 space-y-2">
+        <div className="mt-3 space-y-3">
           {roleProfiles.map((roleProfile) => (
             <div
               key={roleProfile.id}
-              className="rounded-md border border-slate-200 bg-white px-3 py-3 text-slate-700"
+              className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-3 text-slate-700"
             >
               <button
                 type="button"

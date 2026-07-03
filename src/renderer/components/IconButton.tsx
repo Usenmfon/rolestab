@@ -16,9 +16,9 @@ export function IconButton({ label, icon: Icon, onClick, disabled = false }: Ico
       aria-label={label}
       onClick={onClick}
       disabled={disabled}
-      className="grid h-9 w-9 place-items-center rounded-md border border-slate-200 bg-white text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:text-slate-300 disabled:hover:bg-white"
+      className="grid h-8 w-8 place-items-center rounded-full text-slate-600 transition hover:bg-slate-200/80 disabled:cursor-not-allowed disabled:text-slate-300 disabled:hover:bg-transparent"
     >
-      <Icon aria-hidden="true" size={17} strokeWidth={2.2} />
+      <Icon aria-hidden="true" size={17} strokeWidth={2.15} />
     </button>
   )
 }

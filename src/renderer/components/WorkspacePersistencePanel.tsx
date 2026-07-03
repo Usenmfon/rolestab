@@ -26,8 +26,8 @@ export function WorkspacePersistencePanel({
   const totalSessionBytes = sessionUsage.reduce((total, usage) => total + usage.totalBytes, 0)
 
   return (
-    <section className="min-h-0">
-      <label className="flex items-center gap-2 rounded-md border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700">
+    <section className="rounded-xl border border-slate-200 bg-white p-3">
+      <label className="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-semibold text-slate-700">
         <input
           type="checkbox"
           checked={settings.restoreTabsOnStartup}
@@ -37,7 +37,7 @@ export function WorkspacePersistencePanel({
         Restore tabs on startup
       </label>
 
-      <label className="mt-2 flex items-center gap-2 rounded-md border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700">
+      <label className="mt-2 flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-semibold text-slate-700">
         <input
           type="checkbox"
           checked={settings.confirmBeforeClearingSessions}
@@ -52,7 +52,7 @@ export function WorkspacePersistencePanel({
         Sessions
       </div>
 
-      <div className="mt-3 rounded-md border border-slate-200 bg-slate-50 px-3 py-2">
+      <div className="mt-3 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2">
         <div className="flex items-center justify-between gap-3 text-xs">
           <span className="font-semibold text-slate-700">Stored role data</span>
           <span className="font-mono text-[11px] text-slate-500">{formatBytes(totalSessionBytes)}</span>
@@ -68,7 +68,7 @@ export function WorkspacePersistencePanel({
         <button
           type="button"
           onClick={onClearProjectSessions}
-          className="flex h-9 items-center justify-center gap-2 rounded-md border border-slate-200 bg-white px-2 text-xs font-semibold text-slate-700 hover:bg-slate-50"
+          className="flex h-9 items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-2 text-xs font-semibold text-slate-700 hover:bg-slate-50"
         >
           <RotateCcw aria-hidden="true" size={14} />
           Project
@@ -76,7 +76,7 @@ export function WorkspacePersistencePanel({
         <button
           type="button"
           onClick={onClearAllSessions}
-          className="flex h-9 items-center justify-center gap-2 rounded-md border border-slate-200 bg-white px-2 text-xs font-semibold text-slate-700 hover:bg-slate-50"
+          className="flex h-9 items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-2 text-xs font-semibold text-slate-700 hover:bg-slate-50"
         >
           <RotateCcw aria-hidden="true" size={14} />
           All
@@ -89,7 +89,7 @@ export function WorkspacePersistencePanel({
       </div>
 
       {recentUrls.length === 0 ? (
-        <div className="mt-3 rounded-md border border-dashed border-slate-300 bg-slate-50 p-3 text-xs leading-5 text-slate-500">
+        <div className="mt-3 rounded-lg border border-dashed border-slate-300 bg-slate-50 p-3 text-xs leading-5 text-slate-500">
           Visited URLs will appear here.
         </div>
       ) : (
@@ -99,7 +99,7 @@ export function WorkspacePersistencePanel({
               key={recentUrl.id}
               type="button"
               onClick={() => onOpenRecentUrl(recentUrl)}
-              className="block w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-left hover:bg-slate-50"
+              className="block w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-left hover:bg-slate-100"
             >
               <span className="block truncate text-xs font-semibold text-slate-700">
                 {recentUrl.title || recentUrl.url}

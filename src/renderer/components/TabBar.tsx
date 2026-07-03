@@ -10,9 +10,9 @@ type TabBarProps = {
 
 export function TabBar({ tabs, activeTabId, onSelectTab, onCloseTab }: TabBarProps) {
   return (
-    <div className="flex h-12 shrink-0 items-center gap-2 overflow-x-auto border-b border-slate-200 bg-slate-50 px-4">
+    <div className="flex h-10 shrink-0 items-end gap-1 overflow-x-auto border-b border-[#d7dce3] bg-[#e8eaed] px-2 pt-1">
       {tabs.length === 0 ? (
-        <span className="text-sm text-slate-500">No role tabs open</span>
+        <span className="mb-2 px-3 text-sm text-slate-500">No role tabs open</span>
       ) : (
         tabs.map((tab) => {
           const active = tab.id === activeTabId
@@ -20,10 +20,10 @@ export function TabBar({ tabs, activeTabId, onSelectTab, onCloseTab }: TabBarPro
           return (
             <div
               key={tab.id}
-              className={`group flex h-8 w-48 shrink-0 items-center gap-2 rounded-md border px-2 ${
+              className={`group flex h-9 w-56 shrink-0 items-center gap-2 rounded-t-xl px-3 transition ${
                 active
-                  ? 'border-slate-900 bg-white text-slate-950 shadow-sm'
-                  : 'border-slate-200 bg-white text-slate-600'
+                  ? 'bg-white text-slate-950 shadow-[0_-1px_0_rgba(15,23,42,0.08),1px_0_0_rgba(15,23,42,0.08),-1px_0_0_rgba(15,23,42,0.08)]'
+                  : 'bg-[#dfe3e8] text-slate-600 hover:bg-[#e9edf2]'
               }`}
             >
               <button
@@ -39,7 +39,7 @@ export function TabBar({ tabs, activeTabId, onSelectTab, onCloseTab }: TabBarPro
                     style={{ backgroundColor: tab.roleColor }}
                   />
                 )}
-                <span className="truncate text-sm font-medium">{tab.title}</span>
+                <span className="truncate text-[13px] font-medium">{tab.title}</span>
               </button>
               {tab.loading ? (
                 <Loader2 aria-hidden="true" size={13} className="shrink-0 animate-spin text-slate-400" />
@@ -49,7 +49,7 @@ export function TabBar({ tabs, activeTabId, onSelectTab, onCloseTab }: TabBarPro
                 title="Close Tab"
                 aria-label={`Close ${tab.title}`}
                 onClick={() => onCloseTab(tab.id)}
-                className="grid h-6 w-6 shrink-0 place-items-center rounded text-slate-400 hover:bg-slate-100 hover:text-slate-700"
+                className="grid h-6 w-6 shrink-0 place-items-center rounded-full text-slate-400 hover:bg-slate-200 hover:text-slate-700"
               >
                 <X aria-hidden="true" size={14} />
               </button>

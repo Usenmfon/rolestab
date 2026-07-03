@@ -162,7 +162,7 @@ export function DesktopLayout({
   urlInputRef,
 }: DesktopLayoutProps) {
   return (
-    <main className="flex h-screen overflow-hidden bg-slate-100 text-slate-900">
+    <main className="flex h-screen overflow-hidden bg-[#f1f3f4] text-slate-900">
       <Sidebar
         projects={projects}
         activeProjectRoleProfiles={activeProjectRoleProfiles}
@@ -190,7 +190,7 @@ export function DesktopLayout({
         onOpenSettings={onOpenSettings}
       />
 
-      <section className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
+      <section className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden bg-white">
         {workspaceError ? (
           <div className="flex items-center justify-between gap-3 border-b border-red-200 bg-red-50 px-4 py-2 text-sm text-red-700">
             <span>{workspaceError}</span>
@@ -203,6 +203,12 @@ export function DesktopLayout({
             </button>
           </div>
         ) : null}
+        <TabBar
+          tabs={tabs}
+          activeTabId={activeTabId}
+          onSelectTab={onSelectTab}
+          onCloseTab={onCloseTab}
+        />
         <TopBar
           currentUrl={activeTab?.url ?? activeProject?.baseUrl ?? ''}
           canGoBack={activeTab?.canGoBack ?? false}
@@ -226,12 +232,6 @@ export function DesktopLayout({
           onOpenDevTools={onOpenDevTools}
           onInspectElement={onInspectElement}
           urlInputRef={urlInputRef}
-        />
-        <TabBar
-          tabs={tabs}
-          activeTabId={activeTabId}
-          onSelectTab={onSelectTab}
-          onCloseTab={onCloseTab}
         />
         <WebviewArea
           activeProject={activeProject}

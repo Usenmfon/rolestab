@@ -110,10 +110,10 @@ export function WebviewArea({
 
   return (
     <div className="flex min-h-0 flex-1 flex-col bg-white">
-      <div className="flex h-9 shrink-0 items-center justify-between border-b border-slate-200 px-4 text-xs text-slate-500">
+      <div className="flex h-8 shrink-0 items-center justify-between border-b border-slate-200 bg-white px-4 text-xs text-slate-500">
         <span className="flex min-w-0 items-center gap-2">
           <span
-            className={`rounded px-2 py-0.5 text-[11px] font-semibold ${environment.className}`}
+            className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${environment.className}`}
           >
             {environment.label}
           </span>
@@ -128,7 +128,7 @@ export function WebviewArea({
           {activeTab.loading ? 'Loading' : activeTab.loadError ? 'Load failed' : 'Ready'}
         </span>
       </div>
-      <div className="flex h-10 shrink-0 items-center gap-2 border-b border-slate-200 bg-slate-50 px-4">
+      <div className="flex h-9 shrink-0 items-center gap-2 border-b border-slate-200 bg-[#f8fafd] px-4">
         <span className="text-xs font-semibold uppercase tracking-wide text-slate-500">
           Shortcuts
         </span>
@@ -137,7 +137,7 @@ export function WebviewArea({
             key={shortcut}
             type="button"
             onClick={() => onNavigate(shortcut)}
-            className="rounded border border-slate-200 bg-white px-2 py-1 text-xs font-medium text-slate-700 hover:bg-slate-100"
+            className="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-medium text-slate-700 hover:bg-slate-100"
           >
             {shortcut.replace('http://', '')}
           </button>

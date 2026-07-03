@@ -58,36 +58,36 @@ export function Sidebar({
   onOpenSettings,
 }: SidebarProps) {
   return (
-    <aside className="flex w-72 shrink-0 flex-col border-r border-slate-200 bg-white">
-      <div className="flex h-16 items-center gap-3 border-b border-slate-200 px-5">
-        <div className="grid h-9 w-9 place-items-center rounded-md bg-slate-900 text-white">
+    <aside className="flex w-72 shrink-0 flex-col border-r border-[#d7dce3] bg-[#f8fafd]">
+      <div className="flex h-[50px] items-center gap-3 border-b border-[#d7dce3] px-4">
+        <div className="grid h-8 w-8 place-items-center rounded-md bg-blue-600 text-white">
           <PanelsTopLeft aria-hidden="true" size={18} />
         </div>
         <div>
-          <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+          <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
             Desktop Browser
           </p>
-          <h1 className="text-xl font-semibold leading-tight">RolesTab</h1>
+          <h1 className="text-lg font-semibold leading-tight">RolesTab</h1>
         </div>
       </div>
 
-      <div className="flex flex-1 flex-col gap-5 p-4">
+      <div className="shrink-0 border-b border-slate-200 p-3">
         <button
           type="button"
           onClick={onCreateProject}
-          className="flex h-10 items-center justify-center gap-2 rounded-md bg-slate-900 px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800"
+          className="flex h-10 items-center justify-center gap-2 rounded-full bg-blue-600 px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700"
         >
           <FolderPlus aria-hidden="true" size={17} />
           New Project
         </button>
 
-        <section className="min-h-0">
+        <section className="mt-4">
           <h2 className="px-1 text-xs font-semibold uppercase tracking-wide text-slate-500">
             Projects
           </h2>
 
           {projects.length === 0 ? (
-            <div className="mt-3 rounded-md border border-dashed border-slate-300 bg-slate-50 p-4 text-sm leading-6 text-slate-500">
+            <div className="mt-3 rounded-lg border border-dashed border-slate-300 bg-white p-4 text-sm leading-6 text-slate-500">
               No project selected. Create a project to start opening isolated role tabs.
             </div>
           ) : (
@@ -98,9 +98,9 @@ export function Sidebar({
                 return (
                   <div
                     key={project.id}
-                    className={`w-full rounded-md border px-3 py-3 text-left transition ${
+                    className={`w-full rounded-xl border px-3 py-3 text-left transition ${
                       active
-                        ? 'border-slate-900 bg-slate-900 text-white'
+                        ? 'border-blue-200 bg-blue-50 text-slate-950'
                         : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
                     }`}
                   >
@@ -112,7 +112,7 @@ export function Sidebar({
                       <span className="block text-sm font-semibold">{project.name}</span>
                       <span
                         className={`mt-1 block truncate text-xs ${
-                          active ? 'text-slate-300' : 'text-slate-500'
+                          active ? 'text-blue-700' : 'text-slate-500'
                         }`}
                       >
                         {project.baseUrl}
@@ -126,7 +126,7 @@ export function Sidebar({
                         onClick={() => onEditProject(project.id)}
                         className={`grid h-7 w-7 place-items-center rounded border ${
                           active
-                            ? 'border-slate-700 text-slate-200 hover:bg-slate-800'
+                            ? 'border-blue-200 bg-white text-blue-700 hover:bg-blue-100'
                             : 'border-slate-200 text-slate-500 hover:bg-slate-100'
                         }`}
                       >
@@ -139,7 +139,7 @@ export function Sidebar({
                         onClick={() => onDeleteProject(project.id)}
                         className={`grid h-7 w-7 place-items-center rounded border ${
                           active
-                            ? 'border-slate-700 text-slate-200 hover:bg-slate-800'
+                            ? 'border-blue-200 bg-white text-blue-700 hover:bg-blue-100'
                             : 'border-slate-200 text-slate-500 hover:bg-slate-100'
                         }`}
                       >
@@ -152,7 +152,9 @@ export function Sidebar({
             </div>
           )}
         </section>
+      </div>
 
+      <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto p-3">
         <RoleProfileList
           roleProfiles={activeProjectRoleProfiles}
           hasActiveProject={Boolean(activeProjectId)}
@@ -176,7 +178,7 @@ export function Sidebar({
         />
       </div>
 
-      <div className="space-y-2 border-t border-slate-200 p-3">
+      <div className="shrink-0 space-y-2 border-t border-[#d7dce3] bg-white p-3 shadow-[0_-8px_16px_rgba(148,163,184,0.12)]">
         <div className="grid grid-cols-2 gap-2">
           <button
             type="button"

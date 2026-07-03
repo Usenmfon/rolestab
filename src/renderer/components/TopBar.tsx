@@ -77,7 +77,7 @@ export function TopBar({
   }
 
   return (
-    <header className="relative flex h-16 shrink-0 items-center gap-2 border-b border-slate-200 bg-white px-4">
+    <header className="relative flex h-12 shrink-0 items-center gap-1 border-b border-[#d7dce3] bg-white px-3">
       <IconButton label="Back" icon={ArrowLeft} onClick={onBack} disabled={!hasActiveTab || !canGoBack} />
       <IconButton
         label="Forward"
@@ -100,7 +100,7 @@ export function TopBar({
           defaultValue={currentUrl}
           disabled={!hasActiveTab}
           placeholder="Select a role tab to start browsing"
-          className="h-9 w-full rounded-md border border-slate-200 bg-slate-50 px-3 text-sm text-slate-700 outline-none transition focus:border-slate-900 disabled:text-slate-400"
+          className="h-9 w-full rounded-full border border-transparent bg-[#edf1f5] px-4 text-[13px] text-slate-700 outline-none transition placeholder:text-slate-400 hover:bg-[#e7ecf2] focus:border-blue-400 focus:bg-white focus:shadow-[0_0_0_3px_rgba(59,130,246,0.14)] disabled:text-slate-400"
         />
       </form>
 
@@ -116,7 +116,7 @@ export function TopBar({
 
       {isLoading ? (
         <div className="absolute inset-x-0 bottom-0 h-0.5 overflow-hidden bg-slate-100">
-          <div className="h-full w-1/3 animate-pulse bg-slate-900" />
+          <div className="h-full w-1/3 animate-pulse bg-blue-500" />
         </div>
       ) : null}
     </header>
