@@ -1,0 +1,84 @@
+const assert = require('node:assert/strict')
+const { existsSync, readFileSync } = require('node:fs')
+const path = require('node:path')
+const test = require('node:test')
+
+const root = path.resolve(__dirname, '..')
+
+function readProjectFile(relativePath) {
+  return readFileSync(path.join(root, relativePath), 'utf8')
+}
+
+test('build artifacts required by Electron exist', () => {
+  const requiredArtifacts = [
+    'dist/index.html',
+    'dist-electron/main/index.js',
+    'dist-electron/main/browserWindow.js',
+    'dist-electron/main/sessionManager.js',
+    'dist-electron/main/workspaceStore.js',
+    'dist-electron/main/errorLogger.js',
+    'dist-electron/preload/index.js',
+    'dist-electron/shared/workspace.js',
+  ]
+
+  for (const artifact of requiredArtifacts) {
+    assert.equal(existsSync(path.join(root, artifact)), true, `${artifact} should exist after npm run build`)
+  }
+})
+
+test('package metadata points Electron at the compiled main process', () => {
+  const packageJson = JSON.parse(readProjectFile('package.json'))
+
+  assert.equal(packageJson.main, 'dist-electron/main/index.js')
+  assert.equal(packageJson.build.appId, 'com.rolestab.app')
+  assert.equal(packageJson.build.productName, 'RolesTab')
+  assert.deepEqual(packageJson.build.files, ['dist/**', 'dist-electron/**', 'package.json'])
+})
+
+test('renderer shell has a content security policy', () => {
+  const indexHtml = readProjectFile('dist/index.html')
+
+  assert.match(indexHtml, /Content-Security-Policy/)
+  assert.match(indexHtml, /object-src 'none'/)
+  assert.match(indexHtml, /frame-src http: https:/)
+})
+
+test('default app settings cover MVP keyboard and session behavior', () => {
+  const { defaultAppSettings, defaultKeyboardShortcuts, defaultRoleColors } = require('../dist-electron/shared/workspace.js')
+
+  assert.equal(defaultAppSettings.restoreTabsOnStartup, true)
+  assert.equal(defaultAppSettings.confirmBeforeClearingSessions, true)
+  assert.equal(defaultAppSettings.theme, 'system')
+  assert.equal(defaultAppSettings.defaultHomepage, '')
+  assert.deepEqual(defaultAppSettings.defaultRoleColors, defaultRoleColors)
+
+  for (const shortcut of [
+    'newTab',
+    'closeTab',
+    'reload',
+    'hardReload',
+    'focusUrlBar',
+    'openDevTools',
+    'nextTab',
+    'previousTab',
+    'openAllRoles',
+    'clearActiveRoleSession',
+  ]) {
+    assert.equal(typeof defaultKeyboardShortcuts[shortcut], 'string', `${shortcut} shortcut should be configured`)
+    assert.notEqual(defaultKeyboardShortcuts[shortcut].trim(), '')
+  }
+})
+
+test('security-sensitive source contracts are present', () => {
+  const browserWindowSource = readProjectFile('src/main/browserWindow.ts')
+  const webviewSource = readProjectFile('src/renderer/components/BrowserWebview.tsx')
+  const ipcSource = readProjectFile('src/main/index.ts')
+
+  assert.match(browserWindowSource, /nodeIntegration:\s*false/)
+  assert.match(browserWindowSource, /contextIsolation:\s*true/)
+  assert.match(browserWindowSource, /sandbox:\s*true/)
+  assert.match(webviewSource, /nodeIntegration=no/)
+  assert.match(webviewSource, /contextIsolation=yes/)
+  assert.match(webviewSource, /sandbox=yes/)
+  assert.match(ipcSource, /assertTrustedSender/)
+})
