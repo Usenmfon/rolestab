@@ -143,7 +143,7 @@ export function WebviewArea({
           </button>
         ))}
       </div>
-      <div className="relative min-h-0 flex-1 bg-white">
+      <div className="roles-tab-webview-frame relative min-h-0 flex-1 overflow-hidden bg-white">
         {tabs.map((tab) => (
           <BrowserWebview
             key={tab.id}

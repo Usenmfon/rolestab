@@ -307,7 +307,7 @@ export function BrowserWebview({ tab, active, command, onUpdate }: BrowserWebvie
       src={initialUrl}
       partition={tab.sessionPartition}
       webpreferences="contextIsolation=yes,nodeIntegration=no,sandbox=yes,webSecurity=yes,allowRunningInsecureContent=no"
-      className={`h-full w-full ${active ? 'block' : 'hidden'}`}
+      className={`roles-tab-webview ${active ? 'block' : 'hidden'}`}
     />
   )
 }
