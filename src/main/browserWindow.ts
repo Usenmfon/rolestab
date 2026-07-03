@@ -1,7 +1,7 @@
 import electron from 'electron'
 import path from 'node:path'
 
-const { BrowserWindow } = electron
+const { app, BrowserWindow } = electron
 const { shell } = electron
 const currentDirectory = __dirname
 
@@ -9,7 +9,7 @@ const rendererDevServerUrl = process.env.VITE_DEV_SERVER_URL ?? 'http://localhos
 const rendererIndexPath = path.join(currentDirectory, '../../dist/index.html')
 const preloadPath = path.join(currentDirectory, '../preload/index.js')
 const appIconPath =
-  process.env.NODE_ENV === 'production'
+  app.isPackaged
     ? path.join(currentDirectory, '../../dist/favicon.svg')
     : path.join(currentDirectory, '../../public/favicon.svg')
 
@@ -25,7 +25,7 @@ function isSafeExternalUrl(url: string): boolean {
 }
 
 function isExpectedAppUrl(url: string): boolean {
-  if (process.env.NODE_ENV === 'production') {
+  if (app.isPackaged) {
     try {
       const parsed = new URL(url)
       return parsed.protocol === 'file:' && path.normalize(parsed.pathname).endsWith(path.normalize('/dist/index.html'))
@@ -83,7 +83,7 @@ export function createAppWindow(): AppBrowserWindow {
     }
   })
 
-  if (process.env.NODE_ENV === 'production') {
+  if (app.isPackaged) {
     void window.loadFile(rendererIndexPath)
   } else {
     void window.loadURL(rendererDevServerUrl)

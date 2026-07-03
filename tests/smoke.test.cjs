@@ -106,10 +106,12 @@ test('security-sensitive source contracts are present', () => {
   assert.match(browserWindowSource, /nodeIntegration:\s*false/)
   assert.match(browserWindowSource, /contextIsolation:\s*true/)
   assert.match(browserWindowSource, /sandbox:\s*true/)
+  assert.match(browserWindowSource, /app\.isPackaged/)
   assert.match(webviewSource, /nodeIntegration=no/)
   assert.match(webviewSource, /contextIsolation=yes/)
   assert.match(webviewSource, /sandbox=yes/)
   assert.match(ipcSource, /assertTrustedSender/)
+  assert.match(ipcSource, /app\.isPackaged/)
 })
 
 test('project configuration import and export contract is wired', () => {

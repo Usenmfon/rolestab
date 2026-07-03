@@ -202,7 +202,7 @@ function assertTrustedSender(event) {
 function isTrustedAppUrl(url) {
     try {
         const parsed = new URL(url);
-        if (process.env.NODE_ENV === 'production') {
+        if (app.isPackaged) {
             return parsed.protocol === 'file:';
         }
         return parsed.origin === new URL(trustedDevServerUrl).origin;

@@ -290,7 +290,7 @@ function isTrustedAppUrl(url: string): boolean {
   try {
     const parsed = new URL(url)
 
-    if (process.env.NODE_ENV === 'production') {
+    if (app.isPackaged) {
       return parsed.protocol === 'file:'
     }
 
