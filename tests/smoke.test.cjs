@@ -50,6 +50,9 @@ test('packaging config includes Windows, macOS, and Linux targets', () => {
   assert.deepEqual(packageJson.build.mac.target, ['dmg', 'zip'])
   assert.deepEqual(packageJson.build.linux.target, ['AppImage', 'deb'])
   assert.equal(packageJson.build.nsis.shortcutName, 'RolesTab')
+  assert.equal(packageJson.build.nsis.installerIcon, 'public/favicon.ico')
+  assert.equal(packageJson.build.nsis.uninstallerIcon, 'public/favicon.ico')
+  assert.equal(existsSync(path.join(root, 'public/favicon.ico')), true)
 })
 
 test('packaging-only dependencies stay out of production dependencies', () => {

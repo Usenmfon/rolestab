@@ -52,8 +52,8 @@ Unsigned builds are acceptable for local MVP testing. Public distribution should
 
 ## Icon Notes
 
-The current MVP uses `public/favicon.svg` as the source icon. Before public distribution, add platform-native icon assets:
+The current MVP uses `public/favicon.svg` as the source icon and `public/favicon.ico` for the Windows NSIS installer. Before public distribution, confirm platform-native icon assets are present:
 
-- `public/favicon.ico` for Windows.
+- `public/favicon.ico` for Windows installer icons.
 - `public/favicon.icns` for macOS.
 - PNG icon sizes for Linux desktop integration.
