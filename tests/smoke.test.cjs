@@ -111,6 +111,7 @@ test('security-sensitive source contracts are present', () => {
   assert.match(webviewSource, /contextIsolation=yes/)
   assert.match(webviewSource, /sandbox=yes/)
   assert.match(webviewSource, /dom-ready/)
+  assert.match(webviewSource, /shouldIgnorePageConsoleError/)
   assert.match(ipcSource, /assertTrustedSender/)
   assert.match(ipcSource, /app\.isPackaged/)
 })

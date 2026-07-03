@@ -186,7 +186,11 @@ export function BrowserWebview({ tab, active, command, onUpdate }: BrowserWebvie
     function handleConsoleMessage(event: Event) {
       const consoleEvent = event as ConsoleMessageEvent
 
-      if (consoleEvent.level !== 3 || !consoleEvent.message) {
+      if (
+        consoleEvent.level !== 3 ||
+        !consoleEvent.message ||
+        shouldIgnorePageConsoleError(consoleEvent.message)
+      ) {
         return
       }
 
@@ -371,4 +375,11 @@ function isSafeWebUrl(url: string): boolean {
   } catch {
     return false
   }
+}
+
+function shouldIgnorePageConsoleError(message: string): boolean {
+  return [
+    "Hydration failed because the server rendered text didn't match the client",
+    "A tree hydrated but some attributes of the server rendered HTML didn't match the client properties",
+  ].some((ignoredMessage) => message.includes(ignoredMessage))
 }
