@@ -12,15 +12,17 @@
     "lint": "eslint .",
     "test": "node --test tests/smoke.test.cjs",
     "preview": "vite preview",
-    "dist": "npm run build && electron-builder"
+    "dist": "npm run build && electron-builder",
+    "dist:dir": "npm run build && electron-builder --dir",
+    "dist:win": "npm run build && electron-builder --win",
+    "dist:mac": "npm run build && electron-builder --mac",
+    "dist:linux": "npm run build && electron-builder --linux"
   },
   "author": "RolesTab",
   "license": "UNLICENSED",
   "dependencies": {
     "@tailwindcss/vite": "^4.3.2",
     "concurrently": "^10.0.3",
-    "electron": "^43.0.0",
-    "electron-builder": "^26.15.3",
     "lucide-react": "^1.23.0",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
@@ -33,6 +35,8 @@
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.3",
+    "electron": "^43.0.0",
+    "electron-builder": "^26.15.3",
     "eslint": "^10.6.0",
     "eslint-plugin-react-hooks": "^7.1.1",
     "eslint-plugin-react-refresh": "^0.5.3",
@@ -45,17 +49,59 @@
     "appId": "com.rolestab.app",
     "productName": "RolesTab",
     "artifactName": "RolesTab-${version}-${os}-${arch}.${ext}",
-    "icon": "public/favicon.svg",
+    "copyright": "Copyright © 2026 RolesTab",
+    "asar": true,
+    "compression": "maximum",
+    "icon": "public/favicon",
     "directories": {
       "output": "release"
     },
     "files": [
       "dist/**",
       "dist-electron/**",
-      "package.json"
+      "package.json",
+      "!**/*.map",
+      "!src/**",
+      "!tests/**",
+      "!docs/**"
     ],
+    "extraMetadata": {
+      "main": "dist-electron/main/index.js"
+    },
     "win": {
-      "target": "nsis"
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "RolesTab",
+      "installerIcon": "public/favicon.svg",
+      "uninstallerIcon": "public/favicon.svg"
+    },
+    "mac": {
+      "category": "public.app-category.developer-tools",
+      "target": [
+        "dmg",
+        "zip"
+      ]
+    },
+    "linux": {
+      "category": "Development",
+      "target": [
+        "AppImage",
+        "deb"
+      ],
+      "maintainer": "RolesTab"
     }
   }
 }

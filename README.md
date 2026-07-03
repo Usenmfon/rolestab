@@ -38,6 +38,14 @@ Create a distributable package:
 npm run dist
 ```
 
+Create an unpacked app for release inspection:
+
+```bash
+npm run dist:dir
+```
+
+See [docs/release-checklist.md](docs/release-checklist.md) before publishing installers.
+
 ## Project Structure
 
 ```txt

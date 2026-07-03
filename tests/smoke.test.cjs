@@ -32,7 +32,33 @@ test('package metadata points Electron at the compiled main process', () => {
   assert.equal(packageJson.main, 'dist-electron/main/index.js')
   assert.equal(packageJson.build.appId, 'com.rolestab.app')
   assert.equal(packageJson.build.productName, 'RolesTab')
-  assert.deepEqual(packageJson.build.files, ['dist/**', 'dist-electron/**', 'package.json'])
+  assert.equal(packageJson.build.directories.output, 'release')
+  assert.equal(packageJson.build.extraMetadata.main, 'dist-electron/main/index.js')
+  assert.equal(packageJson.build.asar, true)
+  assert.ok(packageJson.build.files.includes('dist/**'))
+  assert.ok(packageJson.build.files.includes('dist-electron/**'))
+  assert.ok(packageJson.build.files.includes('!tests/**'))
+})
+
+test('packaging config includes Windows, macOS, and Linux targets', () => {
+  const packageJson = JSON.parse(readProjectFile('package.json'))
+
+  assert.equal(packageJson.scripts['dist:win'], 'npm run build && electron-builder --win')
+  assert.equal(packageJson.scripts['dist:mac'], 'npm run build && electron-builder --mac')
+  assert.equal(packageJson.scripts['dist:linux'], 'npm run build && electron-builder --linux')
+  assert.equal(packageJson.build.win.target[0].target, 'nsis')
+  assert.deepEqual(packageJson.build.mac.target, ['dmg', 'zip'])
+  assert.deepEqual(packageJson.build.linux.target, ['AppImage', 'deb'])
+  assert.equal(packageJson.build.nsis.shortcutName, 'RolesTab')
+})
+
+test('packaging-only dependencies stay out of production dependencies', () => {
+  const packageJson = JSON.parse(readProjectFile('package.json'))
+
+  assert.equal(packageJson.dependencies.electron, undefined)
+  assert.equal(packageJson.dependencies['electron-builder'], undefined)
+  assert.equal(typeof packageJson.devDependencies.electron, 'string')
+  assert.equal(typeof packageJson.devDependencies['electron-builder'], 'string')
 })
 
 test('renderer shell has a content security policy', () => {
