@@ -110,6 +110,7 @@ test('security-sensitive source contracts are present', () => {
   assert.match(webviewSource, /nodeIntegration=no/)
   assert.match(webviewSource, /contextIsolation=yes/)
   assert.match(webviewSource, /sandbox=yes/)
+  assert.match(webviewSource, /dom-ready/)
   assert.match(ipcSource, /assertTrustedSender/)
   assert.match(ipcSource, /app\.isPackaged/)
 })
@@ -134,4 +135,21 @@ test('project configuration import and export contract is wired', () => {
   assert.match(preloadSource, /importProjectConfig/)
   assert.match(sidebarSource, /Export/)
   assert.match(sidebarSource, /Import/)
+})
+
+test('workspace storage recovers from trailing JSON corruption and serializes writes', () => {
+  const workspaceStoreSource = readProjectFile('src/main/workspaceStore.ts')
+
+  assert.match(workspaceStoreSource, /parseWorkspaceJson/)
+  assert.match(workspaceStoreSource, /getFirstJsonObject/)
+  assert.match(workspaceStoreSource, /workspaceWriteQueue/)
+  assert.match(workspaceStoreSource, /rename\(temporaryPath, filePath\)/)
+})
+
+test('role launcher focuses existing tabs instead of creating duplicates', () => {
+  const appSource = readProjectFile('src/renderer/app/App.tsx')
+
+  assert.match(appSource, /const existingTab = tabs\.find\(\(tab\) => tab\.roleProfileId === roleProfileId\)/)
+  assert.match(appSource, /setActiveTabId\(existingTab\.id\)/)
+  assert.match(appSource, /!tabs\.some\(\(tab\) => tab\.roleProfileId === roleProfile\.id\)/)
 })
