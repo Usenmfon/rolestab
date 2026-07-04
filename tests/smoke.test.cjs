@@ -47,6 +47,7 @@ test('packaging config includes Windows, macOS, and Linux targets', () => {
   assert.equal(packageJson.scripts['dist:mac'], 'npm run build && electron-builder --mac')
   assert.equal(packageJson.scripts['dist:linux'], 'npm run build && electron-builder --linux')
   assert.equal(packageJson.build.win.target[0].target, 'nsis')
+  assert.equal(packageJson.build.win.icon, 'public/favicon.ico')
   assert.deepEqual(packageJson.build.mac.target, ['dmg', 'zip'])
   assert.deepEqual(packageJson.build.linux.target, ['AppImage', 'deb'])
   assert.equal(packageJson.build.nsis.shortcutName, 'RolesTab')
@@ -114,6 +115,7 @@ test('security-sensitive source contracts are present', () => {
   assert.match(webviewSource, /shouldIgnorePageConsoleError/)
   assert.match(ipcSource, /assertTrustedSender/)
   assert.match(ipcSource, /app\.isPackaged/)
+  assert.match(ipcSource, /setAppUserModelId/)
 })
 
 test('project configuration import and export contract is wired', () => {

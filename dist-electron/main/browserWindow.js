@@ -13,8 +13,8 @@ const rendererDevServerUrl = process.env.VITE_DEV_SERVER_URL ?? 'http://localhos
 const rendererIndexPath = node_path_1.default.join(currentDirectory, '../../dist/index.html');
 const preloadPath = node_path_1.default.join(currentDirectory, '../preload/index.js');
 const appIconPath = app.isPackaged
-    ? node_path_1.default.join(currentDirectory, '../../dist/favicon.svg')
-    : node_path_1.default.join(currentDirectory, '../../public/favicon.svg');
+    ? node_path_1.default.join(currentDirectory, '../../dist/favicon.ico')
+    : node_path_1.default.join(currentDirectory, '../../public/favicon.ico');
 function isSafeExternalUrl(url) {
     try {
         const parsed = new URL(url);

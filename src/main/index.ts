@@ -34,10 +34,15 @@ type AppBrowserWindow = InstanceType<typeof BrowserWindow>
 type IpcEvent = Electron.IpcMainInvokeEvent
 
 const trustedDevServerUrl = process.env.VITE_DEV_SERVER_URL ?? 'http://localhost:5173'
+const windowsAppUserModelId = 'com.rolestab.app'
 
 let mainWindow: AppBrowserWindow | null = null
 
 app.setName('RolesTab')
+
+if (process.platform === 'win32') {
+  app.setAppUserModelId(windowsAppUserModelId)
+}
 
 app.whenReady().then(() => {
   electron.session.defaultSession.setPermissionRequestHandler((_webContents, _permission, callback) => {

@@ -10,8 +10,8 @@ const rendererIndexPath = path.join(currentDirectory, '../../dist/index.html')
 const preloadPath = path.join(currentDirectory, '../preload/index.js')
 const appIconPath =
   app.isPackaged
-    ? path.join(currentDirectory, '../../dist/favicon.svg')
-    : path.join(currentDirectory, '../../public/favicon.svg')
+    ? path.join(currentDirectory, '../../dist/favicon.ico')
+    : path.join(currentDirectory, '../../public/favicon.ico')
 
 type AppBrowserWindow = InstanceType<typeof BrowserWindow>
 

@@ -14,8 +14,12 @@ if (!app.requestSingleInstanceLock()) {
     app.quit();
 }
 const trustedDevServerUrl = process.env.VITE_DEV_SERVER_URL ?? 'http://localhost:5173';
+const windowsAppUserModelId = 'com.rolestab.app';
 let mainWindow = null;
 app.setName('RolesTab');
+if (process.platform === 'win32') {
+    app.setAppUserModelId(windowsAppUserModelId);
+}
 app.whenReady().then(() => {
     electron_1.default.session.defaultSession.setPermissionRequestHandler((_webContents, _permission, callback) => {
         callback(false);
