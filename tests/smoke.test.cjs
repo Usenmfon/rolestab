@@ -43,13 +43,15 @@ test('package metadata points Electron at the compiled main process', () => {
 test('packaging config includes Windows, macOS, and Linux targets', () => {
   const packageJson = JSON.parse(readProjectFile('package.json'))
 
-  assert.equal(packageJson.scripts['dist:win'], 'npm run build && electron-builder --win')
-  assert.equal(packageJson.scripts['dist:mac'], 'npm run build && electron-builder --mac')
-  assert.equal(packageJson.scripts['dist:linux'], 'npm run build && electron-builder --linux')
+  assert.equal(packageJson.scripts['dist:win'], 'npm run build && electron-builder --win --publish never')
+  assert.equal(packageJson.scripts['dist:mac'], 'npm run build && electron-builder --mac --publish never')
+  assert.equal(packageJson.scripts['dist:linux'], 'npm run build && electron-builder --linux --publish never')
   assert.equal(packageJson.build.win.target[0].target, 'nsis')
   assert.equal(packageJson.build.win.icon, 'public/favicon.ico')
   assert.deepEqual(packageJson.build.mac.target, ['dmg', 'zip'])
   assert.deepEqual(packageJson.build.linux.target, ['AppImage', 'deb'])
+  assert.equal(packageJson.desktopName, 'RolesTab')
+  assert.equal(packageJson.build.linux.syncDesktopName, true)
   assert.equal(packageJson.build.nsis.shortcutName, 'RolesTab')
   assert.equal(packageJson.build.nsis.installerIcon, 'public/favicon.ico')
   assert.equal(packageJson.build.nsis.uninstallerIcon, 'public/favicon.ico')
