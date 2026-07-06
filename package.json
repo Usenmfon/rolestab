@@ -10,7 +10,7 @@
     "build": "tsc -b && tsc -p tsconfig.electron.json && vite build",
     "electron": "powershell -NoProfile -Command \"Remove-Item Env:ELECTRON_RUN_AS_NODE -ErrorAction SilentlyContinue; electron .\"",
     "lint": "eslint .",
-    "test": "node --test tests/smoke.test.cjs",
+    "test": "npm run build && node --test tests/smoke.test.cjs",
     "preview": "vite preview",
     "dist": "npm run build && electron-builder",
     "dist:dir": "npm run build && electron-builder --dir",
