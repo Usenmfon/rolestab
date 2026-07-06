@@ -1,4 +1,4 @@
-import { ChevronDown, ChevronUp, Globe2, MonitorUp } from 'lucide-react'
+import { AlertTriangle, ChevronDown, ChevronUp, Globe2, MonitorUp, X } from 'lucide-react'
 import { useState } from 'react'
 import type { BrowserCommand } from '../../shared/browser'
 import type { BrowserTab, ProjectSummary, RoleProfile } from '../../shared/workspace'
@@ -44,6 +44,7 @@ export function WebviewArea({
 }: WebviewAreaProps) {
   const environment = getEnvironment(activeTab?.url ?? activeProject?.baseUrl ?? '')
   const [sessionPanelOpen, setSessionPanelOpen] = useState(true)
+  const [consolePanelOpen, setConsolePanelOpen] = useState(false)
 
   if (!activeProject) {
     return (
@@ -205,15 +206,47 @@ export function WebviewArea({
         ) : null}
 
         {activeTab.consoleErrors && activeTab.consoleErrors.length > 0 ? (
-          <div className="absolute bottom-4 right-4 max-w-xl rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-xs text-amber-800 shadow-sm">
-            <p className="font-semibold">Console errors</p>
-            <ul className="mt-2 space-y-1">
-              {activeTab.consoleErrors.slice(0, 3).map((error) => (
-                <li key={error} className="truncate">
-                  {error}
-                </li>
-              ))}
-            </ul>
+          <div className="absolute bottom-4 right-4 max-w-xl rounded-md border border-amber-200 bg-amber-50 text-xs text-amber-900 shadow-sm">
+            <div className="flex items-center gap-2 px-3 py-2">
+              <AlertTriangle aria-hidden="true" className="shrink-0 text-amber-600" size={15} />
+              <button
+                type="button"
+                onClick={() => setConsolePanelOpen((currentConsolePanelOpen) => !currentConsolePanelOpen)}
+                className="flex min-w-0 flex-1 items-center gap-2 text-left font-semibold"
+                aria-expanded={consolePanelOpen}
+              >
+                <span className="shrink-0">Console errors ({activeTab.consoleErrors.length})</span>
+                <span className="truncate font-normal text-amber-800">
+                  {activeTab.consoleErrors[0]}
+                </span>
+                {consolePanelOpen ? (
+                  <ChevronUp aria-hidden="true" className="shrink-0" size={14} />
+                ) : (
+                  <ChevronDown aria-hidden="true" className="shrink-0" size={14} />
+                )}
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  onUpdateTab(activeTab.id, { consoleErrors: [] })
+                  setConsolePanelOpen(false)
+                }}
+                className="grid h-6 w-6 shrink-0 place-items-center rounded-full text-amber-700 hover:bg-amber-100 hover:text-amber-950"
+                title="Dismiss console errors"
+                aria-label="Dismiss console errors"
+              >
+                <X aria-hidden="true" size={14} />
+              </button>
+            </div>
+            {consolePanelOpen ? (
+              <ul className="max-h-36 space-y-1 overflow-auto border-t border-amber-200 px-3 py-2 font-mono text-[11px] text-amber-800">
+                {activeTab.consoleErrors.map((error) => (
+                  <li key={error} className="break-all">
+                    {error}
+                  </li>
+                ))}
+              </ul>
+            ) : null}
           </div>
         ) : null}
       </div>
