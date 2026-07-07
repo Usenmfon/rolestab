@@ -130,6 +130,18 @@ The release workflow:
 
 Review [docs/release-checklist.md](docs/release-checklist.md) before publishing installers.
 
+Check GitHub Release download counts:
+
+```bash
+npm run stats:downloads
+```
+
+For a different repository, pass `owner/name`:
+
+```bash
+npm run stats:downloads -- owner/repo
+```
+
 ## Project Structure
 
 ```txt
