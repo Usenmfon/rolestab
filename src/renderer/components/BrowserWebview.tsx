@@ -350,6 +350,10 @@ function getFriendlyLoadError(errorDescription: string | undefined): string {
     return 'Network is unavailable.'
   }
 
+  if (errorDescription.includes('ERR_CONNECTION_TIMED_OUT')) {
+    return 'Connection timed out. The host resolved, but this machine could not reach it before Chromium gave up.'
+  }
+
   if (errorDescription.includes('ERR_NAME_NOT_RESOLVED')) {
     return 'Host could not be resolved.'
   }
