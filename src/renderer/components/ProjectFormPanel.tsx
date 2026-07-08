@@ -44,7 +44,7 @@ export function ProjectFormPanel({ project, onClose, onSubmit }: ProjectFormPane
   }
 
   return (
-    <aside className="flex w-96 shrink-0 flex-col border-l border-slate-200 bg-white">
+    <aside className="relative z-20 flex w-96 shrink-0 flex-col border-l border-slate-200 bg-white">
       <div className="flex h-16 items-center justify-between border-b border-slate-200 px-5">
         <div>
           <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
