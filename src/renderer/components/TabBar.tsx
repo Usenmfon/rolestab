@@ -23,55 +23,6 @@ export function TabBar({
   onRenameTab,
   onCancelRename,
 }: TabBarProps) {
-  const renamingTab = tabs.find((tab) => tab.id === renamingTabId) ?? null
-  const [titleDraft, setTitleDraft] = useState('')
-  const inputRef = useRef<HTMLInputElement | null>(null)
-  const cancelRenameRef = useRef(false)
-
-  useEffect(() => {
-    setTitleDraft(renamingTab?.title ?? '')
-  }, [renamingTabId, renamingTab?.title])
-
-  useEffect(() => {
-    if (!renamingTab) {
-      return
-    }
-
-    requestAnimationFrame(() => {
-      inputRef.current?.focus()
-      inputRef.current?.select()
-    })
-  }, [renamingTab])
-
-  function finishRename(tabId: string) {
-    if (cancelRenameRef.current) {
-      cancelRenameRef.current = false
-      return
-    }
-
-    const nextTitle = titleDraft.trim()
-
-    if (nextTitle) {
-      onRenameTab(tabId, nextTitle)
-    } else {
-      onCancelRename()
-    }
-  }
-
-  function handleRenameKeyDown(event: KeyboardEvent<HTMLInputElement>, tabId: string) {
-    if (event.key === 'Enter') {
-      event.preventDefault()
-      finishRename(tabId)
-      return
-    }
-
-    if (event.key === 'Escape') {
-      event.preventDefault()
-      cancelRenameRef.current = true
-      onCancelRename()
-    }
-  }
-
   return (
     <div className="app-drag-region relative z-10 flex h-10 shrink-0 items-end gap-1 overflow-x-auto border-b border-[#d7dce3] bg-[#e8eaed] px-2 pr-36 pt-1">
       {tabs.length === 0 ? (
@@ -90,14 +41,12 @@ export function TabBar({
               }`}
             >
               {renamingTabId === tab.id ? (
-                <input
-                  ref={inputRef}
-                  value={titleDraft}
-                  onChange={(event) => setTitleDraft(event.target.value)}
-                  onBlur={() => finishRename(tab.id)}
-                  onKeyDown={(event) => handleRenameKeyDown(event, tab.id)}
-                  className="app-no-drag min-w-0 flex-1 rounded border border-blue-300 bg-white px-2 py-1 text-[13px] font-medium text-slate-950 outline-none"
-                  aria-label="Tab title"
+                <RenameTabInput
+                  key={tab.id}
+                  tabId={tab.id}
+                  initialTitle={tab.title}
+                  onRenameTab={onRenameTab}
+                  onCancelRename={onCancelRename}
                 />
               ) : (
                 <button
@@ -134,5 +83,71 @@ export function TabBar({
         })
       )}
     </div>
+  )
+}
+
+type RenameTabInputProps = {
+  tabId: string
+  initialTitle: string
+  onRenameTab: (tabId: string, title: string) => void
+  onCancelRename: () => void
+}
+
+function RenameTabInput({
+  tabId,
+  initialTitle,
+  onRenameTab,
+  onCancelRename,
+}: RenameTabInputProps) {
+  const [titleDraft, setTitleDraft] = useState(initialTitle)
+  const inputRef = useRef<HTMLInputElement | null>(null)
+  const cancelRenameRef = useRef(false)
+
+  useEffect(() => {
+    requestAnimationFrame(() => {
+      inputRef.current?.focus()
+      inputRef.current?.select()
+    })
+  }, [])
+
+  function finishRename() {
+    if (cancelRenameRef.current) {
+      cancelRenameRef.current = false
+      return
+    }
+
+    const nextTitle = titleDraft.trim()
+
+    if (nextTitle) {
+      onRenameTab(tabId, nextTitle)
+    } else {
+      onCancelRename()
+    }
+  }
+
+  function handleRenameKeyDown(event: KeyboardEvent<HTMLInputElement>) {
+    if (event.key === 'Enter') {
+      event.preventDefault()
+      finishRename()
+      return
+    }
+
+    if (event.key === 'Escape') {
+      event.preventDefault()
+      cancelRenameRef.current = true
+      onCancelRename()
+    }
+  }
+
+  return (
+    <input
+      ref={inputRef}
+      value={titleDraft}
+      onChange={(event) => setTitleDraft(event.target.value)}
+      onBlur={finishRename}
+      onKeyDown={handleRenameKeyDown}
+      className="app-no-drag min-w-0 flex-1 rounded border border-blue-300 bg-white px-2 py-1 text-[13px] font-medium text-slate-950 outline-none"
+      aria-label="Tab title"
+    />
   )
 }
