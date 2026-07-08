@@ -5,7 +5,7 @@ const { app, BrowserWindow } = electron
 const { shell } = electron
 const currentDirectory = __dirname
 
-const rendererDevServerUrl = process.env.VITE_DEV_SERVER_URL ?? 'http://localhost:5173'
+const rendererDevServerUrl = process.env.VITE_DEV_SERVER_URL ?? 'http://127.0.0.1:5174'
 const rendererIndexPath = path.join(currentDirectory, '../../dist/index.html')
 const preloadPath = path.join(currentDirectory, '../preload/index.js')
 const appIconPath =

@@ -26,6 +26,10 @@ import type { AppSettings, ProjectSummary, RecentUrl, RoleProfile, SavedBrowserT
 const { app, BrowserWindow, ipcMain } = electron
 const { dialog, shell } = electron
 
+ignoreBrokenConsolePipe(process.stdout)
+ignoreBrokenConsolePipe(process.stderr)
+ignoreBrokenPipeExceptions()
+
 if (!app.requestSingleInstanceLock()) {
   app.quit()
 }
@@ -33,7 +37,7 @@ if (!app.requestSingleInstanceLock()) {
 type AppBrowserWindow = InstanceType<typeof BrowserWindow>
 type IpcEvent = Electron.IpcMainInvokeEvent
 
-const trustedDevServerUrl = process.env.VITE_DEV_SERVER_URL ?? 'http://localhost:5173'
+const trustedDevServerUrl = process.env.VITE_DEV_SERVER_URL ?? 'http://127.0.0.1:5174'
 const windowsAppUserModelId = 'com.rolestab.app'
 
 let mainWindow: AppBrowserWindow | null = null
@@ -42,6 +46,24 @@ app.setName('RolesTab')
 
 if (process.platform === 'win32') {
   app.setAppUserModelId(windowsAppUserModelId)
+}
+
+function ignoreBrokenConsolePipe(stream: NodeJS.WriteStream): void {
+  stream.on('error', (error: NodeJS.ErrnoException) => {
+    if (error.code !== 'EPIPE') {
+      throw error
+    }
+  })
+}
+
+function ignoreBrokenPipeExceptions(): void {
+  process.on('uncaughtException', (error: Error & { code?: string }) => {
+    if (error.code === 'EPIPE') {
+      return
+    }
+
+    throw error
+  })
 }
 
 app.whenReady().then(() => {

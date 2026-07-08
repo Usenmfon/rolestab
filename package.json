@@ -7,7 +7,7 @@
   "type": "module",
   "main": "dist-electron/main/index.js",
   "scripts": {
-    "dev": "concurrently -k \"vite\" \"tsc -p tsconfig.electron.json --watch\" \"wait-on http://localhost:5173 dist-electron/main/index.js && powershell -NoProfile -Command \\\"Remove-Item Env:ELECTRON_RUN_AS_NODE -ErrorAction SilentlyContinue; electron .\\\"\"",
+    "dev": "concurrently -k \"vite --host 127.0.0.1 --port 5174 --strictPort\" \"tsc -p tsconfig.electron.json --watch\" \"wait-on http://127.0.0.1:5174 dist-electron/main/index.js && powershell -NoProfile -Command \\\"Remove-Item Env:ELECTRON_RUN_AS_NODE -ErrorAction SilentlyContinue; electron .\\\"\"",
     "build": "tsc -b && tsc -p tsconfig.electron.json && vite build",
     "electron": "powershell -NoProfile -Command \"Remove-Item Env:ELECTRON_RUN_AS_NODE -ErrorAction SilentlyContinue; electron .\"",
     "lint": "eslint .",

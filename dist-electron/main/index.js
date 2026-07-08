@@ -10,15 +10,33 @@ const sessionManager_js_1 = require("./sessionManager.js");
 const workspaceStore_js_1 = require("./workspaceStore.js");
 const { app, BrowserWindow, ipcMain } = electron_1.default;
 const { dialog, shell } = electron_1.default;
+ignoreBrokenConsolePipe(process.stdout);
+ignoreBrokenConsolePipe(process.stderr);
+ignoreBrokenPipeExceptions();
 if (!app.requestSingleInstanceLock()) {
     app.quit();
 }
-const trustedDevServerUrl = process.env.VITE_DEV_SERVER_URL ?? 'http://localhost:5173';
+const trustedDevServerUrl = process.env.VITE_DEV_SERVER_URL ?? 'http://127.0.0.1:5174';
 const windowsAppUserModelId = 'com.rolestab.app';
 let mainWindow = null;
 app.setName('RolesTab');
 if (process.platform === 'win32') {
     app.setAppUserModelId(windowsAppUserModelId);
+}
+function ignoreBrokenConsolePipe(stream) {
+    stream.on('error', (error) => {
+        if (error.code !== 'EPIPE') {
+            throw error;
+        }
+    });
+}
+function ignoreBrokenPipeExceptions() {
+    process.on('uncaughtException', (error) => {
+        if (error.code === 'EPIPE') {
+            return;
+        }
+        throw error;
+    });
 }
 app.whenReady().then(() => {
     electron_1.default.session.defaultSession.setPermissionRequestHandler((_webContents, _permission, callback) => {
