@@ -56,6 +56,7 @@ function App() {
   const [workspaceLoaded, setWorkspaceLoaded] = useState(false)
   const [sessionUsage, setSessionUsage] = useState<SessionUsage[]>([])
   const [sidebarOpen, setSidebarOpen] = useState(true)
+  const [renamingTabId, setRenamingTabId] = useState<string | null>(null)
   const [confirmationRequest, setConfirmationRequest] = useState<ConfirmationRequest | null>(null)
   const confirmationResolverRef = useRef<((confirmed: boolean) => void) | null>(null)
   const urlInputRef = useRef<HTMLInputElement | null>(null)
@@ -812,11 +813,18 @@ function App() {
       return
     }
 
-    const nextTitle = window.prompt('Rename tab', activeTab.title)?.trim()
+    setActiveTabId(activeTab.id)
+    setRenamingTabId(activeTab.id)
+  }
+
+  function renameTab(tabId: string, title: string) {
+    const nextTitle = title.trim()
 
     if (nextTitle) {
-      updateTab(activeTab.id, { title: nextTitle })
+      updateTab(tabId, { title: nextTitle })
     }
+
+    setRenamingTabId(null)
   }
 
   async function resetActiveRoleSession() {
@@ -936,6 +944,7 @@ function App() {
 
       return nextTabs
     })
+    setRenamingTabId((currentRenamingTabId) => (currentRenamingTabId === tabId ? null : currentRenamingTabId))
   }
 
   function selectAdjacentTab(direction: 1 | -1) {
@@ -1081,6 +1090,7 @@ function App() {
       tabs={tabs}
       activeTab={activeTab}
       activeTabId={activeTabId}
+      renamingTabId={renamingTabId}
       browserCommand={browserCommand}
       sidebarOpen={sidebarOpen}
       workspaceError={workspaceError}
@@ -1140,6 +1150,10 @@ function App() {
       onNewTab={createRoleTab}
       onSelectTab={setActiveTabId}
       onCloseTab={closeTab}
+      onStartRenameTab={(tabId) => {
+        setActiveTabId(tabId)
+        setRenamingTabId(tabId)
+      }}
       onCloseActiveTab={() => {
         if (activeTabId) {
           closeTab(activeTabId)
@@ -1147,6 +1161,8 @@ function App() {
       }}
       onDuplicateTab={duplicateActiveTab}
       onRenameTab={renameActiveTab}
+      onRenameTabTitle={renameTab}
+      onCancelRenameTab={() => setRenamingTabId(null)}
       onResetSession={() => {
         void resetActiveRoleSession()
       }}

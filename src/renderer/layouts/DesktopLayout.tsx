@@ -36,6 +36,7 @@ type DesktopLayoutProps = {
   tabs: BrowserTab[]
   activeTab: BrowserTab | null
   activeTabId: string | null
+  renamingTabId: string | null
   browserCommand: BrowserCommand | null
   sidebarOpen: boolean
   workspaceError: string | null
@@ -75,9 +76,12 @@ type DesktopLayoutProps = {
   onNewTab: () => void
   onSelectTab: (tabId: string) => void
   onCloseTab: (tabId: string) => void
+  onStartRenameTab: (tabId: string) => void
   onCloseActiveTab: () => void
   onDuplicateTab: () => void
   onRenameTab: () => void
+  onRenameTabTitle: (tabId: string, title: string) => void
+  onCancelRenameTab: () => void
   onResetSession: () => void
   onUpdateTab: (tabId: string, updates: Partial<BrowserTab>) => void
   onBack: () => void
@@ -106,6 +110,7 @@ export function DesktopLayout({
   tabs,
   activeTab,
   activeTabId,
+  renamingTabId,
   browserCommand,
   sidebarOpen,
   workspaceError,
@@ -145,9 +150,12 @@ export function DesktopLayout({
   onNewTab,
   onSelectTab,
   onCloseTab,
+  onStartRenameTab,
   onCloseActiveTab,
   onDuplicateTab,
   onRenameTab,
+  onRenameTabTitle,
+  onCancelRenameTab,
   onResetSession,
   onUpdateTab,
   onBack,
@@ -212,8 +220,12 @@ export function DesktopLayout({
         <TabBar
           tabs={tabs}
           activeTabId={activeTabId}
+          renamingTabId={renamingTabId}
           onSelectTab={onSelectTab}
           onCloseTab={onCloseTab}
+          onStartRename={onStartRenameTab}
+          onRenameTab={onRenameTabTitle}
+          onCancelRename={onCancelRenameTab}
         />
         <TopBar
           currentUrl={activeTab?.url ?? activeProject?.baseUrl ?? ''}

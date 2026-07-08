@@ -1,16 +1,79 @@
 import { Loader2, X } from 'lucide-react'
+import { type KeyboardEvent, useEffect, useRef, useState } from 'react'
 import type { BrowserTab } from '../../shared/workspace'
 
 type TabBarProps = {
   tabs: BrowserTab[]
   activeTabId: string | null
+  renamingTabId: string | null
   onSelectTab: (tabId: string) => void
   onCloseTab: (tabId: string) => void
+  onStartRename: (tabId: string) => void
+  onRenameTab: (tabId: string, title: string) => void
+  onCancelRename: () => void
 }
 
-export function TabBar({ tabs, activeTabId, onSelectTab, onCloseTab }: TabBarProps) {
+export function TabBar({
+  tabs,
+  activeTabId,
+  renamingTabId,
+  onSelectTab,
+  onCloseTab,
+  onStartRename,
+  onRenameTab,
+  onCancelRename,
+}: TabBarProps) {
+  const renamingTab = tabs.find((tab) => tab.id === renamingTabId) ?? null
+  const [titleDraft, setTitleDraft] = useState('')
+  const inputRef = useRef<HTMLInputElement | null>(null)
+  const cancelRenameRef = useRef(false)
+
+  useEffect(() => {
+    setTitleDraft(renamingTab?.title ?? '')
+  }, [renamingTabId, renamingTab?.title])
+
+  useEffect(() => {
+    if (!renamingTab) {
+      return
+    }
+
+    requestAnimationFrame(() => {
+      inputRef.current?.focus()
+      inputRef.current?.select()
+    })
+  }, [renamingTab])
+
+  function finishRename(tabId: string) {
+    if (cancelRenameRef.current) {
+      cancelRenameRef.current = false
+      return
+    }
+
+    const nextTitle = titleDraft.trim()
+
+    if (nextTitle) {
+      onRenameTab(tabId, nextTitle)
+    } else {
+      onCancelRename()
+    }
+  }
+
+  function handleRenameKeyDown(event: KeyboardEvent<HTMLInputElement>, tabId: string) {
+    if (event.key === 'Enter') {
+      event.preventDefault()
+      finishRename(tabId)
+      return
+    }
+
+    if (event.key === 'Escape') {
+      event.preventDefault()
+      cancelRenameRef.current = true
+      onCancelRename()
+    }
+  }
+
   return (
-    <div className="flex h-10 shrink-0 items-end gap-1 overflow-x-auto border-b border-[#d7dce3] bg-[#e8eaed] px-2 pt-1">
+    <div className="relative z-10 flex h-10 shrink-0 items-end gap-1 overflow-x-auto border-b border-[#d7dce3] bg-[#e8eaed] px-2 pt-1">
       {tabs.length === 0 ? (
         <span className="mb-2 px-3 text-sm text-slate-500">No role tabs open</span>
       ) : (
@@ -26,21 +89,34 @@ export function TabBar({ tabs, activeTabId, onSelectTab, onCloseTab }: TabBarPro
                   : 'bg-[#dfe3e8] text-slate-600 hover:bg-[#e9edf2]'
               }`}
             >
-              <button
-                type="button"
-                onClick={() => onSelectTab(tab.id)}
-                className="flex min-w-0 flex-1 items-center gap-2 text-left"
-              >
-                {tab.faviconUrl ? (
-                  <img src={tab.faviconUrl} alt="" className="h-3.5 w-3.5 shrink-0" />
-                ) : (
-                  <span
-                    className="h-2.5 w-2.5 shrink-0 rounded-full"
-                    style={{ backgroundColor: tab.roleColor }}
-                  />
-                )}
-                <span className="truncate text-[13px] font-medium">{tab.title}</span>
-              </button>
+              {renamingTabId === tab.id ? (
+                <input
+                  ref={inputRef}
+                  value={titleDraft}
+                  onChange={(event) => setTitleDraft(event.target.value)}
+                  onBlur={() => finishRename(tab.id)}
+                  onKeyDown={(event) => handleRenameKeyDown(event, tab.id)}
+                  className="min-w-0 flex-1 rounded border border-blue-300 bg-white px-2 py-1 text-[13px] font-medium text-slate-950 outline-none"
+                  aria-label="Tab title"
+                />
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => onSelectTab(tab.id)}
+                  onDoubleClick={() => onStartRename(tab.id)}
+                  className="flex min-w-0 flex-1 items-center gap-2 text-left"
+                >
+                  {tab.faviconUrl ? (
+                    <img src={tab.faviconUrl} alt="" className="h-3.5 w-3.5 shrink-0" />
+                  ) : (
+                    <span
+                      className="h-2.5 w-2.5 shrink-0 rounded-full"
+                      style={{ backgroundColor: tab.roleColor }}
+                    />
+                  )}
+                  <span className="truncate text-[13px] font-medium">{tab.title}</span>
+                </button>
+              )}
               {tab.loading ? (
                 <Loader2 aria-hidden="true" size={13} className="shrink-0 animate-spin text-slate-400" />
               ) : null}

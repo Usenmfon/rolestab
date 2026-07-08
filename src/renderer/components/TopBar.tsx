@@ -15,7 +15,7 @@ import {
   XCircle,
   X,
 } from 'lucide-react'
-import { type FormEvent, type RefObject } from 'react'
+import { type ChangeEvent, type FormEvent, type RefObject, useEffect, useState } from 'react'
 import { IconButton } from './IconButton'
 
 type TopBarProps = {
@@ -71,18 +71,29 @@ export function TopBar({
   onToggleSidebar,
   urlInputRef,
 }: TopBarProps) {
+  const [urlDraft, setUrlDraft] = useState(currentUrl)
+
+  useEffect(() => {
+    if (document.activeElement !== urlInputRef.current) {
+      setUrlDraft(currentUrl)
+    }
+  }, [currentUrl, urlInputRef])
+
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
-    const formData = new FormData(event.currentTarget)
-    const url = String(formData.get('url') ?? '')
+    const url = urlDraft.trim()
 
-    if (url.trim()) {
+    if (url) {
       onNavigate(url)
     }
   }
 
+  function handleUrlChange(event: ChangeEvent<HTMLInputElement>) {
+    setUrlDraft(event.target.value)
+  }
+
   return (
-    <header className="relative flex h-12 shrink-0 items-center gap-1 border-b border-[#d7dce3] bg-white px-3">
+    <header className="relative z-10 flex h-12 shrink-0 items-center gap-1 border-b border-[#d7dce3] bg-white px-3">
       <IconButton
         label={sidebarOpen ? 'Hide Sidebar' : 'Show Sidebar'}
         icon={Sidebar}
@@ -106,10 +117,11 @@ export function TopBar({
       <form onSubmit={handleSubmit} className="mx-2 min-w-0 flex-1">
         <input
           ref={urlInputRef}
-          key={currentUrl}
           name="url"
-          defaultValue={currentUrl}
+          value={urlDraft}
+          onChange={handleUrlChange}
           disabled={!hasActiveTab}
+          onFocus={(event) => event.currentTarget.select()}
           placeholder="Select a role tab to start browsing"
           className="h-9 w-full rounded-full border border-transparent bg-[#edf1f5] px-4 text-[13px] text-slate-700 outline-none transition placeholder:text-slate-400 hover:bg-[#e7ecf2] focus:border-blue-400 focus:bg-white focus:shadow-[0_0_0_3px_rgba(59,130,246,0.14)] disabled:text-slate-400"
         />
