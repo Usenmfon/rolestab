@@ -47,6 +47,16 @@ html.theme-light {
   display: none;
 }
 
+.app-drag-region {
+  -webkit-app-region: drag;
+}
+
+.app-no-drag,
+button,
+input {
+  -webkit-app-region: no-drag;
+}
+
 button,
 input {
   font: inherit;

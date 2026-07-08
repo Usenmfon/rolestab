@@ -53,6 +53,13 @@ function createAppWindow() {
         title: 'RolesTab',
         icon: appIconPath,
         backgroundColor: '#f5f7fb',
+        autoHideMenuBar: true,
+        titleBarStyle: 'hidden',
+        titleBarOverlay: {
+            color: '#e8eaed',
+            symbolColor: '#334155',
+            height: 40,
+        },
         webPreferences: {
             preload: preloadPath,
             nodeIntegration: false,
@@ -63,6 +70,7 @@ function createAppWindow() {
             allowRunningInsecureContent: false,
         },
     });
+    window.setMenuBarVisibility(false);
     window.once('ready-to-show', () => {
         window.show();
     });
