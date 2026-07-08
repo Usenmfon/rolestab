@@ -71,6 +71,7 @@ type BrowserWebviewProps = {
 export function BrowserWebview({ tab, active, command, onUpdate }: BrowserWebviewProps) {
   const webviewRef = useRef<WebviewDomElement | null>(null)
   const [initialUrl] = useState(tab.url)
+  const [browserUserAgent] = useState(getBrowserUserAgent)
   const [domReady, setDomReady] = useState(false)
   const lastCommandIdRef = useRef<number | null>(null)
   const lastInspectPointRef = useRef<{ x: number; y: number } | null>(null)
@@ -322,6 +323,7 @@ export function BrowserWebview({ tab, active, command, onUpdate }: BrowserWebvie
       ref={webviewRef}
       src={initialUrl}
       partition={tab.sessionPartition}
+      useragent={browserUserAgent}
       webpreferences="contextIsolation=yes,nodeIntegration=no,sandbox=yes,webSecurity=yes,allowRunningInsecureContent=no"
       className={`roles-tab-webview ${active ? 'block' : 'hidden'}`}
     />
@@ -335,6 +337,12 @@ function getWebviewCenterPoint(webview: HTMLElement): { x: number; y: number } {
     x: Math.floor(bounds.width / 2),
     y: Math.floor(bounds.height / 2),
   }
+}
+
+function getBrowserUserAgent(): string {
+  const chromeVersion = window.rolesTab?.app.versions.chrome ?? '120.0.0.0'
+
+  return `Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/${chromeVersion} Safari/537.36`
 }
 
 function getFriendlyLoadError(errorDescription: string | undefined): string {
