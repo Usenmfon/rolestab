@@ -3,6 +3,7 @@ import type { AppSettings, ProjectSummary, RecentUrl, RoleProfile } from '../../
 import type { SessionUsage } from '../../shared/session'
 import { RoleProfileList } from './RoleProfileList'
 import { WorkspacePersistencePanel } from './WorkspacePersistencePanel'
+import logoUrl from '../../assets/logo.png'
 
 type SidebarProps = {
   projects: ProjectSummary[]
@@ -61,7 +62,7 @@ export function Sidebar({
     <aside className="flex w-72 shrink-0 flex-col border-r border-[#d7dce3] bg-[#f8fafd]">
       <div className="flex h-[50px] items-center gap-3 border-b border-[#d7dce3] px-4">
         <div className="grid h-8 w-8 place-items-center overflow-hidden rounded-md bg-white">
-          <img src="/android-chrome-192x192.png" alt="" className="h-8 w-8" />
+          <img src={logoUrl} alt="" className="h-8 w-8" />
         </div>
         <div>
           <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
