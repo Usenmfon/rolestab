@@ -11,6 +11,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Release CI now builds and uploads a macOS Intel x64 installer artifact.
 
+### Fixed
+
+- macOS installer app bundles now include the RolesTab brand icon instead of
+  the generic Finder document icon.
+
 ## [0.2.1] - 2026-07-09
 
 ### Fixed

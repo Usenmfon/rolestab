@@ -49,6 +49,7 @@ test('packaging config includes Windows, macOS, and Linux targets', () => {
   assert.equal(packageJson.scripts['dist:linux'], 'npm run build && electron-builder --linux --publish never')
   assert.equal(packageJson.build.win.target[0].target, 'nsis')
   assert.equal(packageJson.build.win.icon, 'public/favicon.ico')
+  assert.equal(packageJson.build.mac.icon, 'public/favicon.icns')
   assert.deepEqual(packageJson.build.mac.target, ['dmg', 'zip'])
   assert.deepEqual(packageJson.build.linux.target, ['AppImage', 'deb'])
   assert.equal(packageJson.desktopName, 'RolesTab')
@@ -57,6 +58,7 @@ test('packaging config includes Windows, macOS, and Linux targets', () => {
   assert.equal(packageJson.build.nsis.installerIcon, 'public/favicon.ico')
   assert.equal(packageJson.build.nsis.uninstallerIcon, 'public/favicon.ico')
   assert.equal(existsSync(path.join(root, 'public/favicon.ico')), true)
+  assert.equal(existsSync(path.join(root, 'public/favicon.icns')), true)
 })
 
 test('packaging-only dependencies stay out of production dependencies', () => {
