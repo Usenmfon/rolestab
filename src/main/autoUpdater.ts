@@ -4,9 +4,9 @@ import log from 'electron-log/main'
 import { logInternalError } from './errorLogger.js'
 import { updateStatusChannel, type UpdateStatus } from '../shared/update.js'
 
-const { app, BrowserWindow } = electron
+const { app } = electron
 
-type AppBrowserWindow = InstanceType<typeof BrowserWindow>
+type AppBrowserWindow = InstanceType<typeof electron.BrowserWindow>
 
 let currentStatus: UpdateStatus = { state: 'idle' }
 let statusWindow: AppBrowserWindow | null = null
