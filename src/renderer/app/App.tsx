@@ -149,10 +149,27 @@ function App() {
 
   useEffect(() => {
     const root = document.documentElement
+    const systemThemeQuery = window.matchMedia('(prefers-color-scheme: dark)')
 
-    root.dataset.theme = settings.theme
-    root.classList.toggle('theme-dark', settings.theme === 'dark')
-    root.classList.toggle('theme-light', settings.theme === 'light')
+    function applyTheme() {
+      const darkTheme = settings.theme === 'dark' || (settings.theme === 'system' && systemThemeQuery.matches)
+
+      root.dataset.theme = settings.theme
+      root.classList.toggle('theme-dark', darkTheme)
+      root.classList.toggle('theme-light', !darkTheme)
+    }
+
+    applyTheme()
+
+    if (settings.theme !== 'system') {
+      return undefined
+    }
+
+    systemThemeQuery.addEventListener('change', applyTheme)
+
+    return () => {
+      systemThemeQuery.removeEventListener('change', applyTheme)
+    }
   }, [settings.theme])
 
   useEffect(() => {
