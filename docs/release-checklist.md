@@ -2,6 +2,23 @@
 
 Run this checklist before publishing a RolesTab installer.
 
+## Version & Changelog
+
+1. Bump `version` in `package.json`. The release CI fails if the pushed
+   `vX.Y.Z` tag does not match this value.
+2. Move the `Unreleased` notes in `CHANGELOG.md` into a new version section
+   and update the comparison links at the bottom of the file.
+3. Commit, then tag and push:
+
+   ```bash
+   git tag vX.Y.Z
+   git push origin vX.Y.Z
+   ```
+
+   The tag push builds installers, publishes a GitHub release with the
+   installers plus `latest*.yml` update metadata, and auto-generates release
+   notes. Installed Windows and Linux apps pick up the update on next launch.
+
 ## Automated Gate
 
 ```bash
