@@ -10,6 +10,7 @@ import type {
   WorkspaceImportResult,
 } from '../shared/workspace.js'
 import type { SessionUsage } from '../shared/session.js'
+import { updateStatusChannel, type UpdateStatus } from '../shared/update.js'
 
 const { contextBridge, ipcRenderer } = electron
 
@@ -23,6 +24,20 @@ const api = {
     },
     getVersion(): Promise<string> {
       return ipcRenderer.invoke('app:get-version')
+    },
+    getUpdateStatus(): Promise<UpdateStatus> {
+      return ipcRenderer.invoke('app:get-update-status')
+    },
+    checkForUpdates(): Promise<UpdateStatus> {
+      return ipcRenderer.invoke('app:check-for-updates')
+    },
+    quitAndInstall(): Promise<void> {
+      return ipcRenderer.invoke('app:quit-and-install')
+    },
+    onUpdateStatus(callback: (status: UpdateStatus) => void): () => void {
+      const listener = (_event: unknown, status: UpdateStatus) => callback(status)
+      ipcRenderer.on(updateStatusChannel, listener)
+      return () => ipcRenderer.removeListener(updateStatusChannel, listener)
     },
     openExternal(url: string): Promise<void> {
       return ipcRenderer.invoke('app:open-external', url)

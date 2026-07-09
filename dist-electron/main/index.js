@@ -6,6 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const electron_1 = __importDefault(require("electron"));
 const browserWindow_js_1 = require("./browserWindow.js");
 const errorLogger_js_1 = require("./errorLogger.js");
+const autoUpdater_js_1 = require("./autoUpdater.js");
 const sessionManager_js_1 = require("./sessionManager.js");
 const workspaceStore_js_1 = require("./workspaceStore.js");
 const { app, BrowserWindow, ipcMain } = electron_1.default;
@@ -43,9 +44,11 @@ app.whenReady().then(() => {
         callback(false);
     });
     mainWindow = (0, browserWindow_js_1.createAppWindow)();
+    (0, autoUpdater_js_1.initAutoUpdater)(mainWindow);
     app.on('activate', () => {
         if (BrowserWindow.getAllWindows().length === 0) {
             mainWindow = (0, browserWindow_js_1.createAppWindow)();
+            (0, autoUpdater_js_1.initAutoUpdater)(mainWindow);
         }
     });
 });
@@ -66,6 +69,18 @@ app.on('window-all-closed', () => {
 ipcMain.handle('app:get-version', (event) => {
     assertTrustedSender(event);
     return app.getVersion();
+});
+ipcMain.handle('app:get-update-status', (event) => {
+    assertTrustedSender(event);
+    return (0, autoUpdater_js_1.getUpdateStatus)();
+});
+ipcMain.handle('app:check-for-updates', (event) => {
+    assertTrustedSender(event);
+    return (0, autoUpdater_js_1.checkForUpdates)();
+});
+ipcMain.handle('app:quit-and-install', (event) => {
+    assertTrustedSender(event);
+    (0, autoUpdater_js_1.quitAndInstall)();
 });
 ipcMain.handle('app:open-external', async (event, url) => {
     assertTrustedSender(event);

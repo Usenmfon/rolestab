@@ -4,6 +4,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const electron_1 = __importDefault(require("electron"));
+const update_js_1 = require("../shared/update.js");
 const { contextBridge, ipcRenderer } = electron_1.default;
 const api = {
     app: {
@@ -15,6 +16,20 @@ const api = {
         },
         getVersion() {
             return ipcRenderer.invoke('app:get-version');
+        },
+        getUpdateStatus() {
+            return ipcRenderer.invoke('app:get-update-status');
+        },
+        checkForUpdates() {
+            return ipcRenderer.invoke('app:check-for-updates');
+        },
+        quitAndInstall() {
+            return ipcRenderer.invoke('app:quit-and-install');
+        },
+        onUpdateStatus(callback) {
+            const listener = (_event, status) => callback(status);
+            ipcRenderer.on(update_js_1.updateStatusChannel, listener);
+            return () => ipcRenderer.removeListener(update_js_1.updateStatusChannel, listener);
         },
         openExternal(url) {
             return ipcRenderer.invoke('app:open-external', url);

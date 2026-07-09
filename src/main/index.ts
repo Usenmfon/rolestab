@@ -2,6 +2,12 @@ import electron from 'electron'
 import { createAppWindow } from './browserWindow.js'
 import { logInternalError } from './errorLogger.js'
 import {
+  checkForUpdates,
+  getUpdateStatus,
+  initAutoUpdater,
+  quitAndInstall,
+} from './autoUpdater.js'
+import {
   clearRoleSession,
   clearRoleSessions,
   createRolePartition,
@@ -72,10 +78,12 @@ app.whenReady().then(() => {
   })
 
   mainWindow = createAppWindow()
+  initAutoUpdater(mainWindow)
 
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) {
       mainWindow = createAppWindow()
+      initAutoUpdater(mainWindow)
     }
   })
 })
@@ -102,6 +110,24 @@ ipcMain.handle('app:get-version', (event) => {
   assertTrustedSender(event)
 
   return app.getVersion()
+})
+
+ipcMain.handle('app:get-update-status', (event) => {
+  assertTrustedSender(event)
+
+  return getUpdateStatus()
+})
+
+ipcMain.handle('app:check-for-updates', (event) => {
+  assertTrustedSender(event)
+
+  return checkForUpdates()
+})
+
+ipcMain.handle('app:quit-and-install', (event) => {
+  assertTrustedSender(event)
+
+  quitAndInstall()
 })
 
 ipcMain.handle('app:open-external', async (event, url: string) => {
