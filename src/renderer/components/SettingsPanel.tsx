@@ -1,6 +1,7 @@
 import { useEffect, useState, type FormEvent } from 'react'
-import { Check, Copy, ExternalLink, RotateCcw, X } from 'lucide-react'
+import { Check, Copy, Download, ExternalLink, RefreshCw, RotateCcw, X } from 'lucide-react'
 import type { AppSettings, ProjectSummary } from '../../shared/workspace'
+import type { UpdateStatus } from '../../shared/update'
 import { normalizeHttpUrl } from '../utils/url'
 
 type SettingsPanelProps = {
@@ -12,6 +13,27 @@ type SettingsPanelProps = {
 }
 
 const releasesUrl = 'https://github.com/Usenmfon/rolestab/releases'
+
+function describeUpdateStatus(status: UpdateStatus): string {
+  switch (status.state) {
+    case 'checking':
+      return 'Checking for updates…'
+    case 'available':
+      return `Downloading version ${status.version}…`
+    case 'downloading':
+      return `Downloading update… ${status.percent}%`
+    case 'downloaded':
+      return `Version ${status.version} is ready to install.`
+    case 'not-available':
+      return 'You are on the latest version.'
+    case 'error':
+      return `Update check failed: ${status.message}`
+    case 'unsupported':
+      return status.reason
+    default:
+      return ''
+  }
+}
 
 const shortcutLabels: Record<string, string> = {
   newTab: 'New tab',
@@ -38,9 +60,14 @@ export function SettingsPanel({
   const [saving, setSaving] = useState(false)
   const [appVersion, setAppVersion] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
+  const [updateStatus, setUpdateStatus] = useState<UpdateStatus>({ state: 'idle' })
 
   const engineVersions = window.rolesTab?.app.versions
   const platform = window.rolesTab?.app.platform ?? 'unknown'
+  const checkingUpdates =
+    updateStatus.state === 'checking' ||
+    updateStatus.state === 'available' ||
+    updateStatus.state === 'downloading'
 
   useEffect(() => {
     let active = true
@@ -51,8 +78,19 @@ export function SettingsPanel({
       }
     })
 
+    void window.rolesTab?.app.getUpdateStatus().then((status) => {
+      if (active) {
+        setUpdateStatus(status)
+      }
+    })
+
+    const unsubscribe = window.rolesTab?.app.onUpdateStatus((status) => {
+      setUpdateStatus(status)
+    })
+
     return () => {
       active = false
+      unsubscribe?.()
     }
   }, [])
 
@@ -85,6 +123,18 @@ export function SettingsPanel({
   function handleOpenReleases() {
     void window.rolesTab?.app.openExternal(releasesUrl)
   }
+
+  function handleCheckForUpdates() {
+    void window.rolesTab?.app.checkForUpdates().then((status) => {
+      setUpdateStatus(status)
+    })
+  }
+
+  function handleInstallUpdate() {
+    void window.rolesTab?.app.quitAndInstall()
+  }
+
+  const updateMessage = describeUpdateStatus(updateStatus)
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -305,7 +355,31 @@ export function SettingsPanel({
                 <dd className="text-slate-700">{engineVersions?.node ?? '—'}</dd>
               </div>
             </dl>
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
+              {updateStatus.state === 'downloaded' ? (
+                <button
+                  type="button"
+                  onClick={handleInstallUpdate}
+                  className="flex h-9 items-center gap-2 rounded-md bg-slate-900 px-3 text-sm font-semibold text-white hover:bg-slate-800"
+                >
+                  <Download aria-hidden="true" size={15} />
+                  Restart to install
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={handleCheckForUpdates}
+                  disabled={checkingUpdates}
+                  className="flex h-9 items-center gap-2 rounded-md border border-slate-200 px-3 text-sm font-semibold text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:text-slate-400"
+                >
+                  <RefreshCw
+                    aria-hidden="true"
+                    size={15}
+                    className={checkingUpdates ? 'animate-spin' : undefined}
+                  />
+                  Check for updates
+                </button>
+              )}
               <button
                 type="button"
                 onClick={handleOpenReleases}
@@ -323,6 +397,15 @@ export function SettingsPanel({
                 {copied ? 'Copied' : 'Copy diagnostics'}
               </button>
             </div>
+            {updateMessage ? (
+              <p
+                className={`text-xs ${
+                  updateStatus.state === 'error' ? 'text-red-600' : 'text-slate-500'
+                }`}
+              >
+                {updateMessage}
+              </p>
+            ) : null}
           </section>
         </div>
 
