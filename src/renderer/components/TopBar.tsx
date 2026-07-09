@@ -93,7 +93,7 @@ export function TopBar({
   }
 
   return (
-    <header className="relative z-10 flex h-12 shrink-0 items-center gap-1 border-b border-[#d7dce3] bg-white px-3">
+    <header className="relative z-10 flex h-14 shrink-0 items-center gap-1.5 border-b border-[#d8dee8] bg-[#fbfcfe] px-3.5">
       <IconButton
         label={sidebarOpen ? 'Hide Sidebar' : 'Show Sidebar'}
         icon={Sidebar}
@@ -123,7 +123,7 @@ export function TopBar({
           disabled={!hasActiveTab}
           onFocus={(event) => event.currentTarget.select()}
           placeholder="Select a role tab to start browsing"
-          className="h-9 w-full rounded-full border border-transparent bg-[#edf1f5] px-4 text-[13px] text-slate-700 outline-none transition placeholder:text-slate-400 hover:bg-[#e7ecf2] focus:border-blue-400 focus:bg-white focus:shadow-[0_0_0_3px_rgba(59,130,246,0.14)] disabled:text-slate-400"
+          className="h-10 w-full rounded-lg border border-transparent bg-[#eef3f8] px-4 text-[13px] text-slate-700 outline-none transition placeholder:text-slate-400 hover:bg-[#e7edf4] focus:border-blue-300 focus:bg-white focus:shadow-[0_0_0_3px_rgba(37,99,235,0.12)] disabled:text-slate-400"
         />
       </form>
 

@@ -26,7 +26,7 @@ export function WorkspacePersistencePanel({
   const totalSessionBytes = sessionUsage.reduce((total, usage) => total + usage.totalBytes, 0)
 
   return (
-    <section className="rounded-xl border border-slate-200 bg-white p-3">
+    <section className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
       <label className="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-semibold text-slate-700">
         <input
           type="checkbox"
@@ -52,7 +52,7 @@ export function WorkspacePersistencePanel({
         Sessions
       </div>
 
-      <div className="mt-3 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2">
+      <div className="mt-3 rounded-lg border border-slate-200 bg-slate-50/80 px-3 py-2.5">
         <div className="flex items-center justify-between gap-3 text-xs">
           <span className="font-semibold text-slate-700">Stored role data</span>
           <span className="font-mono text-[11px] text-slate-500">{formatBytes(totalSessionBytes)}</span>
@@ -99,7 +99,7 @@ export function WorkspacePersistencePanel({
               key={recentUrl.id}
               type="button"
               onClick={() => onOpenRecentUrl(recentUrl)}
-              className="block w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-left hover:bg-slate-100"
+              className="block w-full rounded-lg border border-slate-200 bg-slate-50/80 px-3 py-2.5 text-left transition hover:border-slate-300 hover:bg-white"
             >
               <span className="block truncate text-xs font-semibold text-slate-700">
                 {recentUrl.title || recentUrl.url}

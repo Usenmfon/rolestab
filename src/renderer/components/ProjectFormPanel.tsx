@@ -44,8 +44,8 @@ export function ProjectFormPanel({ project, onClose, onSubmit }: ProjectFormPane
   }
 
   return (
-    <aside className="relative z-20 flex w-96 shrink-0 flex-col border-l border-slate-200 bg-white">
-      <div className="flex h-16 items-center justify-between border-b border-slate-200 px-5">
+    <aside className="relative z-20 flex w-96 shrink-0 flex-col border-l border-slate-200 bg-white shadow-[-12px_0_28px_rgba(15,23,42,0.08)]">
+      <div className="flex h-20 items-center justify-between border-b border-slate-200 px-5">
         <div>
           <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
             Project
@@ -59,7 +59,7 @@ export function ProjectFormPanel({ project, onClose, onSubmit }: ProjectFormPane
           aria-label="Close project form"
           title="Close"
           onClick={onClose}
-          className="grid h-9 w-9 place-items-center rounded-md border border-slate-200 text-slate-600 hover:bg-slate-50"
+          className="grid h-9 w-9 place-items-center rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50"
         >
           <X aria-hidden="true" size={17} />
         </button>
@@ -72,7 +72,7 @@ export function ProjectFormPanel({ project, onClose, onSubmit }: ProjectFormPane
             value={name}
             onChange={(event) => setName(event.target.value)}
             placeholder="Local Laravel App"
-            className="h-10 w-full rounded-md border border-slate-200 px-3 text-sm outline-none transition focus:border-slate-900"
+            className="h-11 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm outline-none transition focus:border-blue-300 focus:shadow-[0_0_0_3px_rgba(37,99,235,0.1)]"
           />
         </label>
 
@@ -82,7 +82,7 @@ export function ProjectFormPanel({ project, onClose, onSubmit }: ProjectFormPane
             value={baseUrl}
             onChange={(event) => setBaseUrl(event.target.value)}
             placeholder="http://localhost:8000"
-            className="h-10 w-full rounded-md border border-slate-200 px-3 text-sm outline-none transition focus:border-slate-900"
+            className="h-11 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm outline-none transition focus:border-blue-300 focus:shadow-[0_0_0_3px_rgba(37,99,235,0.1)]"
           />
         </label>
 
@@ -93,12 +93,12 @@ export function ProjectFormPanel({ project, onClose, onSubmit }: ProjectFormPane
             onChange={(event) => setDescription(event.target.value)}
             placeholder="Testing different user roles"
             rows={4}
-            className="w-full resize-none rounded-md border border-slate-200 px-3 py-2 text-sm outline-none transition focus:border-slate-900"
+            className="w-full resize-none rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm outline-none transition focus:border-blue-300 focus:shadow-[0_0_0_3px_rgba(37,99,235,0.1)]"
           />
         </label>
 
         {error ? (
-          <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+          <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
             {error}
           </div>
         ) : null}
@@ -107,14 +107,14 @@ export function ProjectFormPanel({ project, onClose, onSubmit }: ProjectFormPane
           <button
             type="submit"
             disabled={saving}
-            className="h-10 flex-1 rounded-md bg-slate-900 px-4 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-400"
+            className="h-10 flex-1 rounded-lg bg-slate-900 px-4 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-400"
           >
             {saving ? 'Saving...' : 'Save Project'}
           </button>
           <button
             type="button"
             onClick={onClose}
-            className="h-10 rounded-md border border-slate-200 px-4 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+            className="h-10 rounded-lg border border-slate-200 px-4 text-sm font-semibold text-slate-700 hover:bg-slate-50"
           >
             Cancel
           </button>

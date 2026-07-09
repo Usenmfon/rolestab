@@ -186,8 +186,8 @@ export function SettingsPanel({
   }
 
   return (
-    <aside className="relative z-20 flex w-[30rem] shrink-0 flex-col border-l border-slate-200 bg-white">
-      <div className="flex h-28 items-start justify-between border-b border-slate-200 px-5 pt-10">
+    <aside className="relative z-20 flex w-[30rem] shrink-0 flex-col border-l border-slate-200 bg-white shadow-[-12px_0_28px_rgba(15,23,42,0.08)]">
+      <div className="flex h-24 items-start justify-between border-b border-slate-200 px-5 pt-10">
         <div>
           <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Workspace</p>
           <h2 className="text-lg font-semibold text-slate-950">Settings</h2>
@@ -197,15 +197,15 @@ export function SettingsPanel({
           aria-label="Close settings"
           title="Close"
           onClick={onClose}
-          className="grid h-9 w-9 place-items-center rounded-md border border-slate-200 text-slate-600 hover:bg-slate-50"
+          className="grid h-9 w-9 place-items-center rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50"
         >
           <X aria-hidden="true" size={17} />
         </button>
       </div>
 
       <form onSubmit={handleSubmit} className="min-h-0 flex-1 overflow-y-auto p-5">
-        <div className="space-y-6">
-          <section className="space-y-3">
+        <div className="space-y-7">
+          <section className="space-y-3.5">
             <h3 className="text-sm font-semibold text-slate-950">Startup</h3>
             <label className="space-y-2">
               <span className="text-sm font-medium text-slate-700">Default Homepage</span>
@@ -215,7 +215,7 @@ export function SettingsPanel({
                   setDraft((currentDraft) => ({ ...currentDraft, defaultHomepage: event.target.value }))
                 }
                 placeholder="http://localhost:8000"
-                className="h-10 w-full rounded-md border border-slate-200 px-3 text-sm outline-none transition focus:border-slate-900"
+                className="h-11 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm outline-none transition focus:border-blue-300 focus:shadow-[0_0_0_3px_rgba(37,99,235,0.1)]"
               />
             </label>
 
@@ -229,7 +229,7 @@ export function SettingsPanel({
                     defaultProjectId: event.target.value || null,
                   }))
                 }
-                className="h-10 w-full rounded-md border border-slate-200 bg-white px-3 text-sm outline-none transition focus:border-slate-900"
+                className="h-11 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm outline-none transition focus:border-blue-300 focus:shadow-[0_0_0_3px_rgba(37,99,235,0.1)]"
               >
                 <option value="">Last active project</option>
                 {projects.map((project) => (
@@ -240,7 +240,7 @@ export function SettingsPanel({
               </select>
             </label>
 
-            <label className="flex items-center gap-2 rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-medium text-slate-700">
+            <label className="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm font-medium text-slate-700">
               <input
                 type="checkbox"
                 checked={draft.restoreTabsOnStartup}
@@ -256,7 +256,7 @@ export function SettingsPanel({
             </label>
           </section>
 
-          <section className="space-y-3">
+          <section className="space-y-3.5">
             <h3 className="text-sm font-semibold text-slate-950">Appearance</h3>
             <div className="grid grid-cols-3 gap-2">
               {(['system', 'light', 'dark'] as const).map((theme) => (
@@ -264,7 +264,7 @@ export function SettingsPanel({
                   key={theme}
                   type="button"
                   onClick={() => setDraft((currentDraft) => ({ ...currentDraft, theme }))}
-                  className={`h-9 rounded-md border px-3 text-sm font-semibold capitalize ${
+                    className={`h-9 rounded-lg border px-3 text-sm font-semibold capitalize ${
                     draft.theme === theme
                       ? 'border-slate-900 bg-slate-900 text-white'
                       : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
@@ -276,7 +276,7 @@ export function SettingsPanel({
             </div>
           </section>
 
-          <section className="space-y-3">
+          <section className="space-y-3.5">
             <h3 className="text-sm font-semibold text-slate-950">Role Colors</h3>
             <div className="grid grid-cols-6 gap-2">
               {draft.defaultRoleColors.map((color, index) => (
@@ -292,16 +292,16 @@ export function SettingsPanel({
                       ),
                     }))
                   }
-                  className="h-9 w-full cursor-pointer rounded border border-slate-200 bg-white p-1"
+                  className="h-9 w-full cursor-pointer rounded-lg border border-slate-200 bg-white p-1"
                   aria-label={`Default role color ${index + 1}`}
                 />
               ))}
             </div>
           </section>
 
-          <section className="space-y-3">
+          <section className="space-y-3.5">
             <h3 className="text-sm font-semibold text-slate-950">Sessions</h3>
-            <label className="flex items-center gap-2 rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-medium text-slate-700">
+            <label className="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm font-medium text-slate-700">
               <input
                 type="checkbox"
                 checked={draft.confirmBeforeClearingSessions}
@@ -317,7 +317,7 @@ export function SettingsPanel({
             </label>
           </section>
 
-          <section className="space-y-3">
+          <section className="space-y-3.5">
             <h3 className="text-sm font-semibold text-slate-950">Keyboard Shortcuts</h3>
             <div className="grid grid-cols-2 gap-2">
               {Object.entries(draft.keyboardShortcuts).map(([shortcutKey, shortcut]) => (
@@ -328,16 +328,16 @@ export function SettingsPanel({
                   <input
                     value={shortcut}
                     onChange={(event) => updateShortcut(shortcutKey, event.target.value)}
-                    className="h-9 w-full rounded-md border border-slate-200 px-2 text-sm outline-none transition focus:border-slate-900"
+                    className="h-9 w-full rounded-lg border border-slate-200 bg-white px-2 text-sm outline-none transition focus:border-blue-300 focus:shadow-[0_0_0_3px_rgba(37,99,235,0.1)]"
                   />
                 </label>
               ))}
             </div>
           </section>
 
-          <section className="space-y-3">
+          <section className="space-y-3.5">
             <h3 className="text-sm font-semibold text-slate-950">About</h3>
-            <dl className="overflow-hidden rounded-md border border-slate-200 text-sm">
+            <dl className="overflow-hidden rounded-lg border border-slate-200 text-sm">
               <div className="flex items-center justify-between gap-4 border-b border-slate-100 px-3 py-2">
                 <dt className="font-medium text-slate-500">Version</dt>
                 <dd className="font-semibold text-slate-900">{appVersion ?? '—'}</dd>
@@ -364,7 +364,7 @@ export function SettingsPanel({
                 <button
                   type="button"
                   onClick={handleInstallUpdate}
-                  className="flex h-9 items-center gap-2 rounded-md bg-slate-900 px-3 text-sm font-semibold text-white hover:bg-slate-800"
+                  className="flex h-9 items-center gap-2 rounded-lg bg-slate-900 px-3 text-sm font-semibold text-white hover:bg-slate-800"
                 >
                   <Download aria-hidden="true" size={15} />
                   Restart to install
@@ -374,7 +374,7 @@ export function SettingsPanel({
                   type="button"
                   onClick={handleCheckForUpdates}
                   disabled={checkingUpdates}
-                  className="flex h-9 items-center gap-2 rounded-md border border-slate-200 px-3 text-sm font-semibold text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:text-slate-400"
+                  className="flex h-9 items-center gap-2 rounded-lg border border-slate-200 px-3 text-sm font-semibold text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:text-slate-400"
                 >
                   <RefreshCw
                     aria-hidden="true"
@@ -387,7 +387,7 @@ export function SettingsPanel({
               <button
                 type="button"
                 onClick={handleOpenReleases}
-                className="flex h-9 items-center gap-2 rounded-md border border-slate-200 px-3 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+                className="flex h-9 items-center gap-2 rounded-lg border border-slate-200 px-3 text-sm font-semibold text-slate-700 hover:bg-slate-50"
               >
                 <ExternalLink aria-hidden="true" size={15} />
                 Releases
@@ -395,7 +395,7 @@ export function SettingsPanel({
               <button
                 type="button"
                 onClick={handleCopyDiagnostics}
-                className="flex h-9 min-w-[10rem] items-center justify-center gap-2 rounded-md border border-slate-200 px-3 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+                className="flex h-9 min-w-[10rem] items-center justify-center gap-2 rounded-lg border border-slate-200 px-3 text-sm font-semibold text-slate-700 hover:bg-slate-50"
               >
                 {copied ? <Check aria-hidden="true" size={15} /> : <Copy aria-hidden="true" size={15} />}
                 {copied ? 'Copied' : 'Copy diagnostics'}
@@ -414,7 +414,7 @@ export function SettingsPanel({
         </div>
 
         {error ? (
-          <div className="mt-5 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+          <div className="mt-5 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
             {error}
           </div>
         ) : null}
@@ -423,7 +423,7 @@ export function SettingsPanel({
           <button
             type="submit"
             disabled={saving}
-            className="h-10 flex-1 rounded-md bg-slate-900 px-4 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-400"
+            className="h-10 flex-1 rounded-lg bg-slate-900 px-4 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-400"
           >
             {saving ? 'Saving...' : 'Save Settings'}
           </button>
@@ -431,7 +431,7 @@ export function SettingsPanel({
             type="button"
             onClick={handleReset}
             disabled={saving}
-            className="flex h-10 items-center gap-2 rounded-md border border-slate-200 px-4 text-sm font-semibold text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:text-slate-400"
+            className="flex h-10 items-center gap-2 rounded-lg border border-slate-200 px-4 text-sm font-semibold text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:text-slate-400"
           >
             <RotateCcw aria-hidden="true" size={15} />
             Reset

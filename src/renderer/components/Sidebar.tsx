@@ -59,24 +59,24 @@ export function Sidebar({
   onOpenSettings,
 }: SidebarProps) {
   return (
-    <aside className="flex w-72 shrink-0 flex-col border-r border-[#d7dce3] bg-[#f8fafd]">
-      <div className="flex h-[50px] items-center gap-3 border-b border-[#d7dce3] px-4">
-        <div className="grid h-8 w-8 place-items-center overflow-hidden rounded-md bg-white">
+    <aside className="flex w-[18.5rem] shrink-0 flex-col border-r border-[#d8dee8] bg-[#f7f9fc]">
+      <div className="flex h-14 items-center gap-3 border-b border-[#d8dee8] px-4">
+        <div className="grid h-9 w-9 place-items-center overflow-hidden rounded-lg bg-white shadow-sm ring-1 ring-slate-200">
           <img src={logoUrl} alt="" className="h-8 w-8" />
         </div>
         <div>
           <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
             Desktop Browser
           </p>
-          <h1 className="text-lg font-semibold leading-tight">RolesTab</h1>
+          <h1 className="text-lg font-semibold leading-tight text-slate-950">RolesTab</h1>
         </div>
       </div>
 
-      <div className="shrink-0 border-b border-slate-200 p-3">
+      <div className="shrink-0 border-b border-slate-200 p-4">
         <button
           type="button"
           onClick={onCreateProject}
-          className="flex h-10 items-center justify-center gap-2 rounded-full bg-blue-600 px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700"
+          className="flex h-10 w-full items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700"
         >
           <FolderPlus aria-hidden="true" size={17} />
           New Project
@@ -88,7 +88,7 @@ export function Sidebar({
           </h2>
 
           {projects.length === 0 ? (
-            <div className="mt-3 rounded-lg border border-dashed border-slate-300 bg-white p-4 text-sm leading-6 text-slate-500">
+            <div className="mt-3 rounded-lg border border-dashed border-slate-300 bg-white/70 p-4 text-sm leading-6 text-slate-500">
               No project selected. Create a project to start opening isolated role tabs.
             </div>
           ) : (
@@ -99,10 +99,10 @@ export function Sidebar({
                 return (
                   <div
                     key={project.id}
-                    className={`w-full rounded-xl border px-3 py-3 text-left transition ${
+                  className={`w-full rounded-lg border px-3.5 py-3 text-left shadow-sm transition ${
                       active
-                        ? 'border-blue-200 bg-blue-50 text-slate-950'
-                        : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
+                        ? 'border-blue-200 bg-blue-50 text-slate-950 shadow-blue-100/60'
+                        : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50'
                     }`}
                   >
                     <button
@@ -125,7 +125,7 @@ export function Sidebar({
                         title="Edit Project"
                         aria-label={`Edit ${project.name}`}
                         onClick={() => onEditProject(project.id)}
-                        className={`grid h-7 w-7 place-items-center rounded border ${
+                        className={`grid h-7 w-7 place-items-center rounded-md border ${
                           active
                             ? 'border-blue-200 bg-white text-blue-700 hover:bg-blue-100'
                             : 'border-slate-200 text-slate-500 hover:bg-slate-100'
@@ -138,7 +138,7 @@ export function Sidebar({
                         title="Delete Project"
                         aria-label={`Delete ${project.name}`}
                         onClick={() => onDeleteProject(project.id)}
-                        className={`grid h-7 w-7 place-items-center rounded border ${
+                        className={`grid h-7 w-7 place-items-center rounded-md border ${
                           active
                             ? 'border-blue-200 bg-white text-blue-700 hover:bg-blue-100'
                             : 'border-slate-200 text-slate-500 hover:bg-slate-100'
@@ -155,7 +155,7 @@ export function Sidebar({
         </section>
       </div>
 
-      <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto p-3">
+      <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto p-4">
         <RoleProfileList
           roleProfiles={activeProjectRoleProfiles}
           hasActiveProject={Boolean(activeProjectId)}
@@ -179,13 +179,13 @@ export function Sidebar({
         />
       </div>
 
-      <div className="shrink-0 space-y-2 border-t border-[#d7dce3] bg-white p-3 shadow-[0_-8px_16px_rgba(148,163,184,0.12)]">
+      <div className="shrink-0 space-y-2 border-t border-[#d8dee8] bg-white/90 p-4 shadow-[0_-8px_20px_rgba(148,163,184,0.12)]">
         <div className="grid grid-cols-2 gap-2">
           <button
             type="button"
             onClick={onExportProjectConfig}
             disabled={!activeProjectId}
-            className="flex h-9 items-center justify-center gap-2 rounded-md border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+            className="flex h-9 items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
           >
             <Download aria-hidden="true" size={15} />
             Export
@@ -193,7 +193,7 @@ export function Sidebar({
           <button
             type="button"
             onClick={onImportProjectConfig}
-            className="flex h-9 items-center justify-center gap-2 rounded-md border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-700 hover:bg-slate-50"
+            className="flex h-9 items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-700 hover:bg-slate-50"
           >
             <Upload aria-hidden="true" size={15} />
             Import
@@ -202,7 +202,7 @@ export function Sidebar({
         <button
           type="button"
           onClick={onOpenSettings}
-          className="flex h-9 w-full items-center justify-center gap-2 rounded-md border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-700 hover:bg-slate-50"
+          className="flex h-9 w-full items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-700 hover:bg-slate-50"
         >
           <Settings aria-hidden="true" size={15} />
           Settings

@@ -174,7 +174,7 @@ export function DesktopLayout({
   urlInputRef,
 }: DesktopLayoutProps) {
   return (
-    <main className="flex h-screen overflow-hidden bg-[#f1f3f4] text-slate-900">
+    <main className="flex h-screen overflow-hidden bg-[#eef2f7] text-slate-900">
       {sidebarOpen ? (
         <Sidebar
           projects={projects}
@@ -204,7 +204,7 @@ export function DesktopLayout({
         />
       ) : null}
 
-      <section className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden bg-white">
+      <section className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden bg-[#fbfcfe]">
         {workspaceError ? (
           <div className="flex items-center justify-between gap-3 border-b border-red-200 bg-red-50 px-4 py-2 text-sm text-red-700">
             <span>{workspaceError}</span>

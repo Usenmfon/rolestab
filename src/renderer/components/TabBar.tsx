@@ -24,9 +24,9 @@ export function TabBar({
   onCancelRename,
 }: TabBarProps) {
   return (
-    <div className="app-drag-region relative z-10 flex h-10 shrink-0 items-end gap-1 overflow-x-auto border-b border-[#d7dce3] bg-[#e8eaed] px-2 pr-36 pt-1">
+    <div className="app-drag-region relative z-10 flex h-11 shrink-0 items-end gap-1.5 overflow-x-auto border-b border-[#d8dee8] bg-[#e8edf4] px-2.5 pr-36 pt-1.5">
       {tabs.length === 0 ? (
-        <span className="mb-2 px-3 text-sm text-slate-500">No role tabs open</span>
+        <span className="mb-2.5 px-3 text-sm text-slate-500">No role tabs open</span>
       ) : (
         tabs.map((tab) => {
           const active = tab.id === activeTabId
@@ -34,10 +34,10 @@ export function TabBar({
           return (
             <div
               key={tab.id}
-              className={`app-no-drag group flex h-9 w-56 shrink-0 items-center gap-2 rounded-t-xl px-3 transition ${
+              className={`app-no-drag group flex h-9 w-56 shrink-0 items-center gap-2 rounded-t-lg px-3 transition ${
                 active
-                  ? 'bg-white text-slate-950 shadow-[0_-1px_0_rgba(15,23,42,0.08),1px_0_0_rgba(15,23,42,0.08),-1px_0_0_rgba(15,23,42,0.08)]'
-                  : 'bg-[#dfe3e8] text-slate-600 hover:bg-[#e9edf2]'
+                  ? 'bg-[#fbfcfe] text-slate-950 shadow-[0_-1px_0_rgba(15,23,42,0.08),1px_0_0_rgba(15,23,42,0.08),-1px_0_0_rgba(15,23,42,0.08)]'
+                  : 'bg-[#dce3ed] text-slate-600 hover:bg-[#edf2f7]'
               }`}
             >
               {renamingTabId === tab.id ? (
@@ -74,7 +74,7 @@ export function TabBar({
                 title="Close Tab"
                 aria-label={`Close ${tab.title}`}
                 onClick={() => onCloseTab(tab.id)}
-                className="app-no-drag grid h-6 w-6 shrink-0 place-items-center rounded-full text-slate-400 hover:bg-slate-200 hover:text-slate-700"
+                className="app-no-drag grid h-6 w-6 shrink-0 place-items-center rounded-md text-slate-400 hover:bg-slate-200 hover:text-slate-700"
               >
                 <X aria-hidden="true" size={14} />
               </button>
