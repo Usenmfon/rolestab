@@ -30,7 +30,7 @@ import {
 import type { AppSettings, ProjectSummary, RecentUrl, RoleProfile, SavedBrowserTab } from '../shared/workspace.js'
 
 const { app, BrowserWindow, ipcMain } = electron
-const { dialog, shell } = electron
+const { clipboard, dialog, shell } = electron
 
 ignoreBrokenConsolePipe(process.stdout)
 ignoreBrokenConsolePipe(process.stderr)
@@ -110,6 +110,12 @@ ipcMain.handle('app:get-version', (event) => {
   assertTrustedSender(event)
 
   return app.getVersion()
+})
+
+ipcMain.handle('app:copy-text', (event, text: string) => {
+  assertTrustedSender(event)
+
+  clipboard.writeText(String(text))
 })
 
 ipcMain.handle('app:get-update-status', (event) => {

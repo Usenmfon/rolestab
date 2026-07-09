@@ -20,6 +20,9 @@ const api = {
         getVersion() {
             return ipcRenderer.invoke('app:get-version');
         },
+        copyText(text) {
+            return ipcRenderer.invoke('app:copy-text', text);
+        },
         getUpdateStatus() {
             return ipcRenderer.invoke('app:get-update-status');
         },

@@ -30,6 +30,9 @@ const api = {
     getVersion(): Promise<string> {
       return ipcRenderer.invoke('app:get-version')
     },
+    copyText(text: string): Promise<void> {
+      return ipcRenderer.invoke('app:copy-text', text)
+    },
     getUpdateStatus(): Promise<UpdateStatus> {
       return ipcRenderer.invoke('app:get-update-status')
     },

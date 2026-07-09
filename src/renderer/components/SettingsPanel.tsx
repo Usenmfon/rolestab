@@ -113,7 +113,11 @@ export function SettingsPanel({
     ].join('\n')
 
     try {
-      await navigator.clipboard.writeText(diagnostics)
+      if (window.rolesTab?.app.copyText) {
+        await window.rolesTab.app.copyText(diagnostics)
+      } else {
+        await navigator.clipboard.writeText(diagnostics)
+      }
       setCopied(true)
     } catch {
       setCopied(false)

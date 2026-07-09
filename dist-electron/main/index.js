@@ -10,7 +10,7 @@ const autoUpdater_js_1 = require("./autoUpdater.js");
 const sessionManager_js_1 = require("./sessionManager.js");
 const workspaceStore_js_1 = require("./workspaceStore.js");
 const { app, BrowserWindow, ipcMain } = electron_1.default;
-const { dialog, shell } = electron_1.default;
+const { clipboard, dialog, shell } = electron_1.default;
 ignoreBrokenConsolePipe(process.stdout);
 ignoreBrokenConsolePipe(process.stderr);
 ignoreBrokenPipeExceptions();
@@ -69,6 +69,10 @@ app.on('window-all-closed', () => {
 ipcMain.handle('app:get-version', (event) => {
     assertTrustedSender(event);
     return app.getVersion();
+});
+ipcMain.handle('app:copy-text', (event, text) => {
+    assertTrustedSender(event);
+    clipboard.writeText(String(text));
 });
 ipcMain.handle('app:get-update-status', (event) => {
     assertTrustedSender(event);
