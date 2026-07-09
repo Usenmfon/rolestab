@@ -98,6 +98,12 @@ app.on('window-all-closed', () => {
   }
 })
 
+ipcMain.handle('app:get-version', (event) => {
+  assertTrustedSender(event)
+
+  return app.getVersion()
+})
+
 ipcMain.handle('app:open-external', async (event, url: string) => {
   assertTrustedSender(event)
   const parsed = parseHttpUrl(url)

@@ -21,6 +21,9 @@ const api = {
       chrome: process.versions.chrome,
       node: process.versions.node,
     },
+    getVersion(): Promise<string> {
+      return ipcRenderer.invoke('app:get-version')
+    },
     openExternal(url: string): Promise<void> {
       return ipcRenderer.invoke('app:open-external', url)
     },

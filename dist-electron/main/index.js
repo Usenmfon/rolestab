@@ -63,6 +63,10 @@ app.on('window-all-closed', () => {
         app.quit();
     }
 });
+ipcMain.handle('app:get-version', (event) => {
+    assertTrustedSender(event);
+    return app.getVersion();
+});
 ipcMain.handle('app:open-external', async (event, url) => {
     assertTrustedSender(event);
     const parsed = parseHttpUrl(url);

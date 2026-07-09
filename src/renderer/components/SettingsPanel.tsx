@@ -1,5 +1,5 @@
-import { useState, type FormEvent } from 'react'
-import { RotateCcw, X } from 'lucide-react'
+import { useEffect, useState, type FormEvent } from 'react'
+import { Check, Copy, ExternalLink, RotateCcw, X } from 'lucide-react'
 import type { AppSettings, ProjectSummary } from '../../shared/workspace'
 import { normalizeHttpUrl } from '../utils/url'
 
@@ -10,6 +10,8 @@ type SettingsPanelProps = {
   onSubmit: (settings: AppSettings) => Promise<void>
   onReset: () => Promise<void>
 }
+
+const releasesUrl = 'https://github.com/Usenmfon/rolestab/releases'
 
 const shortcutLabels: Record<string, string> = {
   newTab: 'New tab',
@@ -34,6 +36,55 @@ export function SettingsPanel({
   const [draft, setDraft] = useState<AppSettings>(settings)
   const [error, setError] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
+  const [appVersion, setAppVersion] = useState<string | null>(null)
+  const [copied, setCopied] = useState(false)
+
+  const engineVersions = window.rolesTab?.app.versions
+  const platform = window.rolesTab?.app.platform ?? 'unknown'
+
+  useEffect(() => {
+    let active = true
+
+    void window.rolesTab?.app.getVersion().then((version) => {
+      if (active) {
+        setAppVersion(version)
+      }
+    })
+
+    return () => {
+      active = false
+    }
+  }, [])
+
+  useEffect(() => {
+    if (!copied) {
+      return
+    }
+
+    const timer = window.setTimeout(() => setCopied(false), 2000)
+    return () => window.clearTimeout(timer)
+  }, [copied])
+
+  async function handleCopyDiagnostics() {
+    const diagnostics = [
+      `RolesTab ${appVersion ?? 'unknown'}`,
+      `Platform: ${platform}`,
+      `Electron: ${engineVersions?.electron ?? 'unknown'}`,
+      `Chrome: ${engineVersions?.chrome ?? 'unknown'}`,
+      `Node: ${engineVersions?.node ?? 'unknown'}`,
+    ].join('\n')
+
+    try {
+      await navigator.clipboard.writeText(diagnostics)
+      setCopied(true)
+    } catch {
+      setCopied(false)
+    }
+  }
+
+  function handleOpenReleases() {
+    void window.rolesTab?.app.openExternal(releasesUrl)
+  }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -227,6 +278,50 @@ export function SettingsPanel({
                   />
                 </label>
               ))}
+            </div>
+          </section>
+
+          <section className="space-y-3">
+            <h3 className="text-sm font-semibold text-slate-950">About</h3>
+            <dl className="overflow-hidden rounded-md border border-slate-200 text-sm">
+              <div className="flex items-center justify-between gap-4 border-b border-slate-100 px-3 py-2">
+                <dt className="font-medium text-slate-500">Version</dt>
+                <dd className="font-semibold text-slate-900">{appVersion ?? '—'}</dd>
+              </div>
+              <div className="flex items-center justify-between gap-4 border-b border-slate-100 px-3 py-2">
+                <dt className="font-medium text-slate-500">Platform</dt>
+                <dd className="text-slate-700">{platform}</dd>
+              </div>
+              <div className="flex items-center justify-between gap-4 border-b border-slate-100 px-3 py-2">
+                <dt className="font-medium text-slate-500">Electron</dt>
+                <dd className="text-slate-700">{engineVersions?.electron ?? '—'}</dd>
+              </div>
+              <div className="flex items-center justify-between gap-4 border-b border-slate-100 px-3 py-2">
+                <dt className="font-medium text-slate-500">Chrome</dt>
+                <dd className="text-slate-700">{engineVersions?.chrome ?? '—'}</dd>
+              </div>
+              <div className="flex items-center justify-between gap-4 px-3 py-2">
+                <dt className="font-medium text-slate-500">Node</dt>
+                <dd className="text-slate-700">{engineVersions?.node ?? '—'}</dd>
+              </div>
+            </dl>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={handleOpenReleases}
+                className="flex h-9 items-center gap-2 rounded-md border border-slate-200 px-3 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+              >
+                <ExternalLink aria-hidden="true" size={15} />
+                Releases
+              </button>
+              <button
+                type="button"
+                onClick={handleCopyDiagnostics}
+                className="flex h-9 items-center gap-2 rounded-md border border-slate-200 px-3 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+              >
+                {copied ? <Check aria-hidden="true" size={15} /> : <Copy aria-hidden="true" size={15} />}
+                {copied ? 'Copied' : 'Copy diagnostics'}
+              </button>
             </div>
           </section>
         </div>

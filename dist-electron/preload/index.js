@@ -13,6 +13,9 @@ const api = {
             chrome: process.versions.chrome,
             node: process.versions.node,
         },
+        getVersion() {
+            return ipcRenderer.invoke('app:get-version');
+        },
         openExternal(url) {
             return ipcRenderer.invoke('app:open-external', url);
         },
