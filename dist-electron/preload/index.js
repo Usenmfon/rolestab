@@ -23,6 +23,9 @@ const api = {
         copyText(text) {
             return ipcRenderer.invoke('app:copy-text', text);
         },
+        setTitleBarTheme(theme) {
+            return ipcRenderer.invoke('app:set-title-bar-theme', theme);
+        },
         getUpdateStatus() {
             return ipcRenderer.invoke('app:get-update-status');
         },

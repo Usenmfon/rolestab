@@ -157,6 +157,7 @@ function App() {
       root.dataset.theme = settings.theme
       root.classList.toggle('theme-dark', darkTheme)
       root.classList.toggle('theme-light', !darkTheme)
+      void window.rolesTab?.app.setTitleBarTheme(darkTheme ? 'dark' : 'light')
     }
 
     applyTheme()

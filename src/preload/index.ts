@@ -33,6 +33,9 @@ const api = {
     copyText(text: string): Promise<void> {
       return ipcRenderer.invoke('app:copy-text', text)
     },
+    setTitleBarTheme(theme: 'light' | 'dark'): Promise<void> {
+      return ipcRenderer.invoke('app:set-title-bar-theme', theme)
+    },
     getUpdateStatus(): Promise<UpdateStatus> {
       return ipcRenderer.invoke('app:get-update-status')
     },

@@ -74,6 +74,13 @@ ipcMain.handle('app:copy-text', (event, text) => {
     assertTrustedSender(event);
     clipboard.writeText(String(text));
 });
+ipcMain.handle('app:set-title-bar-theme', (event, theme) => {
+    assertTrustedSender(event);
+    if (!mainWindow || (theme !== 'light' && theme !== 'dark')) {
+        return;
+    }
+    (0, browserWindow_js_1.applyTitleBarTheme)(mainWindow, theme);
+});
 ipcMain.handle('app:get-update-status', (event) => {
     assertTrustedSender(event);
     return (0, autoUpdater_js_1.getUpdateStatus)();

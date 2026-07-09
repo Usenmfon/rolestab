@@ -15,6 +15,27 @@ const appIconPath =
 
 type AppBrowserWindow = InstanceType<typeof BrowserWindow>
 
+type TitleBarTheme = 'light' | 'dark'
+
+const titleBarThemes: Record<TitleBarTheme, { color: string; symbolColor: string }> = {
+  light: {
+    color: '#e8eaed',
+    symbolColor: '#334155',
+  },
+  dark: {
+    color: '#111827',
+    symbolColor: '#e2e8f0',
+  },
+}
+
+export function applyTitleBarTheme(window: AppBrowserWindow, theme: TitleBarTheme): void {
+  window.setTitleBarOverlay({
+    ...titleBarThemes[theme],
+    height: 40,
+  })
+  window.setBackgroundColor(theme === 'dark' ? '#0f172a' : '#f5f7fb')
+}
+
 function isSafeExternalUrl(url: string): boolean {
   try {
     const parsed = new URL(url)
@@ -57,8 +78,7 @@ export function createAppWindow(): AppBrowserWindow {
     autoHideMenuBar: true,
     titleBarStyle: 'hidden',
     titleBarOverlay: {
-      color: '#e8eaed',
-      symbolColor: '#334155',
+      ...titleBarThemes.light,
       height: 40,
     },
     webPreferences: {

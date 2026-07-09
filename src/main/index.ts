@@ -1,5 +1,5 @@
 import electron from 'electron'
-import { createAppWindow } from './browserWindow.js'
+import { applyTitleBarTheme, createAppWindow } from './browserWindow.js'
 import { logInternalError } from './errorLogger.js'
 import {
   checkForUpdates,
@@ -116,6 +116,16 @@ ipcMain.handle('app:copy-text', (event, text: string) => {
   assertTrustedSender(event)
 
   clipboard.writeText(String(text))
+})
+
+ipcMain.handle('app:set-title-bar-theme', (event, theme: 'light' | 'dark') => {
+  assertTrustedSender(event)
+
+  if (!mainWindow || (theme !== 'light' && theme !== 'dark')) {
+    return
+  }
+
+  applyTitleBarTheme(mainWindow, theme)
 })
 
 ipcMain.handle('app:get-update-status', (event) => {

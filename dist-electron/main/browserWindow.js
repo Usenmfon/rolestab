@@ -3,6 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.applyTitleBarTheme = applyTitleBarTheme;
 exports.createAppWindow = createAppWindow;
 const electron_1 = __importDefault(require("electron"));
 const node_path_1 = __importDefault(require("node:path"));
@@ -15,6 +16,23 @@ const preloadPath = node_path_1.default.join(currentDirectory, '../preload/index
 const appIconPath = app.isPackaged
     ? node_path_1.default.join(currentDirectory, '../../dist/favicon.ico')
     : node_path_1.default.join(currentDirectory, '../../public/favicon.ico');
+const titleBarThemes = {
+    light: {
+        color: '#e8eaed',
+        symbolColor: '#334155',
+    },
+    dark: {
+        color: '#111827',
+        symbolColor: '#e2e8f0',
+    },
+};
+function applyTitleBarTheme(window, theme) {
+    window.setTitleBarOverlay({
+        ...titleBarThemes[theme],
+        height: 40,
+    });
+    window.setBackgroundColor(theme === 'dark' ? '#0f172a' : '#f5f7fb');
+}
 function isSafeExternalUrl(url) {
     try {
         const parsed = new URL(url);
@@ -56,8 +74,7 @@ function createAppWindow() {
         autoHideMenuBar: true,
         titleBarStyle: 'hidden',
         titleBarOverlay: {
-            color: '#e8eaed',
-            symbolColor: '#334155',
+            ...titleBarThemes.light,
             height: 40,
         },
         webPreferences: {
