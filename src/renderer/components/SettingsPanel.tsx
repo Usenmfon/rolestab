@@ -395,7 +395,7 @@ export function SettingsPanel({
               <button
                 type="button"
                 onClick={handleCopyDiagnostics}
-                className="flex h-9 items-center gap-2 rounded-md border border-slate-200 px-3 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+                className="flex h-9 min-w-[10rem] items-center justify-center gap-2 rounded-md border border-slate-200 px-3 text-sm font-semibold text-slate-700 hover:bg-slate-50"
               >
                 {copied ? <Check aria-hidden="true" size={15} /> : <Copy aria-hidden="true" size={15} />}
                 {copied ? 'Copied' : 'Copy diagnostics'}
