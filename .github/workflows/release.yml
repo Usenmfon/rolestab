@@ -31,6 +31,10 @@ jobs:
             os: macos-latest
             script: dist:mac
             artifact: macos-installer
+          - name: macOS Intel x64
+            os: macos-13
+            script: dist:mac:x64
+            artifact: macos-intel-x64-installer
           - name: Linux
             os: ubuntu-latest
             script: dist:linux

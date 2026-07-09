@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Release CI now builds and uploads a macOS Intel x64 installer artifact.
+
 ## [0.2.1] - 2026-07-09
 
 ### Fixed

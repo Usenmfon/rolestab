@@ -45,6 +45,7 @@ test('packaging config includes Windows, macOS, and Linux targets', () => {
 
   assert.equal(packageJson.scripts['dist:win'], 'npm run build && electron-builder --win --publish never')
   assert.equal(packageJson.scripts['dist:mac'], 'npm run build && electron-builder --mac --publish never')
+  assert.equal(packageJson.scripts['dist:mac:x64'], 'npm run build && electron-builder --mac --x64 --publish never')
   assert.equal(packageJson.scripts['dist:linux'], 'npm run build && electron-builder --linux --publish never')
   assert.equal(packageJson.build.win.target[0].target, 'nsis')
   assert.equal(packageJson.build.win.icon, 'public/favicon.ico')

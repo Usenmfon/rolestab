@@ -40,6 +40,7 @@ Create platform packages:
 ```bash
 npm run dist:win
 npm run dist:mac
+npm run dist:mac:x64
 npm run dist:linux
 ```
 

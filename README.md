@@ -91,6 +91,7 @@ Build platform-specific installers:
 ```bash
 npm run dist:win
 npm run dist:mac
+npm run dist:mac:x64
 npm run dist:linux
 ```
 
@@ -103,7 +104,7 @@ release/
 Current targets:
 
 - Windows: NSIS installer
-- macOS: DMG and ZIP
+- macOS: DMG and ZIP, including an Intel x64 build in CI
 - Linux: AppImage and DEB
 
 macOS builds are currently unsigned, so macOS may show a security warning on first launch.
