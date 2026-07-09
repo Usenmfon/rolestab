@@ -162,6 +162,15 @@ test('role launcher focuses existing tabs instead of creating duplicates', () =>
   assert.match(appSource, /!tabs\.some\(\(tab\) => tab\.roleProfileId === roleProfile\.id\)/)
 })
 
+test('update checker keeps transport errors readable in settings', () => {
+  const autoUpdaterSource = readProjectFile('src/main/autoUpdater.ts')
+
+  assert.match(autoUpdaterSource, /getUpdateErrorMessage/)
+  assert.match(autoUpdaterSource, /GitHub is temporarily unavailable/)
+  assert.match(autoUpdaterSource, /message\.split\(\s*\/\\r\?\\n\//)
+  assert.match(autoUpdaterSource, /logInternalError\(\{\s*scope:\s*'auto-updater',\s*message:\s*error\.message/)
+})
+
 test('sidebar can be shown and hidden from the browser toolbar', () => {
   const appSource = readProjectFile('src/renderer/app/App.tsx')
   const layoutSource = readProjectFile('src/renderer/layouts/DesktopLayout.tsx')

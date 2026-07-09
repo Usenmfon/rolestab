@@ -16,6 +16,16 @@ const { app } = electron_1.default;
 let currentStatus = { state: 'idle' };
 let statusWindow = null;
 let listenersBound = false;
+function getUpdateErrorMessage(error) {
+    const message = error.message.trim();
+    if (/504|gateway time-?out/i.test(message)) {
+        return 'GitHub is temporarily unavailable. Please try again in a few minutes.';
+    }
+    if (/ENOTFOUND|ECONNRESET|ECONNREFUSED|ETIMEDOUT|network|timeout/i.test(message)) {
+        return 'Unable to reach GitHub. Check your internet connection and try again.';
+    }
+    return message.split(/\r?\n/)[0] || 'Unable to check for updates.';
+}
 function getUpdateStatus() {
     return currentStatus;
 }
@@ -49,7 +59,7 @@ function bindListeners() {
     electron_updater_1.autoUpdater.on('download-progress', (progress) => setStatus({ state: 'downloading', percent: Math.round(progress.percent) }));
     electron_updater_1.autoUpdater.on('update-downloaded', (info) => setStatus({ state: 'downloaded', version: info.version }));
     electron_updater_1.autoUpdater.on('error', (error) => {
-        setStatus({ state: 'error', message: error.message });
+        setStatus({ state: 'error', message: getUpdateErrorMessage(error) });
         void (0, errorLogger_js_1.logInternalError)({ scope: 'auto-updater', message: error.message, stack: error.stack });
     });
 }

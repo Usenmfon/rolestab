@@ -12,6 +12,20 @@ let currentStatus: UpdateStatus = { state: 'idle' }
 let statusWindow: AppBrowserWindow | null = null
 let listenersBound = false
 
+function getUpdateErrorMessage(error: Error): string {
+  const message = error.message.trim()
+
+  if (/504|gateway time-?out/i.test(message)) {
+    return 'GitHub is temporarily unavailable. Please try again in a few minutes.'
+  }
+
+  if (/ENOTFOUND|ECONNRESET|ECONNREFUSED|ETIMEDOUT|network|timeout/i.test(message)) {
+    return 'Unable to reach GitHub. Check your internet connection and try again.'
+  }
+
+  return message.split(/\r?\n/)[0] || 'Unable to check for updates.'
+}
+
 export function getUpdateStatus(): UpdateStatus {
   return currentStatus
 }
@@ -55,7 +69,7 @@ function bindListeners(): void {
   )
   autoUpdater.on('update-downloaded', (info) => setStatus({ state: 'downloaded', version: info.version }))
   autoUpdater.on('error', (error) => {
-    setStatus({ state: 'error', message: error.message })
+    setStatus({ state: 'error', message: getUpdateErrorMessage(error) })
     void logInternalError({ scope: 'auto-updater', message: error.message, stack: error.stack })
   })
 }
