@@ -32,7 +32,7 @@ jobs:
             script: dist:mac
             artifact: macos-installer
           - name: macOS Intel x64
-            os: macos-13
+            os: macos-15-intel
             script: dist:mac:x64
             artifact: macos-intel-x64-installer
           - name: Linux
