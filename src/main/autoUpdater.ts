@@ -1,5 +1,6 @@
 import electron from 'electron'
 import { autoUpdater } from 'electron-updater'
+import log from 'electron-log/main'
 import { logInternalError } from './errorLogger.js'
 import { updateStatusChannel, type UpdateStatus } from '../shared/update.js'
 
@@ -41,6 +42,8 @@ function bindListeners(): void {
   }
 
   listenersBound = true
+  log.transports.file.level = 'info'
+  autoUpdater.logger = log
   autoUpdater.autoDownload = true
   autoUpdater.autoInstallOnAppQuit = true
 

@@ -9,6 +9,7 @@ exports.checkForUpdates = checkForUpdates;
 exports.quitAndInstall = quitAndInstall;
 const electron_1 = __importDefault(require("electron"));
 const electron_updater_1 = require("electron-updater");
+const main_1 = __importDefault(require("electron-log/main"));
 const errorLogger_js_1 = require("./errorLogger.js");
 const update_js_1 = require("../shared/update.js");
 const { app, BrowserWindow } = electron_1.default;
@@ -38,6 +39,8 @@ function bindListeners() {
         return;
     }
     listenersBound = true;
+    main_1.default.transports.file.level = 'info';
+    electron_updater_1.autoUpdater.logger = main_1.default;
     electron_updater_1.autoUpdater.autoDownload = true;
     electron_updater_1.autoUpdater.autoInstallOnAppQuit = true;
     electron_updater_1.autoUpdater.on('checking-for-update', () => setStatus({ state: 'checking' }));
