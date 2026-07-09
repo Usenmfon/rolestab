@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.1] - 2026-07-09
+
+### Fixed
+
+- Dark appearance now applies across the app shell instead of leaving light
+  backgrounds in panels, tabs, controls, and status surfaces.
+- Native window titlebar controls now match the selected appearance, including
+  System mode changes.
+
 ## [0.2.0] - 2026-07-09
 
 ### Added
@@ -61,7 +70,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Project management, role profile management, isolated browser tabs, and
   browser navigation controls.
 
-[Unreleased]: https://github.com/Usenmfon/rolestab/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/Usenmfon/rolestab/compare/v0.2.1...HEAD
+[0.2.1]: https://github.com/Usenmfon/rolestab/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/Usenmfon/rolestab/compare/v0.1.3...v0.2.0
 [0.1.3]: https://github.com/Usenmfon/rolestab/compare/v0.1.2...v0.1.3
 [0.1.2]: https://github.com/Usenmfon/rolestab/compare/v0.1.1...v0.1.2
