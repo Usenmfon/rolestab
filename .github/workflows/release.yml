@@ -76,6 +76,8 @@ jobs:
             release/*.deb
             release/*.blockmap
             release/*.yml
+            !release/builder-debug.yml
+            !release/latest-mac.yml
           if-no-files-found: error
 
   verify-version:
