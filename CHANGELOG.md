@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-07-09
+
 ### Added
 
 - Automatic updates (Windows and Linux AppImage): the app checks for new
@@ -59,7 +61,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Project management, role profile management, isolated browser tabs, and
   browser navigation controls.
 
-[Unreleased]: https://github.com/Usenmfon/rolestab/compare/v0.1.3...HEAD
+[Unreleased]: https://github.com/Usenmfon/rolestab/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/Usenmfon/rolestab/compare/v0.1.3...v0.2.0
 [0.1.3]: https://github.com/Usenmfon/rolestab/compare/v0.1.2...v0.1.3
 [0.1.2]: https://github.com/Usenmfon/rolestab/compare/v0.1.1...v0.1.2
 [0.1.1]: https://github.com/Usenmfon/rolestab/compare/v0.1.0...v0.1.1
