@@ -157,6 +157,12 @@ html.theme-light {
   min-height: 100vh;
 }
 
+.platform-darwin .mac-titlebar-safe {
+  height: 78px;
+  align-items: flex-start;
+  padding-top: 28px;
+}
+
 ::selection {
   background: rgba(37, 99, 235, 0.16);
 }

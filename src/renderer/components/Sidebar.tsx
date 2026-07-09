@@ -60,7 +60,7 @@ export function Sidebar({
 }: SidebarProps) {
   return (
     <aside className="flex w-[18.5rem] shrink-0 flex-col border-r border-[#d8dee8] bg-[#f7f9fc]">
-      <div className="flex h-14 items-center gap-3 border-b border-[#d8dee8] px-4">
+      <div className="mac-titlebar-safe flex h-14 items-center gap-3 border-b border-[#d8dee8] px-4">
         <div className="grid h-9 w-9 place-items-center overflow-hidden rounded-lg bg-white shadow-sm ring-1 ring-slate-200">
           <img src={logoUrl} alt="" className="h-8 w-8" />
         </div>
@@ -99,7 +99,7 @@ export function Sidebar({
                 return (
                   <div
                     key={project.id}
-                  className={`w-full rounded-lg border px-3.5 py-3 text-left shadow-sm transition ${
+                    className={`w-full rounded-lg border px-3.5 py-3 text-left shadow-sm transition ${
                       active
                         ? 'border-blue-200 bg-blue-50 text-slate-950 shadow-blue-100/60'
                         : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50'
