@@ -4,8 +4,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const electron_1 = __importDefault(require("electron"));
-const update_js_1 = require("../shared/update.js");
 const { contextBridge, ipcRenderer } = electron_1.default;
+// This preload runs sandboxed, so it can only require `electron` and Node
+// built-ins — not app modules. Keep imports type-only (erased at compile) and
+// inline any runtime values. Must match `updateStatusChannel` in shared/update.ts.
+const updateStatusChannel = 'app:update-status';
 const api = {
     app: {
         platform: process.platform,
@@ -28,8 +31,8 @@ const api = {
         },
         onUpdateStatus(callback) {
             const listener = (_event, status) => callback(status);
-            ipcRenderer.on(update_js_1.updateStatusChannel, listener);
-            return () => ipcRenderer.removeListener(update_js_1.updateStatusChannel, listener);
+            ipcRenderer.on(updateStatusChannel, listener);
+            return () => ipcRenderer.removeListener(updateStatusChannel, listener);
         },
         openExternal(url) {
             return ipcRenderer.invoke('app:open-external', url);

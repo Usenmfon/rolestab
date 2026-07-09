@@ -10,9 +10,14 @@ import type {
   WorkspaceImportResult,
 } from '../shared/workspace.js'
 import type { SessionUsage } from '../shared/session.js'
-import { updateStatusChannel, type UpdateStatus } from '../shared/update.js'
+import type { UpdateStatus } from '../shared/update.js'
 
 const { contextBridge, ipcRenderer } = electron
+
+// This preload runs sandboxed, so it can only require `electron` and Node
+// built-ins — not app modules. Keep imports type-only (erased at compile) and
+// inline any runtime values. Must match `updateStatusChannel` in shared/update.ts.
+const updateStatusChannel = 'app:update-status'
 
 const api = {
   app: {
