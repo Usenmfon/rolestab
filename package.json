@@ -25,6 +25,7 @@
   "dependencies": {
     "@tailwindcss/vite": "^4.3.2",
     "concurrently": "^10.0.3",
+    "electron-updater": "^6.8.9",
     "lucide-react": "^1.23.0",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
@@ -58,6 +59,13 @@
     "directories": {
       "output": "release"
     },
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "Usenmfon",
+        "repo": "rolestab"
+      }
+    ],
     "files": [
       "dist/**",
       "dist-electron/**",
