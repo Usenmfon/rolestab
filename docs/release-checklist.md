@@ -4,12 +4,13 @@ Run this checklist before publishing a RolesTab installer.
 
 ## Version & Changelog
 
-1. Bump `version` in `package.json`. The release CI fails if the pushed
-   `vX.Y.Z` tag does not match this value.
-2. Keep the `CHANGELOG.md` entry for the release you are publishing current,
-   and update any comparison links at the bottom of the file if you add a new
-   release entry later.
-3. Commit, then tag and push:
+1. Run `npm run release:prep -- patch` from a clean working tree when you are
+   ready to turn recent commits into a release entry.
+2. The prep command bumps `version` in `package.json`, updates
+   `package-lock.json`, and prepends a dated `CHANGELOG.md` entry from the git
+   commits since the previous release tag. Pass `minor`, `major`, or an
+   explicit version if you need something other than a patch bump.
+3. Review the generated changelog entry, then commit, tag, and push:
 
    ```bash
    git tag vX.Y.Z

@@ -13,6 +13,7 @@
     "lint": "eslint .",
     "test": "npm run build && node --test tests/smoke.test.cjs",
     "preview": "vite preview",
+    "release:prep": "node scripts/release-prep.mjs",
     "stats:downloads": "node scripts/github-release-downloads.mjs",
     "dist": "npm run build && electron-builder --publish never",
     "dist:dir": "npm run build && electron-builder --dir --publish never",

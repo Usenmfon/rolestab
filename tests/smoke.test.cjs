@@ -64,6 +64,18 @@ test('packaging config includes Windows, macOS, and Linux targets', () => {
   assert.equal(existsSync(path.join(root, 'public/site.webmanifest')), true)
 })
 
+test('release prep command is wired for changelog and version updates', () => {
+  const packageJson = JSON.parse(readProjectFile('package.json'))
+  const releaseChecklist = readProjectFile('docs/release-checklist.md')
+  const releaseScript = readProjectFile('scripts/release-prep.mjs')
+
+  assert.equal(packageJson.scripts['release:prep'], 'node scripts/release-prep.mjs')
+  assert.match(releaseChecklist, /npm run release:prep -- patch/)
+  assert.match(releaseChecklist, /updates\s+`package-lock\.json`/)
+  assert.match(releaseScript, /buildChangelogSections/)
+  assert.match(releaseScript, /replaceRootVersion/)
+})
+
 test('packaging-only dependencies stay out of production dependencies', () => {
   const packageJson = JSON.parse(readProjectFile('package.json'))
 
