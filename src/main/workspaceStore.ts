@@ -155,7 +155,10 @@ function isValidRecentUrl(
     typeof recentUrl.title === 'string' &&
     (recentUrl.projectId === null || projects.some((project) => project.id === recentUrl.projectId)) &&
     (recentUrl.roleProfileId === null ||
-      roleProfiles.some((roleProfile) => roleProfile.id === recentUrl.roleProfileId)) &&
+      roleProfiles.some(
+        (roleProfile) =>
+          roleProfile.id === recentUrl.roleProfileId && roleProfile.projectId === recentUrl.projectId,
+      )) &&
     typeof recentUrl.visitedAt === 'string'
   )
 }
@@ -168,7 +171,10 @@ function isValidSavedTab(
   return (
     typeof recentTab.id === 'string' &&
     projects.some((project) => project.id === recentTab.projectId) &&
-    roleProfiles.some((roleProfile) => roleProfile.id === recentTab.roleProfileId) &&
+    roleProfiles.some(
+      (roleProfile) =>
+        roleProfile.id === recentTab.roleProfileId && roleProfile.projectId === recentTab.projectId,
+    ) &&
     typeof recentTab.title === 'string' &&
     typeof recentTab.url === 'string' &&
     isAllowedUrl(recentTab.url) &&

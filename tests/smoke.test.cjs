@@ -158,12 +158,24 @@ test('workspace storage recovers from trailing JSON corruption and serializes wr
   assert.match(workspaceStoreSource, /rename\(temporaryPath, filePath\)/)
 })
 
-test('role launcher focuses existing tabs instead of creating duplicates', () => {
+test('role launcher keeps tabs isolated by project', () => {
   const appSource = readProjectFile('src/renderer/app/App.tsx')
+  const workspaceStoreSource = readProjectFile('src/main/workspaceStore.ts')
 
-  assert.match(appSource, /const existingTab = tabs\.find\(\(tab\) => tab\.roleProfileId === roleProfileId\)/)
+  assert.match(
+    appSource,
+    /tab\.projectId === activeProject\.id && tab\.roleProfileId === roleProfileId/,
+  )
+  assert.match(
+    appSource,
+    /currentRoleProfile\.projectId === activeProject\.id && currentRoleProfile\.id === roleProfileId/,
+  )
   assert.match(appSource, /setActiveTabId\(existingTab\.id\)/)
-  assert.match(appSource, /!tabs\.some\(\(tab\) => tab\.roleProfileId === roleProfile\.id\)/)
+  assert.match(appSource, /tabs=\{activeProjectTabs\}/)
+  assert.match(
+    workspaceStoreSource,
+    /roleProfile\.id === recentTab\.roleProfileId && roleProfile\.projectId === recentTab\.projectId/,
+  )
 })
 
 test('update checker keeps transport errors readable in settings', () => {

@@ -82,8 +82,8 @@ function App() {
     [editingRoleProfileId, roleProfiles],
   )
   const activeTab = useMemo(
-    () => tabs.find((tab) => tab.id === activeTabId) ?? null,
-    [activeTabId, tabs],
+    () => tabs.find((tab) => tab.id === activeTabId && tab.projectId === activeProjectId) ?? null,
+    [activeProjectId, activeTabId, tabs],
   )
   const activeProjectTabs = useMemo(
     () => tabs.filter((tab) => tab.projectId === activeProject?.id),
@@ -129,7 +129,9 @@ function App() {
         if (workspace.settings.restoreTabsOnStartup) {
           const restoredTabs = restoreTabsFromWorkspace(workspace)
           setTabs(restoredTabs)
-          setActiveTabId(restoredTabs.at(-1)?.id ?? null)
+          setActiveTabId(
+            restoredTabs.findLast((tab) => tab.projectId === workspace.lastActiveProjectId)?.id ?? null,
+          )
         }
 
         setWorkspaceLoaded(true)
@@ -289,7 +291,10 @@ function App() {
   function restoreTabsFromWorkspace(workspace: WorkspaceData): BrowserTab[] {
     return workspace.recentTabs
       .map((savedTab) => {
-        const roleProfile = workspace.roleProfiles.find((currentRole) => currentRole.id === savedTab.roleProfileId)
+        const roleProfile = workspace.roleProfiles.find(
+          (currentRole) =>
+            currentRole.id === savedTab.roleProfileId && currentRole.projectId === savedTab.projectId,
+        )
 
         if (!roleProfile) {
           return null
@@ -682,7 +687,13 @@ function App() {
   }
 
   function openRoleTab(roleProfileId: string) {
-    const existingTab = tabs.find((tab) => tab.roleProfileId === roleProfileId)
+    if (!activeProject) {
+      return
+    }
+
+    const existingTab = tabs.find(
+      (tab) => tab.projectId === activeProject.id && tab.roleProfileId === roleProfileId,
+    )
 
     if (existingTab) {
       setActiveTabId(existingTab.id)
@@ -690,7 +701,10 @@ function App() {
       return
     }
 
-    const roleProfile = roleProfiles.find((currentRoleProfile) => currentRoleProfile.id === roleProfileId)
+    const roleProfile = roleProfiles.find(
+      (currentRoleProfile) =>
+        currentRoleProfile.projectId === activeProject.id && currentRoleProfile.id === roleProfileId,
+    )
 
     if (!roleProfile) {
       return
@@ -731,7 +745,7 @@ function App() {
     }
 
     activeProjectRoleProfiles.forEach((roleProfile) => {
-      if (!tabs.some((tab) => tab.roleProfileId === roleProfile.id)) {
+      if (!tabs.some((tab) => tab.projectId === roleProfile.projectId && tab.roleProfileId === roleProfile.id)) {
         void openRoleProfileTab(roleProfile)
       }
     })
@@ -1166,7 +1180,7 @@ function App() {
       recentUrls={recentUrls}
       sessionUsage={sessionUsage}
       activeProject={activeProject}
-      tabs={tabs}
+      tabs={activeProjectTabs}
       activeTab={activeTab}
       activeTabId={activeTabId}
       renamingTabId={renamingTabId}
