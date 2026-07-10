@@ -423,7 +423,7 @@ export function SettingsPanel({
           <button
             type="submit"
             disabled={saving}
-            className="h-10 flex-1 rounded-lg bg-slate-900 px-4 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-400"
+            className="settings-save-button h-10 flex-1 rounded-lg bg-slate-900 px-4 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-400"
           >
             {saving ? 'Saving...' : 'Save Settings'}
           </button>
