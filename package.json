@@ -98,8 +98,8 @@
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
       "shortcutName": "RolesTab",
-      "installerIcon": "public/android-chrome-512x512.png",
-      "uninstallerIcon": "public/android-chrome-512x512.png"
+      "installerIcon": "public/favicon.ico",
+      "uninstallerIcon": "public/favicon.ico"
     },
     "mac": {
       "category": "public.app-category.developer-tools",
