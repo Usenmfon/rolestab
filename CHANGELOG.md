@@ -5,6 +5,16 @@ All notable changes to RolesTab are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.1] - 2026-07-10
+
+### Fixed
+
+- Role tabs are now isolated by project, so selecting a role opens or focuses
+  the correct project's URL and port.
+- Project switching now displays only the selected project's active role tabs.
+- Restored tabs and recent URLs now verify that each role belongs to the saved
+  project before loading it.
+
 ## [0.1.0] - 2026-07-10
 
 ### Added
@@ -29,4 +39,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   backgrounds in panels, tabs, controls, and status surfaces.
 - Native window titlebar controls now match the selected appearance.
 
+[0.1.1]: https://github.com/Usenmfon/rolestab/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/Usenmfon/rolestab/releases/tag/v0.1.0

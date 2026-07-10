@@ -71,7 +71,7 @@ Unsigned builds are acceptable for local MVP testing. Public distribution should
 
 ## Icon Notes
 
-The current MVP uses the favicon.io asset set in `rolestap_favicon_io/` and mirrors it into `public/`. Before public distribution, confirm platform-native icon assets are present:
+The current MVP keeps its favicon.io asset set in `public/`. Before public distribution, confirm platform-native icon assets are present:
 
 - `public/favicon.ico` for Windows installer icons.
 - `public/android-chrome-512x512.png` as the source for macOS and Linux packaging icons.
