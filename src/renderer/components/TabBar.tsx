@@ -34,11 +34,12 @@ export function TabBar({
           return (
             <div
               key={tab.id}
-              className={`app-no-drag group flex h-9 w-56 shrink-0 items-center gap-2 rounded-t-lg px-3 transition ${
+              className={`app-no-drag group flex h-9 w-56 shrink-0 items-center gap-2 rounded-t-lg border-t-[3px] px-3 transition ${
                 active
                   ? 'bg-[#fbfcfe] text-slate-950 shadow-[0_-1px_0_rgba(15,23,42,0.08),1px_0_0_rgba(15,23,42,0.08),-1px_0_0_rgba(15,23,42,0.08)]'
                   : 'bg-[#dce3ed] text-slate-600 hover:bg-[#edf2f7]'
               }`}
+              style={{ borderTopColor: tab.roleColor }}
             >
               {renamingTabId === tab.id ? (
                 <RenameTabInput

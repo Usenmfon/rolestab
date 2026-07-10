@@ -85,6 +85,7 @@ test('default app settings cover MVP keyboard and session behavior', () => {
   assert.equal(defaultAppSettings.confirmBeforeClearingSessions, true)
   assert.equal(defaultAppSettings.theme, 'system')
   assert.equal(defaultAppSettings.defaultHomepage, '')
+  assert.equal(defaultAppSettings.hasSeenOnboarding, false)
   assert.deepEqual(defaultAppSettings.defaultRoleColors, defaultRoleColors)
 
   for (const shortcut of [
@@ -181,6 +182,58 @@ test('sidebar can be shown and hidden from the browser toolbar', () => {
   assert.match(layoutSource, /sidebarOpen \?/)
   assert.match(topBarSource, /Hide Sidebar/)
   assert.match(topBarSource, /Show Sidebar/)
+})
+
+test('browser tabs show the active role color on their top border', () => {
+  const tabBarSource = readProjectFile('src/renderer/components/TabBar.tsx')
+
+  assert.match(tabBarSource, /border-t-\[3px\]/)
+  assert.match(tabBarSource, /borderTopColor:\s*tab\.roleColor/)
+})
+
+test('first-run guide is wired to onboarding settings', () => {
+  const workspaceTypes = readProjectFile('src/shared/workspace.ts')
+  const workspaceStoreSource = readProjectFile('src/main/workspaceStore.ts')
+  const appSource = readProjectFile('src/renderer/app/App.tsx')
+  const layoutSource = readProjectFile('src/renderer/layouts/DesktopLayout.tsx')
+  const sidebarSource = readProjectFile('src/renderer/components/Sidebar.tsx')
+  const roleProfileListSource = readProjectFile('src/renderer/components/RoleProfileList.tsx')
+  const workspacePersistenceSource = readProjectFile('src/renderer/components/WorkspacePersistencePanel.tsx')
+  const guideSource = readProjectFile('src/renderer/components/FirstRunGuide.tsx')
+
+  assert.match(workspaceTypes, /hasSeenOnboarding:\s*boolean/)
+  assert.match(workspaceStoreSource, /settings\?\.hasSeenOnboarding/)
+  assert.match(appSource, /firstRunGuideOpen/)
+  assert.match(appSource, /firstRunGuideAutoOpen/)
+  assert.match(appSource, /firstRunGuideManuallyOpen/)
+  assert.match(appSource, /openFirstRunGuide/)
+  assert.match(appSource, /getFirstRunGuideStep/)
+  assert.match(appSource, /isFirstTimeWorkspace/)
+  assert.match(appSource, /workspace\.projects\.length === 0/)
+  assert.match(appSource, /hasSeenOnboarding:\s*true/)
+  assert.match(layoutSource, /FirstRunGuide/)
+  assert.match(layoutSource, /onOpenFirstRunGuide/)
+  assert.match(sidebarSource, /data-tour-id="new-project"/)
+  assert.match(sidebarSource, /onOpenFirstRunGuide/)
+  assert.match(sidebarSource, /Tour/)
+  assert.match(roleProfileListSource, /data-tour-id="new-role-profile"/)
+  assert.match(roleProfileListSource, /data-tour-id="open-role-tab"/)
+  assert.match(workspacePersistenceSource, /data-tour-id="restore-workspace"/)
+  assert.match(guideSource, /first-run-tour-target/)
+  assert.match(guideSource, /Use the highlighted control/)
+})
+
+test('right-side panel close controls clear the titlebar overlay', () => {
+  const projectFormSource = readProjectFile('src/renderer/components/ProjectFormPanel.tsx')
+  const roleFormSource = readProjectFile('src/renderer/components/RoleProfileFormPanel.tsx')
+  const settingsSource = readProjectFile('src/renderer/components/SettingsPanel.tsx')
+
+  assert.match(projectFormSource, /h-24 items-start justify-between/)
+  assert.match(projectFormSource, /pt-10/)
+  assert.match(roleFormSource, /h-24 items-start justify-between/)
+  assert.match(roleFormSource, /pt-10/)
+  assert.match(settingsSource, /h-24 items-start justify-between/)
+  assert.match(settingsSource, /pt-10/)
 })
 
 test('session toolbar can be collapsed from the webview area', () => {
