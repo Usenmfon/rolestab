@@ -57,7 +57,7 @@
     "copyright": "Copyright © 2026 RolesTab",
     "asar": true,
     "compression": "maximum",
-    "icon": "public/favicon",
+    "icon": "public/android-chrome-512x512.png",
     "directories": {
       "output": "release"
     },
@@ -103,7 +103,7 @@
     },
     "mac": {
       "category": "public.app-category.developer-tools",
-      "icon": "public/favicon.icns",
+      "icon": "public/android-chrome-512x512.png",
       "target": [
         "dmg",
         "zip"

@@ -13,9 +13,13 @@ const currentDirectory = __dirname;
 const rendererDevServerUrl = process.env.VITE_DEV_SERVER_URL ?? 'http://127.0.0.1:5174';
 const rendererIndexPath = node_path_1.default.join(currentDirectory, '../../dist/index.html');
 const preloadPath = node_path_1.default.join(currentDirectory, '../preload/index.js');
-const appIconPath = app.isPackaged
-    ? node_path_1.default.join(currentDirectory, '../../dist/favicon.ico')
-    : node_path_1.default.join(currentDirectory, '../../public/favicon.ico');
+const appIconPath = process.platform === 'win32'
+    ? app.isPackaged
+        ? node_path_1.default.join(currentDirectory, '../../dist/favicon.ico')
+        : node_path_1.default.join(currentDirectory, '../../public/favicon.ico')
+    : app.isPackaged
+        ? node_path_1.default.join(currentDirectory, '../../dist/android-chrome-512x512.png')
+        : node_path_1.default.join(currentDirectory, '../../public/android-chrome-512x512.png');
 const titleBarThemes = {
     light: {
         color: '#e8eaed',
