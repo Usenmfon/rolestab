@@ -82,8 +82,11 @@ export function FirstRunGuide({ step, onAction, onDismiss }: FirstRunGuideProps)
     const target = document.querySelector<HTMLElement>(`[data-tour-id="${currentStep.targetId}"]`)
 
     if (!target) {
-      setTargetRect(null)
-      return undefined
+      const frameId = window.requestAnimationFrame(() => {
+        setTargetRect(null)
+      })
+
+      return () => window.cancelAnimationFrame(frameId)
     }
 
     const measuredTarget = target
