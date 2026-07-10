@@ -5,6 +5,13 @@ All notable changes to RolesTab are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.2] - 2026-07-10
+
+### Changed
+
+- Add release prep automation
+- Improve form focus responsiveness
+
 ## [0.1.1] - 2026-07-10
 
 ### Fixed
@@ -39,5 +46,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   backgrounds in panels, tabs, controls, and status surfaces.
 - Native window titlebar controls now match the selected appearance.
 
+[0.1.2]: https://github.com/Usenmfon/rolestab/compare/v0.1.1...v0.1.2
 [0.1.1]: https://github.com/Usenmfon/rolestab/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/Usenmfon/rolestab/releases/tag/v0.1.0
+
