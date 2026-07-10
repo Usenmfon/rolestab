@@ -1,4 +1,4 @@
-import { Download, FolderPlus, Pencil, Trash2, Settings, Upload } from 'lucide-react'
+import { Download, FolderPlus, Map, Pencil, Trash2, Settings, Upload } from 'lucide-react'
 import type { AppSettings, ProjectSummary, RecentUrl, RoleProfile } from '../../shared/workspace'
 import type { SessionUsage } from '../../shared/session'
 import { RoleProfileList } from './RoleProfileList'
@@ -30,6 +30,7 @@ type SidebarProps = {
   onExportProjectConfig: () => void
   onImportProjectConfig: () => void
   onOpenSettings: () => void
+  onOpenFirstRunGuide: () => void
 }
 
 export function Sidebar({
@@ -57,6 +58,7 @@ export function Sidebar({
   onExportProjectConfig,
   onImportProjectConfig,
   onOpenSettings,
+  onOpenFirstRunGuide,
 }: SidebarProps) {
   return (
     <aside className="flex w-[18.5rem] shrink-0 flex-col border-r border-[#d8dee8] bg-[#f7f9fc]">
@@ -76,6 +78,7 @@ export function Sidebar({
         <button
           type="button"
           onClick={onCreateProject}
+          data-tour-id="new-project"
           className="flex h-10 w-full items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700"
         >
           <FolderPlus aria-hidden="true" size={17} />
@@ -111,11 +114,7 @@ export function Sidebar({
                       className="block w-full text-left"
                     >
                       <span className="block text-sm font-semibold">{project.name}</span>
-                      <span
-                        className={`mt-1 block truncate text-xs ${
-                          active ? 'text-blue-700' : 'text-slate-500'
-                        }`}
-                      >
+                      <span className={`mt-1 block truncate text-xs ${active ? 'text-blue-700' : 'text-slate-500'}`}>
                         {project.baseUrl}
                       </span>
                     </button>
@@ -199,14 +198,24 @@ export function Sidebar({
             Import
           </button>
         </div>
-        <button
-          type="button"
-          onClick={onOpenSettings}
-          className="flex h-9 w-full items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-700 hover:bg-slate-50"
-        >
-          <Settings aria-hidden="true" size={15} />
-          Settings
-        </button>
+        <div className="grid grid-cols-2 gap-2">
+          <button
+            type="button"
+            onClick={onOpenFirstRunGuide}
+            className="flex h-9 items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-700 hover:bg-slate-50"
+          >
+            <Map aria-hidden="true" size={15} />
+            Tour
+          </button>
+          <button
+            type="button"
+            onClick={onOpenSettings}
+            className="flex h-9 items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-700 hover:bg-slate-50"
+          >
+            <Settings aria-hidden="true" size={15} />
+            Settings
+          </button>
+        </div>
       </div>
     </aside>
   )

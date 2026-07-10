@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { DesktopLayout } from '../layouts/DesktopLayout'
 import type { ProjectDraft } from '../components/ProjectFormPanel'
 import type { RoleProfileDraft } from '../components/RoleProfileFormPanel'
+import type { FirstRunGuideStep } from '../components/FirstRunGuide'
 import type { BrowserCommand, BrowserCommandInput } from '../../shared/browser'
 import type {
   AppSettings,
@@ -57,6 +58,8 @@ function App() {
   const [sessionUsage, setSessionUsage] = useState<SessionUsage[]>([])
   const [sidebarOpen, setSidebarOpen] = useState(true)
   const [renamingTabId, setRenamingTabId] = useState<string | null>(null)
+  const [firstRunGuideAutoOpen, setFirstRunGuideAutoOpen] = useState(false)
+  const [firstRunGuideManuallyOpen, setFirstRunGuideManuallyOpen] = useState(false)
   const [confirmationRequest, setConfirmationRequest] = useState<ConfirmationRequest | null>(null)
   const confirmationResolverRef = useRef<((confirmed: boolean) => void) | null>(null)
   const urlInputRef = useRef<HTMLInputElement | null>(null)
@@ -82,6 +85,21 @@ function App() {
     () => tabs.find((tab) => tab.id === activeTabId) ?? null,
     [activeTabId, tabs],
   )
+  const activeProjectTabs = useMemo(
+    () => tabs.filter((tab) => tab.projectId === activeProject?.id),
+    [activeProject?.id, tabs],
+  )
+  const firstRunGuideStep: FirstRunGuideStep = getFirstRunGuideStep(
+    projects.length,
+    activeProjectRoleProfiles.length,
+    activeProjectTabs.length,
+  )
+  const firstRunGuideOpen =
+    (firstRunGuideAutoOpen || firstRunGuideManuallyOpen) &&
+    !projectFormOpen &&
+    !roleProfileFormOpen &&
+    !settingsPanelOpen &&
+    !confirmationRequest
 
   const refreshSessionUsage = useCallback(async (nextRoleProfiles = roleProfiles) => {
     const partitions = nextRoleProfiles.map((roleProfile) => roleProfile.sessionPartition)
@@ -106,6 +124,7 @@ function App() {
         }
 
         applyWorkspace(workspace)
+        setFirstRunGuideAutoOpen(isFirstTimeWorkspace(workspace))
 
         if (workspace.settings.restoreTabsOnStartup) {
           const restoredTabs = restoreTabsFromWorkspace(workspace)
@@ -775,7 +794,49 @@ function App() {
     await saveAppSettings({
       ...defaultAppSettings,
       defaultProjectId: null,
+      hasSeenOnboarding: settings.hasSeenOnboarding,
     })
+  }
+
+  function dismissFirstRunGuide() {
+    setFirstRunGuideAutoOpen(false)
+    setFirstRunGuideManuallyOpen(false)
+    void saveAppSettings({
+      ...settings,
+      hasSeenOnboarding: true,
+    })
+  }
+
+  function openFirstRunGuide() {
+    setSidebarOpen(true)
+    setProjectFormOpen(false)
+    setRoleProfileFormOpen(false)
+    setSettingsPanelOpen(false)
+    setConfirmationRequest(null)
+    setFirstRunGuideManuallyOpen(true)
+  }
+
+  function handleFirstRunGuideAction() {
+    if (firstRunGuideStep === 'project') {
+      openCreateProjectForm()
+      return
+    }
+
+    if (firstRunGuideStep === 'role') {
+      openCreateRoleProfileForm()
+      return
+    }
+
+    if (firstRunGuideStep === 'open') {
+      const firstRoleProfile = activeProjectRoleProfiles[0]
+
+      if (firstRoleProfile) {
+        openRoleTab(firstRoleProfile.id)
+      }
+      return
+    }
+
+    dismissFirstRunGuide()
   }
 
   async function shouldClearSessions(request: ConfirmationRequest): Promise<boolean> {
@@ -1119,6 +1180,8 @@ function App() {
       projectFormOpen={projectFormOpen}
       roleProfileFormOpen={roleProfileFormOpen}
       settingsPanelOpen={settingsPanelOpen}
+      firstRunGuideOpen={firstRunGuideOpen}
+      firstRunGuideStep={firstRunGuideStep}
       confirmationRequest={confirmationRequest}
       onCreateProject={openCreateProjectForm}
       onEditProject={openEditProjectForm}
@@ -1157,9 +1220,12 @@ function App() {
         void importProjectConfig()
       }}
       onOpenSettings={openSettingsPanel}
+      onOpenFirstRunGuide={openFirstRunGuide}
       onCloseSettings={closeSettingsPanel}
       onSaveSettings={saveAppSettings}
       onResetSettings={resetAppSettings}
+      onFirstRunGuideAction={handleFirstRunGuideAction}
+      onDismissFirstRunGuide={dismissFirstRunGuide}
       onCloseRoleProfileForm={closeRoleProfileForm}
       onSaveRoleProfile={saveRoleProfile}
       onSelectProject={(projectId) => {
@@ -1208,6 +1274,36 @@ function App() {
 }
 
 export default App
+
+function getFirstRunGuideStep(
+  projectCount: number,
+  roleProfileCount: number,
+  activeProjectTabCount: number,
+): FirstRunGuideStep {
+  if (projectCount === 0) {
+    return 'project'
+  }
+
+  if (roleProfileCount === 0) {
+    return 'role'
+  }
+
+  if (activeProjectTabCount === 0) {
+    return 'open'
+  }
+
+  return 'restore'
+}
+
+function isFirstTimeWorkspace(workspace: WorkspaceData): boolean {
+  return (
+    !workspace.settings.hasSeenOnboarding &&
+    workspace.projects.length === 0 &&
+    workspace.roleProfiles.length === 0 &&
+    workspace.recentTabs.length === 0 &&
+    workspace.recentUrls.length === 0
+  )
+}
 
 function shouldIgnoreShortcut(event: KeyboardEvent): boolean {
   if (event.defaultPrevented || event.isComposing) {

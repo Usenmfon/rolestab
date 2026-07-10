@@ -122,6 +122,9 @@ function sanitizeSettings(settings, projects) {
                 ? settings.keyboardShortcuts
                 : {}),
         },
+        hasSeenOnboarding: typeof settings?.hasSeenOnboarding === 'boolean'
+            ? settings.hasSeenOnboarding
+            : workspace_js_1.defaultAppSettings.hasSeenOnboarding,
     };
 }
 function isValidRecentUrl(recentUrl, projects, roleProfiles) {

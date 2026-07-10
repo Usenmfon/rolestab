@@ -22,5 +22,6 @@ exports.defaultAppSettings = {
     defaultProjectId: null,
     defaultRoleColors: exports.defaultRoleColors,
     keyboardShortcuts: exports.defaultKeyboardShortcuts,
+    hasSeenOnboarding: false,
 };
 //# sourceMappingURL=workspace.js.map

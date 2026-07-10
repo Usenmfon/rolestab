@@ -34,7 +34,8 @@ export function RoleProfileList({
           aria-label="New Role Profile"
           disabled={!hasActiveProject}
           onClick={onCreateRoleProfile}
-          className="grid h-7 w-7 place-items-center rounded-md border border-slate-200 text-slate-600 hover:bg-slate-50 disabled:cursor-not-allowed disabled:text-slate-300"
+          data-tour-id="new-role-profile"
+          className="grid h-7 w-7 place-items-center rounded-lg border border-slate-200 text-slate-500 hover:bg-slate-100 hover:text-slate-900 disabled:cursor-not-allowed disabled:text-slate-300"
         >
           <Plus aria-hidden="true" size={14} />
         </button>
@@ -63,11 +64,11 @@ export function RoleProfileList({
       ) : null}
 
       {!hasActiveProject ? (
-        <div className="mt-3 rounded-lg border border-dashed border-slate-300 bg-slate-50 p-4 text-sm leading-6 text-slate-500">
+        <div className="mt-3 rounded-lg border border-dashed border-slate-300 bg-white/70 p-4 text-sm leading-6 text-slate-500">
           Select a project before adding reusable role profiles.
         </div>
       ) : roleProfiles.length === 0 ? (
-        <div className="mt-3 rounded-lg border border-dashed border-slate-300 bg-slate-50 p-4 text-sm leading-6 text-slate-500">
+        <div className="mt-3 rounded-lg border border-dashed border-slate-300 bg-white/70 p-4 text-sm leading-6 text-slate-500">
           No roles yet. Add Admin, Staff, Customer, or any role you test often.
         </div>
       ) : (
@@ -75,7 +76,7 @@ export function RoleProfileList({
           {roleProfiles.map((roleProfile) => (
             <div
               key={roleProfile.id}
-              className="rounded-lg border border-slate-200 bg-slate-50/80 px-3.5 py-3 text-slate-700 transition hover:border-slate-300 hover:bg-white"
+              className="rounded-lg border border-slate-200 bg-white px-3.5 py-3 text-slate-700 transition hover:border-slate-300 hover:bg-slate-50"
             >
               <button
                 type="button"
@@ -87,7 +88,7 @@ export function RoleProfileList({
                   style={{ backgroundColor: roleProfile.color }}
                 />
                 <span className="min-w-0 flex-1">
-                  <span className="block truncate text-sm font-semibold">{roleProfile.name}</span>
+                  <span className="block truncate text-sm font-semibold text-slate-950">{roleProfile.name}</span>
                   <span className="mt-1 block truncate text-xs text-slate-500">
                     {roleProfile.startUrl}
                   </span>
@@ -100,7 +101,8 @@ export function RoleProfileList({
                   title="Open Role Tab"
                   aria-label={`Open ${roleProfile.name} role tab`}
                   onClick={() => onOpenRoleProfile(roleProfile.id)}
-                  className="grid h-7 w-7 place-items-center rounded-md border border-slate-200 text-slate-500 hover:bg-slate-100"
+                  data-tour-id="open-role-tab"
+                  className="grid h-7 w-7 place-items-center rounded-lg border border-slate-200 text-slate-500 hover:bg-slate-100 hover:text-slate-900"
                 >
                   <Play aria-hidden="true" size={14} />
                 </button>
@@ -109,7 +111,7 @@ export function RoleProfileList({
                   title="Edit Role Profile"
                   aria-label={`Edit ${roleProfile.name}`}
                   onClick={() => onEditRoleProfile(roleProfile.id)}
-                  className="grid h-7 w-7 place-items-center rounded-md border border-slate-200 text-slate-500 hover:bg-slate-100"
+                  className="grid h-7 w-7 place-items-center rounded-lg border border-slate-200 text-slate-500 hover:bg-slate-100 hover:text-slate-900"
                 >
                   <Pencil aria-hidden="true" size={14} />
                 </button>
@@ -118,7 +120,7 @@ export function RoleProfileList({
                   title="Delete Role Profile"
                   aria-label={`Delete ${roleProfile.name}`}
                   onClick={() => onDeleteRoleProfile(roleProfile.id)}
-                  className="grid h-7 w-7 place-items-center rounded-md border border-slate-200 text-slate-500 hover:bg-slate-100"
+                  className="grid h-7 w-7 place-items-center rounded-lg border border-slate-200 text-slate-500 hover:bg-slate-100 hover:text-slate-900"
                 >
                   <Trash2 aria-hidden="true" size={14} />
                 </button>

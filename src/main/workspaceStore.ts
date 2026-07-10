@@ -136,6 +136,10 @@ function sanitizeSettings(settings: AppSettings | undefined, projects: ProjectSu
         ? settings.keyboardShortcuts
         : {}),
     },
+    hasSeenOnboarding:
+      typeof settings?.hasSeenOnboarding === 'boolean'
+        ? settings.hasSeenOnboarding
+        : defaultAppSettings.hasSeenOnboarding,
   }
 }
 

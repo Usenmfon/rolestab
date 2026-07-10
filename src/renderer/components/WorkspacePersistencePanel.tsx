@@ -27,7 +27,10 @@ export function WorkspacePersistencePanel({
 
   return (
     <section className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
-      <label className="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-semibold text-slate-700">
+      <label
+        data-tour-id="restore-workspace"
+        className="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-semibold text-slate-700"
+      >
         <input
           type="checkbox"
           checked={settings.restoreTabsOnStartup}
@@ -52,7 +55,7 @@ export function WorkspacePersistencePanel({
         Sessions
       </div>
 
-      <div className="mt-3 rounded-lg border border-slate-200 bg-slate-50/80 px-3 py-2.5">
+      <div className="mt-3 rounded-lg border border-slate-200 bg-white px-3 py-2.5">
         <div className="flex items-center justify-between gap-3 text-xs">
           <span className="font-semibold text-slate-700">Stored role data</span>
           <span className="font-mono text-[11px] text-slate-500">{formatBytes(totalSessionBytes)}</span>
@@ -89,7 +92,7 @@ export function WorkspacePersistencePanel({
       </div>
 
       {recentUrls.length === 0 ? (
-        <div className="mt-3 rounded-lg border border-dashed border-slate-300 bg-slate-50 p-3 text-xs leading-5 text-slate-500">
+        <div className="mt-3 rounded-lg border border-dashed border-slate-300 bg-white/70 p-3 text-xs leading-5 text-slate-500">
           Visited URLs will appear here.
         </div>
       ) : (
@@ -99,7 +102,7 @@ export function WorkspacePersistencePanel({
               key={recentUrl.id}
               type="button"
               onClick={() => onOpenRecentUrl(recentUrl)}
-              className="block w-full rounded-lg border border-slate-200 bg-slate-50/80 px-3 py-2.5 text-left transition hover:border-slate-300 hover:bg-white"
+              className="block w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-left transition hover:border-slate-300 hover:bg-slate-50"
             >
               <span className="block truncate text-xs font-semibold text-slate-700">
                 {recentUrl.title || recentUrl.url}

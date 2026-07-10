@@ -3,6 +3,7 @@ import { TabBar } from '../components/TabBar'
 import { TopBar } from '../components/TopBar'
 import { WebviewArea } from '../components/WebviewArea'
 import { ConfirmationDialog } from '../components/ConfirmationDialog'
+import { FirstRunGuide, type FirstRunGuideStep } from '../components/FirstRunGuide'
 import { ProjectFormPanel, type ProjectDraft } from '../components/ProjectFormPanel'
 import { SettingsPanel } from '../components/SettingsPanel'
 import {
@@ -47,6 +48,8 @@ type DesktopLayoutProps = {
   projectFormOpen: boolean
   roleProfileFormOpen: boolean
   settingsPanelOpen: boolean
+  firstRunGuideOpen: boolean
+  firstRunGuideStep: FirstRunGuideStep
   confirmationRequest: ConfirmationRequest | null
   onCreateProject: () => void
   onEditProject: (projectId: string) => void
@@ -67,9 +70,12 @@ type DesktopLayoutProps = {
   onExportProjectConfig: () => void
   onImportProjectConfig: () => void
   onOpenSettings: () => void
+  onOpenFirstRunGuide: () => void
   onCloseSettings: () => void
   onSaveSettings: (settings: AppSettings) => Promise<void>
   onResetSettings: () => Promise<void>
+  onFirstRunGuideAction: () => void
+  onDismissFirstRunGuide: () => void
   onCloseRoleProfileForm: () => void
   onSaveRoleProfile: (draft: RoleProfileDraft) => Promise<void>
   onSelectProject: (projectId: string) => void
@@ -121,6 +127,8 @@ export function DesktopLayout({
   projectFormOpen,
   roleProfileFormOpen,
   settingsPanelOpen,
+  firstRunGuideOpen,
+  firstRunGuideStep,
   confirmationRequest,
   onCreateProject,
   onEditProject,
@@ -141,9 +149,12 @@ export function DesktopLayout({
   onExportProjectConfig,
   onImportProjectConfig,
   onOpenSettings,
+  onOpenFirstRunGuide,
   onCloseSettings,
   onSaveSettings,
   onResetSettings,
+  onFirstRunGuideAction,
+  onDismissFirstRunGuide,
   onCloseRoleProfileForm,
   onSaveRoleProfile,
   onSelectProject,
@@ -201,10 +212,11 @@ export function DesktopLayout({
           onExportProjectConfig={onExportProjectConfig}
           onImportProjectConfig={onImportProjectConfig}
           onOpenSettings={onOpenSettings}
+          onOpenFirstRunGuide={onOpenFirstRunGuide}
         />
       ) : null}
 
-      <section className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden bg-[#fbfcfe]">
+      <section className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden bg-white">
         {workspaceError ? (
           <div className="flex items-center justify-between gap-3 border-b border-red-200 bg-red-50 px-4 py-2 text-sm text-red-700">
             <span>{workspaceError}</span>
@@ -297,6 +309,14 @@ export function DesktopLayout({
           onClose={onCloseSettings}
           onSubmit={onSaveSettings}
           onReset={onResetSettings}
+        />
+      ) : null}
+
+      {firstRunGuideOpen ? (
+        <FirstRunGuide
+          step={firstRunGuideStep}
+          onAction={onFirstRunGuideAction}
+          onDismiss={onDismissFirstRunGuide}
         />
       ) : null}
 

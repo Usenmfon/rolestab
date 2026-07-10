@@ -7,8 +7,8 @@ body {
   background: #eef2f7;
   color: #111827;
   font-family:
-    Inter, "Inter Variable", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
-    "Segoe UI", sans-serif;
+    "SF Pro Text", "Avenir Next", Inter, "Inter Variable", ui-sans-serif, system-ui,
+    -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   font-size: 14px;
   line-height: 1.5;
   text-rendering: optimizeLegibility;
@@ -149,6 +149,22 @@ html.theme-dark textarea {
   border-color: #334155;
 }
 
+html.theme-dark .settings-save-button {
+  background-color: #2563eb;
+  color: #ffffff;
+  box-shadow: 0 10px 24px rgba(37, 99, 235, 0.22);
+}
+
+html.theme-dark .settings-save-button:hover:not(:disabled) {
+  background-color: #1d4ed8;
+}
+
+html.theme-dark .settings-save-button:disabled {
+  background-color: #475569;
+  color: #cbd5e1;
+  box-shadow: none;
+}
+
 html.theme-light {
   color-scheme: light;
 }
@@ -161,6 +177,15 @@ html.theme-light {
   height: 78px;
   align-items: flex-start;
   padding-top: 28px;
+}
+
+.first-run-tour-target {
+  position: relative;
+  z-index: 31;
+}
+
+svg {
+  stroke-width: 1.75;
 }
 
 ::selection {
