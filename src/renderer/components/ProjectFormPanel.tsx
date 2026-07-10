@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react'
+import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { X } from 'lucide-react'
 import type { ProjectSummary } from '../../shared/workspace'
 import { normalizeHttpUrl } from '../utils/url'
@@ -12,11 +12,21 @@ type ProjectFormPanelProps = {
 }
 
 export function ProjectFormPanel({ project, onClose, onSubmit }: ProjectFormPanelProps) {
+  const nameInputRef = useRef<HTMLInputElement | null>(null)
   const [name, setName] = useState(project?.name ?? '')
   const [baseUrl, setBaseUrl] = useState(project?.baseUrl ?? '')
   const [description, setDescription] = useState(project?.description ?? '')
   const [error, setError] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
+
+  useEffect(() => {
+    const frameId = window.requestAnimationFrame(() => {
+      nameInputRef.current?.focus()
+      nameInputRef.current?.select()
+    })
+
+    return () => window.cancelAnimationFrame(frameId)
+  }, [project?.id])
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -44,7 +54,7 @@ export function ProjectFormPanel({ project, onClose, onSubmit }: ProjectFormPane
   }
 
   return (
-    <aside className="relative z-20 flex w-96 shrink-0 flex-col border-l border-slate-200 bg-white shadow-[-12px_0_28px_rgba(15,23,42,0.08)]">
+    <aside className="app-no-drag relative z-20 flex w-96 shrink-0 flex-col border-l border-slate-200 bg-white shadow-[-12px_0_28px_rgba(15,23,42,0.08)]">
       <div className="flex h-24 items-start justify-between border-b border-slate-200 px-5 pt-10">
         <div>
           <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
@@ -69,6 +79,8 @@ export function ProjectFormPanel({ project, onClose, onSubmit }: ProjectFormPane
         <label className="space-y-2">
           <span className="text-sm font-medium text-slate-700">Name</span>
           <input
+            ref={nameInputRef}
+            autoFocus
             value={name}
             onChange={(event) => setName(event.target.value)}
             placeholder="Local Laravel App"

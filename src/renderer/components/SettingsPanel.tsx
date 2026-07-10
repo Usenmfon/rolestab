@@ -186,7 +186,7 @@ export function SettingsPanel({
   }
 
   return (
-    <aside className="relative z-20 flex w-[30rem] shrink-0 flex-col border-l border-slate-200 bg-white shadow-[-12px_0_28px_rgba(15,23,42,0.08)]">
+    <aside className="app-no-drag relative z-20 flex w-[30rem] shrink-0 flex-col border-l border-slate-200 bg-white shadow-[-12px_0_28px_rgba(15,23,42,0.08)]">
       <div className="flex h-24 items-start justify-between border-b border-slate-200 px-5 pt-10">
         <div>
           <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Workspace</p>

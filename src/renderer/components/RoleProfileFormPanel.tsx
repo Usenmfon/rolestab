@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react'
+import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { X } from 'lucide-react'
 import type { ProjectSummary, RoleProfile } from '../../shared/workspace'
 import { normalizeHttpUrl } from '../utils/url'
@@ -20,11 +20,21 @@ export function RoleProfileFormPanel({
   onClose,
   onSubmit,
 }: RoleProfileFormPanelProps) {
+  const nameInputRef = useRef<HTMLInputElement | null>(null)
   const [name, setName] = useState(roleProfile?.name ?? '')
   const [color, setColor] = useState(roleProfile?.color ?? presetColors[0] ?? '#2563eb')
   const [startUrl, setStartUrl] = useState(roleProfile?.startUrl ?? project.baseUrl)
   const [error, setError] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
+
+  useEffect(() => {
+    const frameId = window.requestAnimationFrame(() => {
+      nameInputRef.current?.focus()
+      nameInputRef.current?.select()
+    })
+
+    return () => window.cancelAnimationFrame(frameId)
+  }, [roleProfile?.id, project.id])
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -51,7 +61,7 @@ export function RoleProfileFormPanel({
   }
 
   return (
-    <aside className="relative z-20 flex w-96 shrink-0 flex-col border-l border-slate-200 bg-white shadow-[-12px_0_28px_rgba(15,23,42,0.08)]">
+    <aside className="app-no-drag relative z-20 flex w-96 shrink-0 flex-col border-l border-slate-200 bg-white shadow-[-12px_0_28px_rgba(15,23,42,0.08)]">
       <div className="flex h-24 items-start justify-between border-b border-slate-200 px-5 pt-10">
         <div>
           <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
@@ -76,6 +86,8 @@ export function RoleProfileFormPanel({
         <label className="space-y-2">
           <span className="text-sm font-medium text-slate-700">Role Name</span>
           <input
+            ref={nameInputRef}
+            autoFocus
             value={name}
             onChange={(event) => setName(event.target.value)}
             placeholder="Admin"

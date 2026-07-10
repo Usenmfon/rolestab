@@ -111,7 +111,11 @@ function createAppWindow() {
     }
     else {
         void window.loadURL(rendererDevServerUrl);
-        window.webContents.openDevTools({ mode: 'detach' });
+        // DevTools are handy while developing, but opening them by default adds a
+        // noticeable amount of render overhead and can make form focus feel laggy.
+        if (process.env.ROLSETAB_OPEN_DEVTOOLS === '1') {
+            window.webContents.openDevTools({ mode: 'detach' });
+        }
     }
     return window;
 }
