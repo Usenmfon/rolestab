@@ -33,6 +33,7 @@ test('package metadata points Electron at the compiled main process', () => {
   assert.equal(packageJson.build.appId, 'com.rolestab.app')
   assert.equal(packageJson.build.productName, 'RolesTab')
   assert.equal(packageJson.build.directories.output, 'release')
+  assert.equal(packageJson.build.icon, 'public/android-chrome-512x512.png')
   assert.equal(packageJson.build.extraMetadata.main, 'dist-electron/main/index.js')
   assert.equal(packageJson.build.asar, true)
   assert.ok(packageJson.build.files.includes('dist/**'))
@@ -49,7 +50,7 @@ test('packaging config includes Windows, macOS, and Linux targets', () => {
   assert.equal(packageJson.scripts['dist:linux'], 'npm run build && electron-builder --linux --publish never')
   assert.equal(packageJson.build.win.target[0].target, 'nsis')
   assert.equal(packageJson.build.win.icon, 'public/favicon.ico')
-  assert.equal(packageJson.build.mac.icon, 'public/favicon.icns')
+  assert.equal(packageJson.build.mac.icon, 'public/android-chrome-512x512.png')
   assert.deepEqual(packageJson.build.mac.target, ['dmg', 'zip'])
   assert.deepEqual(packageJson.build.linux.target, ['AppImage', 'deb'])
   assert.equal(packageJson.desktopName, 'RolesTab')
@@ -58,7 +59,9 @@ test('packaging config includes Windows, macOS, and Linux targets', () => {
   assert.equal(packageJson.build.nsis.installerIcon, 'public/favicon.ico')
   assert.equal(packageJson.build.nsis.uninstallerIcon, 'public/favicon.ico')
   assert.equal(existsSync(path.join(root, 'public/favicon.ico')), true)
-  assert.equal(existsSync(path.join(root, 'public/favicon.icns')), true)
+  assert.equal(existsSync(path.join(root, 'public/android-chrome-512x512.png')), true)
+  assert.equal(existsSync(path.join(root, 'public/apple-touch-icon.png')), true)
+  assert.equal(existsSync(path.join(root, 'public/site.webmanifest')), true)
 })
 
 test('packaging-only dependencies stay out of production dependencies', () => {
