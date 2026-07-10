@@ -15,8 +15,8 @@ const rendererIndexPath = node_path_1.default.join(currentDirectory, '../../dist
 const preloadPath = node_path_1.default.join(currentDirectory, '../preload/index.js');
 const appIconPath = process.platform === 'win32'
     ? app.isPackaged
-        ? node_path_1.default.join(currentDirectory, '../../dist/favicon.ico')
-        : node_path_1.default.join(currentDirectory, '../../public/favicon.ico')
+        ? node_path_1.default.join(currentDirectory, '../../dist/android-chrome-512x512.png')
+        : node_path_1.default.join(currentDirectory, '../../public/android-chrome-512x512.png')
     : app.isPackaged
         ? node_path_1.default.join(currentDirectory, '../../dist/android-chrome-512x512.png')
         : node_path_1.default.join(currentDirectory, '../../public/android-chrome-512x512.png');

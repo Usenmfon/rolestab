@@ -81,7 +81,7 @@
       "main": "dist-electron/main/index.js"
     },
     "win": {
-      "icon": "public/favicon.ico",
+      "icon": "public/android-chrome-512x512.png",
       "target": [
         {
           "target": "nsis",
@@ -98,8 +98,8 @@
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
       "shortcutName": "RolesTab",
-      "installerIcon": "public/favicon.ico",
-      "uninstallerIcon": "public/favicon.ico"
+      "installerIcon": "public/android-chrome-512x512.png",
+      "uninstallerIcon": "public/android-chrome-512x512.png"
     },
     "mac": {
       "category": "public.app-category.developer-tools",

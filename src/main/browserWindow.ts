@@ -11,8 +11,8 @@ const preloadPath = path.join(currentDirectory, '../preload/index.js')
 const appIconPath =
   process.platform === 'win32'
     ? app.isPackaged
-      ? path.join(currentDirectory, '../../dist/favicon.ico')
-      : path.join(currentDirectory, '../../public/favicon.ico')
+      ? path.join(currentDirectory, '../../dist/android-chrome-512x512.png')
+      : path.join(currentDirectory, '../../public/android-chrome-512x512.png')
     : app.isPackaged
       ? path.join(currentDirectory, '../../dist/android-chrome-512x512.png')
       : path.join(currentDirectory, '../../public/android-chrome-512x512.png')
