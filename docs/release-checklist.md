@@ -6,8 +6,9 @@ Run this checklist before publishing a RolesTab installer.
 
 1. Bump `version` in `package.json`. The release CI fails if the pushed
    `vX.Y.Z` tag does not match this value.
-2. Move the `Unreleased` notes in `CHANGELOG.md` into a new version section
-   and update the comparison links at the bottom of the file.
+2. Keep the `CHANGELOG.md` entry for the release you are publishing current,
+   and update any comparison links at the bottom of the file if you add a new
+   release entry later.
 3. Commit, then tag and push:
 
    ```bash
