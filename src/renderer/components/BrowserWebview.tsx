@@ -319,6 +319,22 @@ export function BrowserWebview({ tab, active, command, onUpdate }: BrowserWebvie
     }
   }, [active, command, domReady, onUpdate, tab.id])
 
+  useEffect(() => {
+    const webview = webviewRef.current
+
+    if (!active || !domReady || !webview) {
+      return undefined
+    }
+
+    const frameId = window.requestAnimationFrame(() => {
+      if (!isEditableHostElement(document.activeElement)) {
+        webview.focus()
+      }
+    })
+
+    return () => window.cancelAnimationFrame(frameId)
+  }, [active, domReady])
+
   return (
     <webview
       ref={webviewRef}
@@ -328,6 +344,15 @@ export function BrowserWebview({ tab, active, command, onUpdate }: BrowserWebvie
       webpreferences="contextIsolation=yes,nodeIntegration=no,sandbox=yes,webSecurity=yes,allowRunningInsecureContent=no"
       className={`roles-tab-webview ${active ? 'block' : 'hidden'}`}
     />
+  )
+}
+
+function isEditableHostElement(element: Element | null): boolean {
+  return (
+    element instanceof HTMLInputElement ||
+    element instanceof HTMLTextAreaElement ||
+    element instanceof HTMLSelectElement ||
+    (element instanceof HTMLElement && element.isContentEditable)
   )
 }
 

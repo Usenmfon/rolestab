@@ -228,6 +228,17 @@ test('browser tabs show the active role color on their top border', () => {
   assert.match(tabBarSource, /borderTopColor:\s*tab\.roleColor/)
 })
 
+test('active webviews receive focus without stealing it from editable app controls', () => {
+  const browserWebviewSource = readFileSync(
+    path.join(root, 'src/renderer/components/BrowserWebview.tsx'),
+    'utf8',
+  )
+
+  assert.match(browserWebviewSource, /if \(!active \|\| !domReady \|\| !webview\)/)
+  assert.match(browserWebviewSource, /isEditableHostElement\(document\.activeElement\)/)
+  assert.match(browserWebviewSource, /webview\.focus\(\)/)
+})
+
 test('first-run guide is wired to onboarding settings', () => {
   const workspaceTypes = readProjectFile('src/shared/workspace.ts')
   const workspaceStoreSource = readProjectFile('src/main/workspaceStore.ts')
