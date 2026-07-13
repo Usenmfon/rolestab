@@ -8,6 +8,7 @@ import {
   Home,
   PencilLine,
   Plus,
+  Puzzle,
   RefreshCw,
   RotateCcw,
   Search,
@@ -17,6 +18,7 @@ import {
 } from 'lucide-react'
 import { type ChangeEvent, type FormEvent, type RefObject, useEffect, useState } from 'react'
 import { IconButton } from './IconButton'
+import type { InstalledExtension, RoleExtensionRuntimeState } from '../../shared/extensions'
 
 type TopBarProps = {
   currentUrl: string
@@ -26,6 +28,10 @@ type TopBarProps = {
   hasActiveProject: boolean
   hasActiveTab: boolean
   sidebarOpen: boolean
+  activeRoleExtensions: Array<{
+    extension: InstalledExtension
+    runtimeState?: RoleExtensionRuntimeState
+  }>
   onNewTab: () => void
   onCloseTab: () => void
   onDuplicateTab: () => void
@@ -53,6 +59,7 @@ export function TopBar({
   hasActiveProject,
   hasActiveTab,
   sidebarOpen,
+  activeRoleExtensions,
   onNewTab,
   onCloseTab,
   onDuplicateTab,
@@ -72,6 +79,7 @@ export function TopBar({
   urlInputRef,
 }: TopBarProps) {
   const [urlDraft, setUrlDraft] = useState(currentUrl)
+  const [extensionMenuOpen, setExtensionMenuOpen] = useState(false)
 
   useEffect(() => {
     if (document.activeElement !== urlInputRef.current) {
@@ -134,6 +142,53 @@ export function TopBar({
       <IconButton label="Close Tab" icon={X} onClick={onCloseTab} disabled={!hasActiveTab} />
       <IconButton label="Copy Current URL" icon={Clipboard} onClick={onCopyUrl} disabled={!hasActiveTab} />
       <IconButton label="Open External Browser" icon={ExternalLink} onClick={onOpenExternal} disabled={!hasActiveTab} />
+      <div className="relative">
+        <IconButton
+          label="Active Role Extensions"
+          icon={Puzzle}
+          onClick={() => setExtensionMenuOpen((currentOpen) => !currentOpen)}
+          disabled={!hasActiveTab}
+        />
+        {extensionMenuOpen && hasActiveTab ? (
+          <div className="absolute right-0 top-10 z-30 w-72 rounded-lg border border-slate-200 bg-white p-2 text-sm shadow-xl">
+            <p className="px-2 py-1 text-xs font-semibold uppercase tracking-wide text-slate-500">
+              Role extensions
+            </p>
+            {activeRoleExtensions.length === 0 ? (
+              <p className="px-2 py-3 text-xs leading-5 text-slate-500">
+                No extensions are enabled for this role.
+              </p>
+            ) : (
+              <div className="space-y-1">
+                {activeRoleExtensions.map(({ extension, runtimeState }) => (
+                  <div
+                    key={extension.id}
+                    className="flex items-center justify-between gap-3 rounded-md px-2 py-2 hover:bg-slate-50"
+                  >
+                    <span className="min-w-0">
+                      <span className="block truncate text-sm font-semibold text-slate-800">
+                        {extension.name}
+                      </span>
+                      <span className="block truncate text-[11px] text-slate-500">
+                        {runtimeState?.error ?? runtimeState?.status ?? 'not loaded yet'}
+                      </span>
+                    </span>
+                    <span
+                      className={`h-2 w-2 shrink-0 rounded-full ${
+                        runtimeState?.status === 'loaded'
+                          ? 'bg-emerald-500'
+                          : runtimeState?.status === 'failed'
+                            ? 'bg-red-500'
+                            : 'bg-slate-300'
+                      }`}
+                    />
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        ) : null}
+      </div>
       <IconButton label="Open DevTools" icon={Bug} onClick={onOpenDevTools} disabled={!hasActiveTab} />
       <IconButton label="Inspect Element" icon={Search} onClick={onInspectElement} disabled={!hasActiveTab} />
 

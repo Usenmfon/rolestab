@@ -20,6 +20,7 @@ import type {
   RoleProfile,
 } from '../../shared/workspace'
 import type { SessionUsage } from '../../shared/session'
+import type { InstalledExtension, RoleExtensionRuntimeState } from '../../shared/extensions'
 
 type ConfirmationRequest = {
   title: string
@@ -39,6 +40,10 @@ type DesktopLayoutProps = {
   activeTabId: string | null
   renamingTabId: string | null
   browserCommand: BrowserCommand | null
+  activeRoleExtensions: Array<{
+    extension: InstalledExtension
+    runtimeState?: RoleExtensionRuntimeState
+  }>
   sidebarOpen: boolean
   workspaceError: string | null
   onClearWorkspaceError: () => void
@@ -118,6 +123,7 @@ export function DesktopLayout({
   activeTabId,
   renamingTabId,
   browserCommand,
+  activeRoleExtensions,
   sidebarOpen,
   workspaceError,
   onClearWorkspaceError,
@@ -263,6 +269,7 @@ export function DesktopLayout({
           onOpenDevTools={onOpenDevTools}
           onInspectElement={onInspectElement}
           onToggleSidebar={onToggleSidebar}
+          activeRoleExtensions={activeRoleExtensions}
           urlInputRef={urlInputRef}
         />
         <WebviewArea
@@ -306,6 +313,7 @@ export function DesktopLayout({
         <SettingsPanel
           settings={settings}
           projects={projects}
+          roleProfiles={activeProjectRoleProfiles}
           onClose={onCloseSettings}
           onSubmit={onSaveSettings}
           onReset={onResetSettings}

@@ -11,6 +11,12 @@ import type {
 } from '../shared/workspace.js'
 import type { SessionUsage } from '../shared/session.js'
 import type { UpdateStatus } from '../shared/update.js'
+import type {
+  ExtensionInstallResult,
+  ExtensionListResult,
+  InstalledExtension,
+  RoleExtensionRuntimeState,
+} from '../shared/extensions.js'
 
 const { contextBridge, ipcRenderer } = electron
 
@@ -107,6 +113,36 @@ const api = {
     },
     importProjectConfig(): Promise<WorkspaceImportResult> {
       return ipcRenderer.invoke('workspace:import-project-config')
+    },
+  },
+  extensions: {
+    list(): Promise<ExtensionListResult> {
+      return ipcRenderer.invoke('extensions:list')
+    },
+    install(): Promise<ExtensionInstallResult> {
+      return ipcRenderer.invoke('extensions:install')
+    },
+    remove(extensionId: string): Promise<void> {
+      return ipcRenderer.invoke('extensions:remove', extensionId)
+    },
+    setGlobalEnabled(extensionId: string, enabled: boolean): Promise<InstalledExtension[]> {
+      return ipcRenderer.invoke('extensions:set-global-enabled', extensionId, enabled)
+    },
+    setRoleEnabled(
+      extensionId: string,
+      roleId: string,
+      enabled: boolean,
+    ): Promise<RoleExtensionRuntimeState> {
+      return ipcRenderer.invoke('extensions:set-role-enabled', extensionId, roleId, enabled)
+    },
+    loadForRole(roleId: string): Promise<RoleExtensionRuntimeState[]> {
+      return ipcRenderer.invoke('extensions:load-for-role', roleId)
+    },
+    reloadForRole(extensionId: string, roleId: string): Promise<RoleExtensionRuntimeState> {
+      return ipcRenderer.invoke('extensions:reload-for-role', extensionId, roleId)
+    },
+    openFolder(extensionId: string): Promise<void> {
+      return ipcRenderer.invoke('extensions:open-folder', extensionId)
     },
   },
 }

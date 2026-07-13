@@ -1,12 +1,15 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { Check, Copy, Download, ExternalLink, RefreshCw, RotateCcw, X } from 'lucide-react'
 import type { AppSettings, ProjectSummary } from '../../shared/workspace'
+import type { RoleProfile } from '../../shared/workspace'
 import type { UpdateStatus } from '../../shared/update'
 import { normalizeHttpUrl } from '../utils/url'
+import { ExtensionsSettingsSection } from './ExtensionsSettingsSection'
 
 type SettingsPanelProps = {
   settings: AppSettings
   projects: ProjectSummary[]
+  roleProfiles: RoleProfile[]
   onClose: () => void
   onSubmit: (settings: AppSettings) => Promise<void>
   onReset: () => Promise<void>
@@ -51,6 +54,7 @@ const shortcutLabels: Record<string, string> = {
 export function SettingsPanel({
   settings,
   projects,
+  roleProfiles,
   onClose,
   onSubmit,
   onReset,
@@ -334,6 +338,8 @@ export function SettingsPanel({
               ))}
             </div>
           </section>
+
+          <ExtensionsSettingsSection roleProfiles={roleProfiles} />
 
           <section className="space-y-3.5">
             <h3 className="text-sm font-semibold text-slate-950">About</h3>

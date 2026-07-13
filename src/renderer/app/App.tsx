@@ -15,6 +15,7 @@ import type {
 } from '../../shared/workspace'
 import { defaultAppSettings } from '../../shared/workspace'
 import type { SessionUsage } from '../../shared/session'
+import type { InstalledExtension, RoleExtensionRuntimeState } from '../../shared/extensions'
 import { isProductionUrl, normalizeHttpUrl } from '../utils/url'
 
 const commonRoleNames = ['Admin', 'Manager', 'Staff', 'Customer', 'Guest']
@@ -56,6 +57,8 @@ function App() {
   const [browserCommand, setBrowserCommand] = useState<BrowserCommand | null>(null)
   const [workspaceLoaded, setWorkspaceLoaded] = useState(false)
   const [sessionUsage, setSessionUsage] = useState<SessionUsage[]>([])
+  const [installedExtensions, setInstalledExtensions] = useState<InstalledExtension[]>([])
+  const [extensionRuntimeStates, setExtensionRuntimeStates] = useState<RoleExtensionRuntimeState[]>([])
   const [sidebarOpen, setSidebarOpen] = useState(true)
   const [renamingTabId, setRenamingTabId] = useState<string | null>(null)
   const [firstRunGuideAutoOpen, setFirstRunGuideAutoOpen] = useState(false)
@@ -100,6 +103,25 @@ function App() {
     !roleProfileFormOpen &&
     !settingsPanelOpen &&
     !confirmationRequest
+  const activeRoleExtensions = useMemo(
+    () =>
+      activeTab
+        ? installedExtensions
+            .filter(
+              (extension) =>
+                extension.globallyEnabled && extension.roleSettings[activeTab.roleProfileId]?.enabled,
+            )
+            .map((extension) => ({
+              extension,
+              runtimeState: extensionRuntimeStates.find(
+                (runtimeState) =>
+                  runtimeState.extensionId === extension.id &&
+                  runtimeState.roleId === activeTab.roleProfileId,
+              ),
+            }))
+        : [],
+    [activeTab, extensionRuntimeStates, installedExtensions],
+  )
 
   const refreshSessionUsage = useCallback(async (nextRoleProfiles = roleProfiles) => {
     const partitions = nextRoleProfiles.map((roleProfile) => roleProfile.sessionPartition)
@@ -124,10 +146,12 @@ function App() {
         }
 
         applyWorkspace(workspace)
+        void refreshExtensions()
         setFirstRunGuideAutoOpen(isFirstTimeWorkspace(workspace))
 
         if (workspace.settings.restoreTabsOnStartup) {
           const restoredTabs = restoreTabsFromWorkspace(workspace)
+          await Promise.all(restoredTabs.map((tab) => loadExtensionsForRole(tab.roleProfileId)))
           setTabs(restoredTabs)
           setActiveTabId(
             restoredTabs.findLast((tab) => tab.projectId === workspace.lastActiveProjectId)?.id ?? null,
@@ -147,6 +171,18 @@ function App() {
 
     return () => {
       mounted = false
+    }
+  }, [])
+
+  useEffect(() => {
+    function handleExtensionsChanged() {
+      void refreshExtensions()
+    }
+
+    window.addEventListener('rolestab-extensions-changed', handleExtensionsChanged)
+
+    return () => {
+      window.removeEventListener('rolestab-extensions-changed', handleExtensionsChanged)
     }
   }, [])
 
@@ -286,6 +322,19 @@ function App() {
     setSettings(workspace.settings)
     setRecentUrls(workspace.recentUrls)
     setActiveProjectId(workspace.lastActiveProjectId)
+  }
+
+  async function refreshExtensions() {
+    try {
+      const result = await window.rolesTab?.extensions.list()
+
+      if (result) {
+        setInstalledExtensions(result.extensions)
+        setExtensionRuntimeStates(result.runtimeStates)
+      }
+    } catch (error) {
+      await logError('extensions-list', 'Unable to load extension settings.', error)
+    }
   }
 
   function restoreTabsFromWorkspace(workspace: WorkspaceData): BrowserTab[] {
@@ -719,6 +768,7 @@ function App() {
     }
 
     const sessionPartition = await ensureRoleProfileSession(roleProfile)
+    await loadExtensionsForRole(roleProfile.id)
     const tabId = `tab-${crypto.randomUUID()}`
 
     setTabs((currentTabs) => [
@@ -773,6 +823,28 @@ function App() {
     } catch (error) {
       reportError('session-partition-repair', 'Unable to repair the role session partition.', error, setWorkspaceError)
       throw error
+    }
+  }
+
+  async function loadExtensionsForRole(roleProfileId: string) {
+    try {
+      const runtimeStates = await window.rolesTab?.extensions.loadForRole(roleProfileId)
+
+      if (runtimeStates) {
+        setExtensionRuntimeStates((currentStates) => [
+          ...runtimeStates,
+          ...currentStates.filter(
+            (currentState) =>
+              !runtimeStates.some(
+                (runtimeState) =>
+                  runtimeState.extensionId === currentState.extensionId &&
+                  runtimeState.roleId === currentState.roleId,
+              ),
+          ),
+        ])
+      }
+    } catch (error) {
+      await logError('extensions-role-load', 'Unable to load extensions for this role.', error)
     }
   }
 
@@ -1185,6 +1257,7 @@ function App() {
       activeTabId={activeTabId}
       renamingTabId={renamingTabId}
       browserCommand={browserCommand}
+      activeRoleExtensions={activeRoleExtensions}
       sidebarOpen={sidebarOpen}
       workspaceError={workspaceError}
       onClearWorkspaceError={() => setWorkspaceError(null)}
