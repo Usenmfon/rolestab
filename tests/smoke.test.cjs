@@ -1,5 +1,7 @@
 const assert = require('node:assert/strict')
 const { existsSync, readFileSync } = require('node:fs')
+const { mkdtemp, mkdir, rm, writeFile } = require('node:fs/promises')
+const os = require('node:os')
 const path = require('node:path')
 const test = require('node:test')
 
@@ -270,4 +272,110 @@ test('session toolbar can be collapsed from the webview area', () => {
   assert.match(webviewAreaSource, /setSessionPanelOpen/)
   assert.match(webviewAreaSource, /Hide session toolbar/)
   assert.match(webviewAreaSource, /Show session toolbar/)
+})
+
+test('extension manifest validation covers valid and invalid unpacked extensions', async () => {
+  const { validateExtensionManifest } = require('../dist-electron/main/extensions/extension-manifest-validator.js')
+  const tempRoot = await mkdtemp(path.join(os.tmpdir(), 'rolestab-extension-test-'))
+
+  try {
+    const validExtension = path.join(tempRoot, 'valid')
+    await mkdir(path.join(validExtension, 'icons'), { recursive: true })
+    await writeFile(path.join(validExtension, 'icons', 'icon.png'), 'png')
+    await writeFile(
+      path.join(validExtension, 'manifest.json'),
+      JSON.stringify({
+        manifest_version: 3,
+        name: 'Valid Test Extension',
+        version: '1.0.0',
+        description: 'A test extension',
+        icons: { 16: 'icons/icon.png' },
+        permissions: ['storage'],
+      }),
+    )
+
+    const validResult = await validateExtensionManifest(validExtension)
+    assert.equal(validResult.valid, true)
+    assert.equal(validResult.manifest.name, 'Valid Test Extension')
+
+    const missingManifest = path.join(tempRoot, 'missing-manifest')
+    await mkdir(missingManifest)
+    const missingManifestResult = await validateExtensionManifest(missingManifest)
+    assert.equal(missingManifestResult.valid, false)
+    assert.match(missingManifestResult.errors.join('\n'), /manifest\.json was not found/)
+
+    const invalidJson = path.join(tempRoot, 'invalid-json')
+    await mkdir(invalidJson)
+    await writeFile(path.join(invalidJson, 'manifest.json'), '{')
+    const invalidJsonResult = await validateExtensionManifest(invalidJson)
+    assert.equal(invalidJsonResult.valid, false)
+    assert.match(invalidJsonResult.errors.join('\n'), /not valid JSON/)
+
+    const missingName = path.join(tempRoot, 'missing-name')
+    await mkdir(missingName)
+    await writeFile(path.join(missingName, 'manifest.json'), JSON.stringify({ manifest_version: 3, version: '1.0.0' }))
+    const missingNameResult = await validateExtensionManifest(missingName)
+    assert.equal(missingNameResult.valid, false)
+    assert.match(missingNameResult.errors.join('\n'), /name/)
+
+    const missingVersion = path.join(tempRoot, 'missing-version')
+    await mkdir(missingVersion)
+    await writeFile(path.join(missingVersion, 'manifest.json'), JSON.stringify({ manifest_version: 3, name: 'No Version' }))
+    const missingVersionResult = await validateExtensionManifest(missingVersion)
+    assert.equal(missingVersionResult.valid, false)
+    assert.match(missingVersionResult.errors.join('\n'), /version/)
+
+    const unsupportedManifest = path.join(tempRoot, 'unsupported-manifest')
+    await mkdir(unsupportedManifest)
+    await writeFile(
+      path.join(unsupportedManifest, 'manifest.json'),
+      JSON.stringify({ manifest_version: 99, name: 'Unsupported', version: '1.0.0' }),
+    )
+    const unsupportedResult = await validateExtensionManifest(unsupportedManifest)
+    assert.equal(unsupportedResult.valid, false)
+    assert.equal(unsupportedResult.compatibility, 'unsupported')
+
+    const missingIcon = path.join(tempRoot, 'missing-icon')
+    await mkdir(missingIcon)
+    await writeFile(
+      path.join(missingIcon, 'manifest.json'),
+      JSON.stringify({
+        manifest_version: 3,
+        name: 'Missing Icon',
+        version: '1.0.0',
+        icons: { 16: 'icons/nope.png' },
+      }),
+    )
+    const missingIconResult = await validateExtensionManifest(missingIcon)
+    assert.equal(missingIconResult.valid, false)
+    assert.match(missingIconResult.errors.join('\n'), /Icon "16" file is missing/)
+  } finally {
+    await rm(tempRoot, { recursive: true, force: true })
+  }
+})
+
+test('extension persistence and removal preserve role isolation contracts', () => {
+  const persistenceSource = readProjectFile('src/main/extensions/extension-persistence.ts')
+  const managerSource = readProjectFile('src/main/extensions/extension-manager.ts')
+  const ipcSource = readProjectFile('src/main/extensions/extension-ipc.ts')
+  const appSource = readProjectFile('src/renderer/app/App.tsx')
+  const settingsSource = readProjectFile('src/renderer/components/ExtensionsSettingsSection.tsx')
+
+  assert.match(persistenceSource, /extensions\.json/)
+  assert.match(persistenceSource, /sanitizeExtensionsState/)
+  assert.match(persistenceSource, /isPathInsideManagedDirectory/)
+  assert.match(persistenceSource, /roleSettings/)
+  assert.match(managerSource, /extension\.globallyEnabled \|\| !roleSetting\?\.enabled/)
+  assert.match(managerSource, /getRoleSession\(partition\)/)
+  assert.match(managerSource, /roleSession\.extensions\.loadExtension/)
+  assert.match(managerSource, /roleSession\.extensions\s*\.\s*getAllExtensions/)
+  assert.match(managerSource, /roleSession\.extensions\.removeExtension/)
+  assert.match(managerSource, /Refusing to delete an extension folder outside/)
+  assert.match(ipcSource, /dialog\.showOpenDialog/)
+  assert.match(ipcSource, /getRoleProfile\(roleId\)/)
+  assert.doesNotMatch(ipcSource, /destinationPath/)
+  assert.match(appSource, /loadExtensionsForRole\(roleProfile\.id\)/)
+  assert.match(appSource, /loadExtensionsForRole\(tab\.roleProfileId\)/)
+  assert.match(settingsSource, /Choose the roles that should use it/)
+  assert.match(settingsSource, /Globally disabled/)
 })
