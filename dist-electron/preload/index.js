@@ -125,6 +125,47 @@ const api = {
             return ipcRenderer.invoke('extensions:open-folder', extensionId);
         },
     },
+    analytics: {
+        connectivityRestored() {
+            ipcRenderer.send('analytics:connectivity-restored');
+        },
+        roleCreated(roleId) {
+            ipcRenderer.send('analytics:role-created', { roleId });
+        },
+        roleUpdated(roleId) {
+            ipcRenderer.send('analytics:role-updated', { roleId });
+        },
+        roleDeleted(roleId) {
+            ipcRenderer.send('analytics:role-deleted', { roleId });
+        },
+        tabOpened(tabType) {
+            ipcRenderer.send('analytics:tab-opened', { tabType });
+        },
+        tabClosed(tabType, lifetimeSeconds) {
+            ipcRenderer.send('analytics:tab-closed', { tabType, lifetimeSeconds });
+        },
+        tabSwitched(fromTabType, toTabType) {
+            ipcRenderer.send('analytics:tab-switched', { fromTabType, toTabType });
+        },
+        urlVisited(url) {
+            ipcRenderer.send('analytics:url-visited', { url });
+        },
+        extensionInstalled(extensionId) {
+            ipcRenderer.send('analytics:extension-installed', { extensionId });
+        },
+        extensionEnabled(extensionId) {
+            ipcRenderer.send('analytics:extension-enabled', { extensionId });
+        },
+        extensionDisabled(extensionId) {
+            ipcRenderer.send('analytics:extension-disabled', { extensionId });
+        },
+        extensionRemoved(extensionId) {
+            ipcRenderer.send('analytics:extension-removed', { extensionId });
+        },
+        featureUsed(feature) {
+            ipcRenderer.send('analytics:feature-used', { feature });
+        },
+    },
 };
 contextBridge.exposeInMainWorld('rolesTab', api);
 //# sourceMappingURL=index.js.map

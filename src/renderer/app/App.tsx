@@ -69,6 +69,7 @@ function App() {
   const confirmationResolverRef = useRef<((confirmed: boolean) => void) | null>(null)
   const urlInputRef = useRef<HTMLInputElement | null>(null)
   const shortcutHandlersRef = useRef<ShortcutHandlers | null>(null)
+  const tabOpenedAtRef = useRef<Record<string, number>>({})
 
   const activeProject = useMemo(
     () => projects.find((project) => project.id === activeProjectId) ?? null,
@@ -174,6 +175,18 @@ function App() {
 
     return () => {
       mounted = false
+    }
+  }, [])
+
+  useEffect(() => {
+    function handleOnline() {
+      window.rolesTab?.analytics.connectivityRestored()
+    }
+
+    window.addEventListener('online', handleOnline)
+
+    return () => {
+      window.removeEventListener('online', handleOnline)
     }
   }, [])
 
@@ -524,6 +537,7 @@ function App() {
 
     closeRoleProfileForm()
     setWorkspaceError(null)
+    window.rolesTab?.analytics[editingRoleProfile ? 'roleUpdated' : 'roleCreated'](roleProfile.id)
   }
 
   async function persistRoleProfile(roleProfile: RoleProfile) {
@@ -591,6 +605,8 @@ function App() {
       if (!workspace) {
         await persistRoleProfile(roleProfile)
       }
+
+      window.rolesTab?.analytics.roleCreated(roleProfile.id)
     }
 
     if (workspace) {
@@ -634,6 +650,7 @@ function App() {
         : remainingTabs.at(-1)?.id ?? null
     })
     setWorkspaceError(null)
+    window.rolesTab?.analytics.roleDeleted(roleProfileId)
   }
 
   async function deleteProject(projectId: string) {
@@ -686,6 +703,7 @@ function App() {
       const result = await window.rolesTab?.workspace.exportProjectConfig(activeProject.id)
 
       if (!result?.canceled) {
+        window.rolesTab?.analytics.featureUsed('export_project_config')
         setWorkspaceError(null)
       }
     } catch (error) {
@@ -720,6 +738,7 @@ function App() {
       setSettingsPanelOpen(false)
       setEditingProjectId(null)
       setEditingRoleProfileId(null)
+      window.rolesTab?.analytics.featureUsed('import_project_config')
       setWorkspaceError(null)
     } catch (error) {
       reportError('project-import', 'Unable to import the project configuration.', error, setWorkspaceError)
@@ -767,6 +786,7 @@ function App() {
     )
 
     if (existingTab) {
+      trackTabSwitch(activeTabId, existingTab.id)
       setActiveTabId(existingTab.id)
       setWorkspaceError(null)
       return
@@ -792,6 +812,7 @@ function App() {
     const sessionPartition = await ensureRoleProfileSession(roleProfile)
     await loadExtensionsForRole(roleProfile.id)
     const tabId = `tab-${crypto.randomUUID()}`
+    tabOpenedAtRef.current[tabId] = Date.now()
 
     setTabs((currentTabs) => [
       ...currentTabs,
@@ -807,6 +828,8 @@ function App() {
         sessionPartition,
       },
     ])
+    window.rolesTab?.analytics.tabOpened('web')
+    window.rolesTab?.analytics.urlVisited(initialUrl)
     setActiveTabId(tabId)
   }
 
@@ -1047,6 +1070,7 @@ function App() {
       )
       sendBrowserCommand({ type: 'reload' })
       setWorkspaceError(null)
+      window.rolesTab?.analytics.featureUsed('clear_role_session')
     } catch (error) {
       reportError('session-reset', 'Unable to reset the active role session.', error, setWorkspaceError)
     }
@@ -1087,6 +1111,7 @@ function App() {
           : remainingTabs.at(-1)?.id ?? null
       })
       setWorkspaceError(null)
+      window.rolesTab?.analytics.featureUsed('clear_project_sessions')
     } catch (error) {
       reportError('session-clear-project', 'Unable to clear project sessions.', error, setWorkspaceError)
     }
@@ -1116,12 +1141,25 @@ function App() {
       setTabs([])
       setActiveTabId(null)
       setWorkspaceError(null)
+      window.rolesTab?.analytics.featureUsed('clear_all_sessions')
     } catch (error) {
       reportError('session-clear-all', 'Unable to clear all sessions.', error, setWorkspaceError)
     }
   }
 
   function closeTab(tabId: string) {
+    const closingTab = tabs.find((tab) => tab.id === tabId)
+    const openedAt = tabOpenedAtRef.current[tabId]
+
+    if (closingTab) {
+      window.rolesTab?.analytics.tabClosed(
+        'web',
+        typeof openedAt === 'number' ? (Date.now() - openedAt) / 1000 : undefined,
+      )
+    }
+
+    delete tabOpenedAtRef.current[tabId]
+
     setTabs((currentTabs) => {
       const nextTabs = currentTabs.filter((tab) => tab.id !== tabId)
 
@@ -1144,7 +1182,7 @@ function App() {
       tabs.findIndex((tab) => tab.id === activeTabId),
     )
     const nextIndex = (currentIndex + direction + tabs.length) % tabs.length
-    setActiveTabId(tabs[nextIndex]?.id ?? null)
+    selectTab(tabs[nextIndex]?.id ?? null)
   }
 
   function focusUrlBar() {
@@ -1159,7 +1197,24 @@ function App() {
   }
 
   function sendBrowserCommand(command: BrowserCommandInput) {
+    if (command.type === 'open-devtools' || command.type === 'inspect-element') {
+      window.rolesTab?.analytics.featureUsed('open_devtools')
+    }
+
     setBrowserCommand({ ...command, id: Date.now() } as BrowserCommand)
+  }
+
+  function selectTab(tabId: string | null) {
+    trackTabSwitch(activeTabId, tabId)
+    setActiveTabId(tabId)
+  }
+
+  function trackTabSwitch(fromTabId: string | null, toTabId: string | null) {
+    if (!fromTabId || !toTabId || fromTabId === toTabId) {
+      return
+    }
+
+    window.rolesTab?.analytics.tabSwitched('web', 'web')
   }
 
   function navigateActiveTab(url: string) {
@@ -1219,6 +1274,7 @@ function App() {
       } else {
         await navigator.clipboard.writeText(activeTab.url)
       }
+      window.rolesTab?.analytics.featureUsed('copy_active_url')
       setWorkspaceError(null)
     } catch (error) {
       reportError('clipboard-copy', 'Unable to copy the current URL.', error, setWorkspaceError)
@@ -1347,10 +1403,10 @@ function App() {
         void selectProject(projectId)
       }}
       onNewTab={createRoleTab}
-      onSelectTab={setActiveTabId}
+      onSelectTab={selectTab}
       onCloseTab={closeTab}
       onStartRenameTab={(tabId) => {
-        setActiveTabId(tabId)
+        selectTab(tabId)
         setRenamingTabId(tabId)
       }}
       onCloseActiveTab={() => {

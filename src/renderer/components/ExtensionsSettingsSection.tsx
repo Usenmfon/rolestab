@@ -52,6 +52,7 @@ export function ExtensionsSettingsSection({ roleProfiles }: ExtensionsSettingsSe
       if (result.extension) {
         setSelectedExtensionId(result.extension.id)
         setMessage('Extension installed. Choose the roles that should use it.')
+        window.rolesTab?.analytics.extensionInstalled(result.extension.id)
       }
 
       await refreshExtensions()
@@ -75,6 +76,9 @@ export function ExtensionsSettingsSection({ roleProfiles }: ExtensionsSettingsSe
       if (nextExtensions) {
         setExtensions(nextExtensions)
       }
+      window.rolesTab?.analytics[extension.globallyEnabled ? 'extensionDisabled' : 'extensionEnabled'](
+        extension.id,
+      )
 
       await refreshExtensions()
     } catch (error) {
@@ -123,6 +127,7 @@ export function ExtensionsSettingsSection({ roleProfiles }: ExtensionsSettingsSe
           ),
         ])
       }
+      window.rolesTab?.analytics[enabled ? 'extensionEnabled' : 'extensionDisabled'](extension.id)
     } catch (error) {
       setMessage(error instanceof Error ? error.message : 'Unable to update role extension setting.')
     } finally {
@@ -172,6 +177,7 @@ export function ExtensionsSettingsSection({ roleProfiles }: ExtensionsSettingsSe
       setSelectedExtensionId((currentSelectedExtensionId) =>
         currentSelectedExtensionId === extension.id ? null : currentSelectedExtensionId,
       )
+      window.rolesTab?.analytics.extensionRemoved(extension.id)
     } catch (error) {
       setMessage(error instanceof Error ? error.message : 'Unable to remove extension.')
     } finally {

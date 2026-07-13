@@ -140,6 +140,10 @@ function sanitizeSettings(settings: AppSettings | undefined, projects: ProjectSu
       typeof settings?.hasSeenOnboarding === 'boolean'
         ? settings.hasSeenOnboarding
         : defaultAppSettings.hasSeenOnboarding,
+    shareAnonymousAnalytics:
+      typeof settings?.shareAnonymousAnalytics === 'boolean'
+        ? settings.shareAnonymousAnalytics
+        : defaultAppSettings.shareAnonymousAnalytics,
   }
 }
 

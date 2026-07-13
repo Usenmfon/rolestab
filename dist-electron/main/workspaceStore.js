@@ -125,6 +125,9 @@ function sanitizeSettings(settings, projects) {
         hasSeenOnboarding: typeof settings?.hasSeenOnboarding === 'boolean'
             ? settings.hasSeenOnboarding
             : workspace_js_1.defaultAppSettings.hasSeenOnboarding,
+        shareAnonymousAnalytics: typeof settings?.shareAnonymousAnalytics === 'boolean'
+            ? settings.shareAnonymousAnalytics
+            : workspace_js_1.defaultAppSettings.shareAnonymousAnalytics,
     };
 }
 function isValidRecentUrl(recentUrl, projects, roleProfiles) {

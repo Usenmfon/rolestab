@@ -322,6 +322,24 @@ export function SettingsPanel({
           </section>
 
           <section className="space-y-3.5">
+            <h3 className="text-sm font-semibold text-slate-950">Privacy</h3>
+            <label className="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm font-medium text-slate-700">
+              <input
+                type="checkbox"
+                checked={draft.shareAnonymousAnalytics}
+                onChange={(event) =>
+                  setDraft((currentDraft) => ({
+                    ...currentDraft,
+                    shareAnonymousAnalytics: event.target.checked,
+                  }))
+                }
+                className="h-4 w-4"
+              />
+              Share anonymous usage analytics
+            </label>
+          </section>
+
+          <section className="space-y-3.5">
             <h3 className="text-sm font-semibold text-slate-950">Keyboard Shortcuts</h3>
             <div className="grid grid-cols-2 gap-2">
               {Object.entries(draft.keyboardShortcuts).map(([shortcutKey, shortcut]) => (

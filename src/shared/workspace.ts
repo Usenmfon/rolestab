@@ -27,6 +27,7 @@ export type AppSettings = {
   defaultRoleColors: string[]
   keyboardShortcuts: Record<string, string>
   hasSeenOnboarding: boolean
+  shareAnonymousAnalytics: boolean
 }
 
 export const defaultRoleColors = ['#2563eb', '#059669', '#f59e0b', '#e11d48', '#7c3aed', '#0891b2']
@@ -53,6 +54,7 @@ export const defaultAppSettings: AppSettings = {
   defaultRoleColors,
   keyboardShortcuts: defaultKeyboardShortcuts,
   hasSeenOnboarding: false,
+  shareAnonymousAnalytics: true,
 }
 
 export type RecentUrl = {
