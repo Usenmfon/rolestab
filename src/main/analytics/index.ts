@@ -3,9 +3,8 @@ export { ANALYTICS_CONFIG } from './analytics-config.js'
 export { createAnalyticsEvent } from './analytics-events.js'
 export { registerAnalyticsIpcHandlers, getAnalyticsErrorCodeForScope, trackApplicationError } from './analytics-ipc.js'
 export { normalizeArchitecture, normalizePlatform } from './analytics-platform.js'
-export { getSafeHostname } from './analytics-privacy.js'
 export { getRetryDelayMs, isPermanentStatus, isRetryableStatus, parseRetryAfterMs } from './analytics-retry.js'
-export { loadAnalyticsIdentity, getAnalyticsStoragePaths } from './analytics-storage.js'
+export { createAnalyticsIdentity, loadAnalyticsIdentity, getAnalyticsStoragePaths } from './analytics-storage.js'
 export type {
   AnalyticsArchitecture,
   AnalyticsErrorCode,

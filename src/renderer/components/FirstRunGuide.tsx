@@ -4,22 +4,25 @@ import {
   Layers3,
   PlayCircle,
   RotateCcw,
+  ShieldCheck,
   type LucideIcon,
   X,
 } from 'lucide-react'
 import { useEffect, useLayoutEffect, useState } from 'react'
 
-export type FirstRunGuideStep = 'project' | 'role' | 'open' | 'restore'
+export type FirstRunGuideStep = 'project' | 'role' | 'open' | 'restore' | 'analytics'
 
 type FirstRunGuideProps = {
   step: FirstRunGuideStep
   onAction: () => void
+  onAnalyticsChoice: (enabled: boolean) => void
   onDismiss: () => void
+  onOpenPrivacyPolicy: () => void
 }
 
 type GuideStep = {
   id: FirstRunGuideStep
-  targetId: string
+  targetId?: string
   title: string
   description: string
   actionLabel: string
@@ -56,8 +59,16 @@ const steps: GuideStep[] = [
     targetId: 'restore-workspace',
     title: 'Restore your workspace',
     description: 'Keep tabs and role sessions ready for your next testing pass.',
-    actionLabel: 'Finish',
+    actionLabel: 'Continue',
     icon: RotateCcw,
+  },
+  {
+    id: 'analytics',
+    title: 'Help improve RolesTab',
+    description:
+      'Choose whether to share pseudonymous usage analytics. RolesTab stays fully usable either way.',
+    actionLabel: 'Share analytics',
+    icon: ShieldCheck,
   },
 ]
 
@@ -68,7 +79,13 @@ type TargetRect = {
   width: number
 }
 
-export function FirstRunGuide({ step, onAction, onDismiss }: FirstRunGuideProps) {
+export function FirstRunGuide({
+  step,
+  onAction,
+  onAnalyticsChoice,
+  onDismiss,
+  onOpenPrivacyPolicy,
+}: FirstRunGuideProps) {
   const currentStep = steps.find((candidateStep) => candidateStep.id === step) ?? steps[0]
   const [targetRect, setTargetRect] = useState<TargetRect | null>(null)
   const [windowSize, setWindowSize] = useState(() => ({
@@ -77,8 +94,17 @@ export function FirstRunGuide({ step, onAction, onDismiss }: FirstRunGuideProps)
   }))
   const Icon = currentStep.icon
   const stepIndex = steps.findIndex((candidateStep) => candidateStep.id === currentStep.id)
+  const isAnalyticsStep = currentStep.id === 'analytics'
 
   useLayoutEffect(() => {
+    if (!currentStep.targetId) {
+      const frameId = window.requestAnimationFrame(() => {
+        setTargetRect(null)
+      })
+
+      return () => window.cancelAnimationFrame(frameId)
+    }
+
     const target = document.querySelector<HTMLElement>(`[data-tour-id="${currentStep.targetId}"]`)
 
     if (!target) {
@@ -120,6 +146,10 @@ export function FirstRunGuide({ step, onAction, onDismiss }: FirstRunGuideProps)
   }, [currentStep.targetId])
 
   useEffect(() => {
+    if (!currentStep.targetId) {
+      return undefined
+    }
+
     const timer = window.setInterval(() => {
       const target = document.querySelector<HTMLElement>(`[data-tour-id="${currentStep.targetId}"]`)
 
@@ -149,6 +179,7 @@ export function FirstRunGuide({ step, onAction, onDismiss }: FirstRunGuideProps)
       }
     : undefined
   const popoverStyle = getPopoverStyle(targetRect, windowSize)
+  const dismiss = isAnalyticsStep ? () => onAnalyticsChoice(false) : onDismiss
 
   return (
     <div className="pointer-events-none fixed inset-0 z-30">
@@ -177,42 +208,64 @@ export function FirstRunGuide({ step, onAction, onDismiss }: FirstRunGuideProps)
           </div>
           <button
             type="button"
-            onClick={onDismiss}
+            onClick={dismiss}
             className="grid h-9 w-9 shrink-0 place-items-center rounded-lg border border-slate-200 text-slate-500 hover:bg-slate-50 hover:text-slate-900"
-            aria-label="Dismiss guide"
-            title="Dismiss"
+            aria-label={isAnalyticsStep ? 'Do not share analytics' : 'Dismiss guide'}
+            title={isAnalyticsStep ? 'Not now' : 'Dismiss'}
           >
             <X aria-hidden="true" size={17} />
           </button>
         </div>
 
-        <div className="mt-4 flex items-center gap-3 rounded-lg bg-slate-50 p-3">
-          <div className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-blue-50 text-blue-700">
-            <Icon aria-hidden="true" size={17} />
+        {isAnalyticsStep ? (
+          <div className="mt-4 space-y-3 rounded-lg border border-slate-200 bg-slate-50 p-3">
+            <p className="text-xs leading-5 text-slate-600">
+              Shares a random installation ID, app and session activity, platform details, feature
+              usage, and fixed error codes.
+            </p>
+            <p className="text-xs leading-5 text-slate-600">
+              Never includes browsing destinations, page content, role details, extension details,
+              or error messages. You can change this choice in Settings at any time.
+            </p>
+            <button
+              type="button"
+              onClick={onOpenPrivacyPolicy}
+              className="text-xs font-semibold text-blue-700 hover:text-blue-800 hover:underline"
+            >
+              Read privacy policy
+            </button>
           </div>
-          <p className="text-xs leading-5 text-slate-500">
-            {targetRect
-              ? 'Use the highlighted control, or choose the action below to continue.'
-              : 'Choose the action below to continue. The guide will move to the next control when it appears.'}
-          </p>
-        </div>
+        ) : (
+          <div className="mt-4 flex items-center gap-3 rounded-lg bg-slate-50 p-3">
+            <div className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-blue-50 text-blue-700">
+              <Icon aria-hidden="true" size={17} />
+            </div>
+            <p className="text-xs leading-5 text-slate-500">
+              {targetRect
+                ? 'Use the highlighted control, or choose the action below to continue.'
+                : 'Choose the action below to continue. The guide will move to the next control when it appears.'}
+            </p>
+          </div>
+        )}
 
         <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-2 text-xs font-medium text-slate-500">
             <CheckCircle2 aria-hidden="true" size={15} className="text-emerald-600" />
-            {step === 'restore' ? 'You are ready to test roles.' : 'The guide moves as you complete each step.'}
+            {isAnalyticsStep
+              ? 'Analytics is off until you choose to share.'
+              : 'The guide moves as you complete each step.'}
           </div>
           <div className="flex gap-2">
             <button
               type="button"
-              onClick={onDismiss}
+              onClick={isAnalyticsStep ? () => onAnalyticsChoice(false) : onDismiss}
               className="h-10 rounded-lg border border-slate-200 px-4 text-sm font-semibold text-slate-700 hover:bg-slate-50"
             >
-              Later
+              {isAnalyticsStep ? 'Not now' : 'Later'}
             </button>
             <button
               type="button"
-              onClick={onAction}
+              onClick={isAnalyticsStep ? () => onAnalyticsChoice(true) : onAction}
               className="flex h-10 items-center gap-2 rounded-lg bg-blue-600 px-4 text-sm font-semibold text-white shadow-sm hover:bg-blue-700"
             >
               <Icon aria-hidden="true" size={16} />

@@ -207,7 +207,6 @@ ipcMain.handle(
       analytics,
       getAnalyticsErrorCodeForScope(entry.scope),
       'warning',
-      entry.scope,
     )
   },
 )

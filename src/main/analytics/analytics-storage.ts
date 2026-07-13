@@ -8,6 +8,7 @@ type AnalyticsDiskState = {
   installation_id?: unknown
   installed_at?: unknown
   analytics_enabled?: unknown
+  consent_version?: unknown
   schema_version?: unknown
   registration_pending?: unknown
   last_app_version?: unknown
@@ -15,6 +16,16 @@ type AnalyticsDiskState = {
 
 const analyticsFileName = 'analytics.json'
 const queueFileName = 'analytics-queue.json'
+const retiredEventNames = new Set([
+  'url_visited',
+  'role_created',
+  'role_updated',
+  'role_deleted',
+  'extension_installed',
+  'extension_enabled',
+  'extension_disabled',
+  'extension_removed',
+])
 
 export function getAnalyticsStoragePaths(userDataPath: string): { identityPath: string; queuePath: string } {
   return {
@@ -31,14 +42,24 @@ export async function loadAnalyticsIdentity(userDataPath: string): Promise<Analy
     const parsed = JSON.parse(raw) as AnalyticsDiskState
 
     if (typeof parsed.installation_id === 'string' && typeof parsed.installed_at === 'string') {
+      if (parsed.consent_version !== 1) {
+        const migratedIdentity = createAnalyticsIdentity(false)
+        await saveAnalyticsIdentity(userDataPath, migratedIdentity)
+        return migratedIdentity
+      }
+
+      const hasCurrentConsent = parsed.consent_version === 1 && parsed.analytics_enabled === true
+
       return {
         installation_id: parsed.installation_id,
         installed_at: parsed.installed_at,
-        analytics_enabled:
-          typeof parsed.analytics_enabled === 'boolean' ? parsed.analytics_enabled : true,
+        analytics_enabled: hasCurrentConsent,
+        consent_version: 1,
         schema_version: ANALYTICS_CONFIG.schemaVersion,
         registration_pending:
-          typeof parsed.registration_pending === 'boolean' ? parsed.registration_pending : true,
+          hasCurrentConsent && typeof parsed.registration_pending === 'boolean'
+            ? parsed.registration_pending
+            : hasCurrentConsent,
         last_app_version:
           typeof parsed.last_app_version === 'string' ? parsed.last_app_version : undefined,
       }
@@ -51,17 +72,22 @@ export async function loadAnalyticsIdentity(userDataPath: string): Promise<Analy
     }
   }
 
-  const identity: AnalyticsIdentity = {
-    installation_id: randomUUID(),
-    installed_at: new Date().toISOString(),
-    analytics_enabled: true,
-    schema_version: ANALYTICS_CONFIG.schemaVersion,
-    registration_pending: true,
-  }
+  const identity = createAnalyticsIdentity(false)
 
   await saveAnalyticsIdentity(userDataPath, identity)
 
   return identity
+}
+
+export function createAnalyticsIdentity(analyticsEnabled: boolean): AnalyticsIdentity {
+  return {
+    installation_id: randomUUID(),
+    installed_at: new Date().toISOString(),
+    analytics_enabled: analyticsEnabled,
+    consent_version: 1,
+    schema_version: ANALYTICS_CONFIG.schemaVersion,
+    registration_pending: analyticsEnabled,
+  }
 }
 
 export async function saveAnalyticsIdentity(
@@ -118,11 +144,12 @@ function isQueueItem(item: unknown): item is AnalyticsQueueItem {
   }
 
   const candidate = item as Partial<AnalyticsQueueItem>
+  const event = candidate.event as { event_id?: unknown; event_name?: unknown } | undefined
 
   return (
-    Boolean(candidate.event) &&
-    typeof candidate.event?.event_id === 'string' &&
-    typeof candidate.event?.event_name === 'string' &&
+    typeof event?.event_id === 'string' &&
+    typeof event.event_name === 'string' &&
+    !retiredEventNames.has(event.event_name) &&
     typeof candidate.created_at === 'string' &&
     typeof candidate.attempt_count === 'number'
   )

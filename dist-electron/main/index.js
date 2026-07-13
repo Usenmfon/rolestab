@@ -128,7 +128,7 @@ ipcMain.handle('app:open-external', async (event, url) => {
 ipcMain.handle('app:log-error', async (event, entry) => {
     assertTrustedSender(event);
     await (0, errorLogger_js_1.logInternalError)(entry);
-    (0, index_js_1.trackApplicationError)(analytics, (0, index_js_1.getAnalyticsErrorCodeForScope)(entry.scope), 'warning', entry.scope);
+    (0, index_js_1.trackApplicationError)(analytics, (0, index_js_1.getAnalyticsErrorCodeForScope)(entry.scope), 'warning');
 });
 ipcMain.handle('session:create-role-partition', (event, projectId, roleProfileId) => {
     assertTrustedSender(event);

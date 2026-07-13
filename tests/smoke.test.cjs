@@ -103,6 +103,8 @@ test('default app settings cover MVP keyboard and session behavior', () => {
   assert.equal(defaultAppSettings.theme, 'system')
   assert.equal(defaultAppSettings.defaultHomepage, '')
   assert.equal(defaultAppSettings.hasSeenOnboarding, false)
+  assert.equal(defaultAppSettings.shareAnonymousAnalytics, false)
+  assert.equal(defaultAppSettings.analyticsConsentVersion, null)
   assert.deepEqual(defaultAppSettings.defaultRoleColors, defaultRoleColors)
 
   for (const shortcut of [
@@ -248,6 +250,7 @@ test('first-run guide is wired to onboarding settings', () => {
   const roleProfileListSource = readProjectFile('src/renderer/components/RoleProfileList.tsx')
   const workspacePersistenceSource = readProjectFile('src/renderer/components/WorkspacePersistencePanel.tsx')
   const guideSource = readProjectFile('src/renderer/components/FirstRunGuide.tsx')
+  const settingsSource = readProjectFile('src/renderer/components/SettingsPanel.tsx')
 
   assert.match(workspaceTypes, /hasSeenOnboarding:\s*boolean/)
   assert.match(workspaceStoreSource, /settings\?\.hasSeenOnboarding/)
@@ -259,7 +262,14 @@ test('first-run guide is wired to onboarding settings', () => {
   assert.match(appSource, /isFirstTimeWorkspace/)
   assert.match(appSource, /workspace\.projects\.length === 0/)
   assert.match(appSource, /hasSeenOnboarding:\s*true/)
+  assert.match(appSource, /firstRunGuideAnalyticsStep/)
+  assert.match(appSource, /chooseFirstRunAnalytics/)
+  assert.match(appSource, /shareAnonymousAnalytics:\s*enabled/)
+  assert.match(appSource, /analyticsConsentVersion:\s*1/)
   assert.match(layoutSource, /FirstRunGuide/)
+  assert.match(layoutSource, /onAnalyticsChoice/)
+  assert.match(layoutSource, /https:\/\/rolestab\.app\/privacy/)
+  assert.match(layoutSource, /openPrivacyPolicy/)
   assert.match(layoutSource, /onOpenFirstRunGuide/)
   assert.match(sidebarSource, /data-tour-id="new-project"/)
   assert.match(sidebarSource, /onOpenFirstRunGuide/)
@@ -269,6 +279,12 @@ test('first-run guide is wired to onboarding settings', () => {
   assert.match(workspacePersistenceSource, /data-tour-id="restore-workspace"/)
   assert.match(guideSource, /first-run-tour-target/)
   assert.match(guideSource, /Use the highlighted control/)
+  assert.match(guideSource, /Help improve RolesTab/)
+  assert.match(guideSource, /Share analytics/)
+  assert.match(guideSource, /Not now/)
+  assert.match(guideSource, /Analytics is off until you choose to share/)
+  assert.match(guideSource, /Read privacy policy/)
+  assert.match(settingsSource, /Read privacy policy/)
 })
 
 test('right-side panel close controls clear the titlebar overlay', () => {

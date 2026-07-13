@@ -3,7 +3,7 @@ import { createAnalyticsEvent } from './analytics-events.js'
 import { normalizeArchitecture, normalizePlatform } from './analytics-platform.js'
 import { getRetryDelayMs, isPermanentStatus, isRetryableStatus } from './analytics-retry.js'
 import { createAnalyticsSession, type AnalyticsSession } from './analytics-session.js'
-import { loadAnalyticsIdentity, saveAnalyticsIdentity } from './analytics-storage.js'
+import { createAnalyticsIdentity, loadAnalyticsIdentity, saveAnalyticsIdentity } from './analytics-storage.js'
 import { AnalyticsQueue } from './analytics-queue.js'
 import type {
   AnalyticsArchitecture,
@@ -46,8 +46,11 @@ export class AnalyticsClient {
   private readonly fetchImpl: AnalyticsHttpClient
   private readonly distributionChannel: string
   private readonly log: (message: string) => void
+  private readonly activeRequests = new Set<AbortController>()
   private flushTimer: NodeJS.Timeout | null = null
   private flushing = false
+  private flushCompletion: Promise<void> | null = null
+  private resolveFlushCompletion: (() => void) | null = null
 
   constructor(private readonly options: AnalyticsClientOptions) {
     this.queue = new AnalyticsQueue(options.userDataPath)
@@ -61,6 +64,10 @@ export class AnalyticsClient {
   async initialize(): Promise<void> {
     this.identity = await loadAnalyticsIdentity(this.options.userDataPath)
     await this.queue.load()
+
+    if (this.queue.all().some((item) => item.event.installation_id !== this.identity?.installation_id)) {
+      await this.queue.clear()
+    }
 
     if (!this.identity.analytics_enabled) {
       return
@@ -112,18 +119,33 @@ export class AnalyticsClient {
       this.identity = await loadAnalyticsIdentity(this.options.userDataPath)
     }
 
-    this.identity = {
-      ...this.identity,
-      analytics_enabled: enabled,
-      registration_pending: enabled ? true : this.identity.registration_pending,
-    }
-    await saveAnalyticsIdentity(this.options.userDataPath, this.identity)
-
     if (!enabled) {
       this.stopFlushTimer()
+      this.session = null
+
+      if (this.identity.analytics_enabled) {
+        this.identity = createAnalyticsIdentity(false)
+      } else {
+        this.identity = { ...this.identity, analytics_enabled: false, consent_version: 1 }
+      }
+
+      for (const controller of this.activeRequests) {
+        controller.abort()
+      }
+
+      await this.flushCompletion
       await this.queue.clear()
+      await saveAnalyticsIdentity(this.options.userDataPath, this.identity)
       return
     }
+
+    this.identity = {
+      ...this.identity,
+      analytics_enabled: true,
+      consent_version: 1,
+      registration_pending: true,
+    }
+    await saveAnalyticsIdentity(this.options.userDataPath, this.identity)
 
     if (!this.session) {
       this.session = createAnalyticsSession()
@@ -172,6 +194,10 @@ export class AnalyticsClient {
     try {
       const response = await this.post('/analytics/installations', payload)
 
+      if (!this.identity?.analytics_enabled) {
+        return
+      }
+
       if (response.ok || response.status === 409) {
         this.identity = { ...this.identity, registration_pending: false }
         await saveAnalyticsIdentity(this.options.userDataPath, this.identity)
@@ -219,6 +245,9 @@ export class AnalyticsClient {
     }
 
     this.flushing = true
+    this.flushCompletion = new Promise<void>((resolve) => {
+      this.resolveFlushCompletion = resolve
+    })
 
     try {
       await this.queue.markSending(batch.map((item) => item.event.event_id))
@@ -262,6 +291,9 @@ export class AnalyticsClient {
       )
     } finally {
       this.flushing = false
+      this.resolveFlushCompletion?.()
+      this.resolveFlushCompletion = null
+      this.flushCompletion = null
     }
   }
 
@@ -309,6 +341,7 @@ export class AnalyticsClient {
 
   private async post(path: string, payload: unknown): Promise<Response> {
     const controller = new AbortController()
+    this.activeRequests.add(controller)
     const timeout = setTimeout(() => controller.abort(), ANALYTICS_CONFIG.requestTimeoutMs)
 
     try {
@@ -320,6 +353,7 @@ export class AnalyticsClient {
       })
     } finally {
       clearTimeout(timeout)
+      this.activeRequests.delete(controller)
     }
   }
 

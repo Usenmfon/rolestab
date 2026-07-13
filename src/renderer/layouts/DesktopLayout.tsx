@@ -28,6 +28,8 @@ type ConfirmationRequest = {
   confirmLabel: string
 }
 
+const privacyPolicyUrl = 'https://rolestab.app/privacy'
+
 type DesktopLayoutProps = {
   projects: ProjectSummary[]
   activeProjectRoleProfiles: RoleProfile[]
@@ -81,6 +83,7 @@ type DesktopLayoutProps = {
   onSaveSettings: (settings: AppSettings) => Promise<void>
   onResetSettings: () => Promise<void>
   onFirstRunGuideAction: () => void
+  onFirstRunGuideAnalyticsChoice: (enabled: boolean) => void
   onDismissFirstRunGuide: () => void
   onCloseRoleProfileForm: () => void
   onSaveRoleProfile: (draft: RoleProfileDraft) => Promise<void>
@@ -162,6 +165,7 @@ export function DesktopLayout({
   onSaveSettings,
   onResetSettings,
   onFirstRunGuideAction,
+  onFirstRunGuideAnalyticsChoice,
   onDismissFirstRunGuide,
   onCloseRoleProfileForm,
   onSaveRoleProfile,
@@ -192,6 +196,10 @@ export function DesktopLayout({
   onCancelAction,
   urlInputRef,
 }: DesktopLayoutProps) {
+  function openPrivacyPolicy() {
+    void window.rolesTab?.app.openExternal(privacyPolicyUrl)
+  }
+
   return (
     <main className="flex h-screen overflow-hidden bg-[#eef2f7] text-slate-900">
       {sidebarOpen ? (
@@ -318,6 +326,7 @@ export function DesktopLayout({
           projects={projects}
           roleProfiles={activeProjectRoleProfiles}
           onClose={onCloseSettings}
+          onOpenPrivacyPolicy={openPrivacyPolicy}
           onSubmit={onSaveSettings}
           onReset={onResetSettings}
         />
@@ -327,7 +336,9 @@ export function DesktopLayout({
         <FirstRunGuide
           step={firstRunGuideStep}
           onAction={onFirstRunGuideAction}
+          onAnalyticsChoice={onFirstRunGuideAnalyticsChoice}
           onDismiss={onDismissFirstRunGuide}
+          onOpenPrivacyPolicy={openPrivacyPolicy}
         />
       ) : null}
 

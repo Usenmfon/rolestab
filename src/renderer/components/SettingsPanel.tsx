@@ -11,6 +11,7 @@ type SettingsPanelProps = {
   projects: ProjectSummary[]
   roleProfiles: RoleProfile[]
   onClose: () => void
+  onOpenPrivacyPolicy: () => void
   onSubmit: (settings: AppSettings) => Promise<void>
   onReset: () => Promise<void>
 }
@@ -56,6 +57,7 @@ export function SettingsPanel({
   projects,
   roleProfiles,
   onClose,
+  onOpenPrivacyPolicy,
   onSubmit,
   onReset,
 }: SettingsPanelProps) {
@@ -331,12 +333,25 @@ export function SettingsPanel({
                   setDraft((currentDraft) => ({
                     ...currentDraft,
                     shareAnonymousAnalytics: event.target.checked,
+                    analyticsConsentVersion: 1,
                   }))
                 }
                 className="h-4 w-4"
               />
-              Share anonymous usage analytics
+              Share pseudonymous usage analytics
             </label>
+            <p className="text-xs leading-5 text-slate-500">
+              Off by default. Shares a random installation ID, app and session activity, platform
+              details, feature usage, and fixed error codes. It never sends browsing destinations,
+              role details, extension details, page content, or error messages.
+            </p>
+            <button
+              type="button"
+              onClick={onOpenPrivacyPolicy}
+              className="text-xs font-semibold text-blue-700 hover:text-blue-800 hover:underline"
+            >
+              Read privacy policy
+            </button>
           </section>
 
           <section className="space-y-3.5">

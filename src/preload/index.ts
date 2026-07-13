@@ -149,15 +149,6 @@ const api = {
     connectivityRestored(): void {
       ipcRenderer.send('analytics:connectivity-restored')
     },
-    roleCreated(roleId: string): void {
-      ipcRenderer.send('analytics:role-created', { roleId })
-    },
-    roleUpdated(roleId: string): void {
-      ipcRenderer.send('analytics:role-updated', { roleId })
-    },
-    roleDeleted(roleId: string): void {
-      ipcRenderer.send('analytics:role-deleted', { roleId })
-    },
     tabOpened(tabType: string): void {
       ipcRenderer.send('analytics:tab-opened', { tabType })
     },
@@ -166,21 +157,6 @@ const api = {
     },
     tabSwitched(fromTabType: string, toTabType: string): void {
       ipcRenderer.send('analytics:tab-switched', { fromTabType, toTabType })
-    },
-    urlVisited(url: string): void {
-      ipcRenderer.send('analytics:url-visited', { url })
-    },
-    extensionInstalled(extensionId: string): void {
-      ipcRenderer.send('analytics:extension-installed', { extensionId })
-    },
-    extensionEnabled(extensionId: string): void {
-      ipcRenderer.send('analytics:extension-enabled', { extensionId })
-    },
-    extensionDisabled(extensionId: string): void {
-      ipcRenderer.send('analytics:extension-disabled', { extensionId })
-    },
-    extensionRemoved(extensionId: string): void {
-      ipcRenderer.send('analytics:extension-removed', { extensionId })
     },
     featureUsed(feature: string): void {
       ipcRenderer.send('analytics:feature-used', { feature })

@@ -18,8 +18,11 @@ class AnalyticsClient {
     fetchImpl;
     distributionChannel;
     log;
+    activeRequests = new Set();
     flushTimer = null;
     flushing = false;
+    flushCompletion = null;
+    resolveFlushCompletion = null;
     constructor(options) {
         this.options = options;
         this.queue = new analytics_queue_js_1.AnalyticsQueue(options.userDataPath);
@@ -32,6 +35,9 @@ class AnalyticsClient {
     async initialize() {
         this.identity = await (0, analytics_storage_js_1.loadAnalyticsIdentity)(this.options.userDataPath);
         await this.queue.load();
+        if (this.queue.all().some((item) => item.event.installation_id !== this.identity?.installation_id)) {
+            await this.queue.clear();
+        }
         if (!this.identity.analytics_enabled) {
             return;
         }
@@ -72,17 +78,30 @@ class AnalyticsClient {
         if (!this.identity) {
             this.identity = await (0, analytics_storage_js_1.loadAnalyticsIdentity)(this.options.userDataPath);
         }
-        this.identity = {
-            ...this.identity,
-            analytics_enabled: enabled,
-            registration_pending: enabled ? true : this.identity.registration_pending,
-        };
-        await (0, analytics_storage_js_1.saveAnalyticsIdentity)(this.options.userDataPath, this.identity);
         if (!enabled) {
             this.stopFlushTimer();
+            this.session = null;
+            if (this.identity.analytics_enabled) {
+                this.identity = (0, analytics_storage_js_1.createAnalyticsIdentity)(false);
+            }
+            else {
+                this.identity = { ...this.identity, analytics_enabled: false, consent_version: 1 };
+            }
+            for (const controller of this.activeRequests) {
+                controller.abort();
+            }
+            await this.flushCompletion;
             await this.queue.clear();
+            await (0, analytics_storage_js_1.saveAnalyticsIdentity)(this.options.userDataPath, this.identity);
             return;
         }
+        this.identity = {
+            ...this.identity,
+            analytics_enabled: true,
+            consent_version: 1,
+            registration_pending: true,
+        };
+        await (0, analytics_storage_js_1.saveAnalyticsIdentity)(this.options.userDataPath, this.identity);
         if (!this.session) {
             this.session = (0, analytics_session_js_1.createAnalyticsSession)();
         }
@@ -121,6 +140,9 @@ class AnalyticsClient {
         };
         try {
             const response = await this.post('/analytics/installations', payload);
+            if (!this.identity?.analytics_enabled) {
+                return;
+            }
             if (response.ok || response.status === 409) {
                 this.identity = { ...this.identity, registration_pending: false };
                 await (0, analytics_storage_js_1.saveAnalyticsIdentity)(this.options.userDataPath, this.identity);
@@ -160,6 +182,9 @@ class AnalyticsClient {
             return;
         }
         this.flushing = true;
+        this.flushCompletion = new Promise((resolve) => {
+            this.resolveFlushCompletion = resolve;
+        });
         try {
             await this.queue.markSending(batch.map((item) => item.event.event_id));
             const endpoint = batch.length === 1 ? '/analytics/events' : '/analytics/events/batch';
@@ -187,6 +212,9 @@ class AnalyticsClient {
         }
         finally {
             this.flushing = false;
+            this.resolveFlushCompletion?.();
+            this.resolveFlushCompletion = null;
+            this.flushCompletion = null;
         }
     }
     async handleSuccessfulFlush(response, batch) {
@@ -228,6 +256,7 @@ class AnalyticsClient {
     }
     async post(path, payload) {
         const controller = new AbortController();
+        this.activeRequests.add(controller);
         const timeout = setTimeout(() => controller.abort(), analytics_config_js_1.ANALYTICS_CONFIG.requestTimeoutMs);
         try {
             return await this.fetchImpl(`${analytics_config_js_1.ANALYTICS_CONFIG.baseUrl}${path}`, {
@@ -239,6 +268,7 @@ class AnalyticsClient {
         }
         finally {
             clearTimeout(timeout);
+            this.activeRequests.delete(controller);
         }
     }
     startFlushTimer() {

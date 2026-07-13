@@ -125,9 +125,8 @@ function sanitizeSettings(settings, projects) {
         hasSeenOnboarding: typeof settings?.hasSeenOnboarding === 'boolean'
             ? settings.hasSeenOnboarding
             : workspace_js_1.defaultAppSettings.hasSeenOnboarding,
-        shareAnonymousAnalytics: typeof settings?.shareAnonymousAnalytics === 'boolean'
-            ? settings.shareAnonymousAnalytics
-            : workspace_js_1.defaultAppSettings.shareAnonymousAnalytics,
+        shareAnonymousAnalytics: settings?.analyticsConsentVersion === 1 && settings.shareAnonymousAnalytics === true,
+        analyticsConsentVersion: settings?.analyticsConsentVersion === 1 ? 1 : null,
     };
 }
 function isValidRecentUrl(recentUrl, projects, roleProfiles) {

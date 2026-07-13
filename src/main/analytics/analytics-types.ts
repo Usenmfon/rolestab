@@ -7,17 +7,9 @@ export type AnalyticsEventName =
   | 'app_closed'
   | 'session_started'
   | 'session_ended'
-  | 'role_created'
-  | 'role_updated'
-  | 'role_deleted'
   | 'tab_opened'
   | 'tab_closed'
   | 'tab_switched'
-  | 'url_visited'
-  | 'extension_installed'
-  | 'extension_enabled'
-  | 'extension_disabled'
-  | 'extension_removed'
   | 'feature_used'
   | 'app_updated'
   | 'application_error'
@@ -42,17 +34,9 @@ export type AnalyticsEventInput =
   | { event_name: 'app_closed'; properties: Record<string, never> }
   | { event_name: 'session_started'; properties: Record<string, never> }
   | { event_name: 'session_ended'; properties: Record<string, never> }
-  | { event_name: 'role_created'; properties: { role_id: string } }
-  | { event_name: 'role_updated'; properties: { role_id: string } }
-  | { event_name: 'role_deleted'; properties: { role_id: string } }
   | { event_name: 'tab_opened'; properties: { tab_type: AnalyticsTabType } }
   | { event_name: 'tab_closed'; properties: { tab_type: AnalyticsTabType; lifetime_seconds?: number } }
   | { event_name: 'tab_switched'; properties: { from_tab_type: AnalyticsTabType; to_tab_type: AnalyticsTabType } }
-  | { event_name: 'url_visited'; properties: { hostname: string } }
-  | { event_name: 'extension_installed'; properties: { extension_id: string } }
-  | { event_name: 'extension_enabled'; properties: { extension_id: string } }
-  | { event_name: 'extension_disabled'; properties: { extension_id: string } }
-  | { event_name: 'extension_removed'; properties: { extension_id: string } }
   | { event_name: 'feature_used'; properties: { feature: AnalyticsFeatureName } }
   | {
       event_name: 'app_updated'
@@ -63,7 +47,6 @@ export type AnalyticsEventInput =
       properties: {
         error_code: AnalyticsErrorCode
         severity: AnalyticsErrorSeverity
-        component?: string
       }
     }
 
@@ -106,6 +89,7 @@ export type AnalyticsIdentity = {
   installation_id: string
   installed_at: string
   analytics_enabled: boolean
+  consent_version?: 1
   schema_version: 1
   registration_pending: boolean
   last_app_version?: string

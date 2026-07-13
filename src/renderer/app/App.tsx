@@ -65,6 +65,7 @@ function App() {
   const [renamingTabId, setRenamingTabId] = useState<string | null>(null)
   const [firstRunGuideAutoOpen, setFirstRunGuideAutoOpen] = useState(false)
   const [firstRunGuideManuallyOpen, setFirstRunGuideManuallyOpen] = useState(false)
+  const [firstRunGuideAnalyticsStep, setFirstRunGuideAnalyticsStep] = useState(false)
   const [confirmationRequest, setConfirmationRequest] = useState<ConfirmationRequest | null>(null)
   const confirmationResolverRef = useRef<((confirmed: boolean) => void) | null>(null)
   const urlInputRef = useRef<HTMLInputElement | null>(null)
@@ -95,11 +96,13 @@ function App() {
     () => tabs.filter((tab) => tab.projectId === activeProject?.id),
     [activeProject?.id, tabs],
   )
-  const firstRunGuideStep: FirstRunGuideStep = getFirstRunGuideStep(
-    projects.length,
-    activeProjectRoleProfiles.length,
-    activeProjectTabs.length,
-  )
+  const firstRunGuideStep: FirstRunGuideStep = firstRunGuideAnalyticsStep
+    ? 'analytics'
+    : getFirstRunGuideStep(
+        projects.length,
+        activeProjectRoleProfiles.length,
+        activeProjectTabs.length,
+      )
   const firstRunGuideOpen =
     (firstRunGuideAutoOpen || firstRunGuideManuallyOpen) &&
     !projectFormOpen &&
@@ -537,7 +540,6 @@ function App() {
 
     closeRoleProfileForm()
     setWorkspaceError(null)
-    window.rolesTab?.analytics[editingRoleProfile ? 'roleUpdated' : 'roleCreated'](roleProfile.id)
   }
 
   async function persistRoleProfile(roleProfile: RoleProfile) {
@@ -606,7 +608,6 @@ function App() {
         await persistRoleProfile(roleProfile)
       }
 
-      window.rolesTab?.analytics.roleCreated(roleProfile.id)
     }
 
     if (workspace) {
@@ -650,7 +651,6 @@ function App() {
         : remainingTabs.at(-1)?.id ?? null
     })
     setWorkspaceError(null)
-    window.rolesTab?.analytics.roleDeleted(roleProfileId)
   }
 
   async function deleteProject(projectId: string) {
@@ -829,7 +829,6 @@ function App() {
       },
     ])
     window.rolesTab?.analytics.tabOpened('web')
-    window.rolesTab?.analytics.urlVisited(initialUrl)
     setActiveTabId(tabId)
   }
 
@@ -926,12 +925,24 @@ function App() {
       ...defaultAppSettings,
       defaultProjectId: null,
       hasSeenOnboarding: settings.hasSeenOnboarding,
+      shareAnonymousAnalytics: settings.shareAnonymousAnalytics,
+      analyticsConsentVersion: settings.analyticsConsentVersion,
     })
   }
 
   function dismissFirstRunGuide() {
+    if (settings.analyticsConsentVersion === null) {
+      setFirstRunGuideAnalyticsStep(true)
+      return
+    }
+
+    closeFirstRunGuide()
+  }
+
+  function closeFirstRunGuide() {
     setFirstRunGuideAutoOpen(false)
     setFirstRunGuideManuallyOpen(false)
+    setFirstRunGuideAnalyticsStep(false)
     void saveAppSettings({
       ...settings,
       hasSeenOnboarding: true,
@@ -944,7 +955,20 @@ function App() {
     setRoleProfileFormOpen(false)
     setSettingsPanelOpen(false)
     setConfirmationRequest(null)
+    setFirstRunGuideAnalyticsStep(false)
     setFirstRunGuideManuallyOpen(true)
+  }
+
+  function chooseFirstRunAnalytics(enabled: boolean) {
+    setFirstRunGuideAutoOpen(false)
+    setFirstRunGuideManuallyOpen(false)
+    setFirstRunGuideAnalyticsStep(false)
+    void saveAppSettings({
+      ...settings,
+      hasSeenOnboarding: true,
+      shareAnonymousAnalytics: enabled,
+      analyticsConsentVersion: 1,
+    })
   }
 
   function handleFirstRunGuideAction() {
@@ -967,7 +991,12 @@ function App() {
       return
     }
 
-    dismissFirstRunGuide()
+    if (settings.analyticsConsentVersion === null) {
+      setFirstRunGuideAnalyticsStep(true)
+      return
+    }
+
+    closeFirstRunGuide()
   }
 
   async function shouldClearSessions(request: ConfirmationRequest): Promise<boolean> {
@@ -1396,6 +1425,7 @@ function App() {
       onSaveSettings={saveAppSettings}
       onResetSettings={resetAppSettings}
       onFirstRunGuideAction={handleFirstRunGuideAction}
+      onFirstRunGuideAnalyticsChoice={chooseFirstRunAnalytics}
       onDismissFirstRunGuide={dismissFirstRunGuide}
       onCloseRoleProfileForm={closeRoleProfileForm}
       onSaveRoleProfile={saveRoleProfile}

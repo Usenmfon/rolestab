@@ -5,7 +5,7 @@ export const ANALYTICS_CONFIG = {
   flushIntervalMs: 30_000,
   requestTimeoutMs: 10_000,
   maxQueueSize: 5_000,
-  maxEventAgeDays: 30,
+  maxEventAgeDays: 7,
   maxRetryAttempts: 10,
   flushThreshold: 20,
   shutdownFlushTimeoutMs: 1_500,

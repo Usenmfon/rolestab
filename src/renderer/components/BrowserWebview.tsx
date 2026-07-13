@@ -128,7 +128,6 @@ export function BrowserWebview({ tab, active, command, onUpdate }: BrowserWebvie
 
       if (url) {
         onUpdate(tab.id, { url, loadError: undefined, loadErrorDetails: undefined })
-        window.rolesTab?.analytics.urlVisited(url)
       }
     }
 

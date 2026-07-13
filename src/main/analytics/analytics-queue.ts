@@ -16,7 +16,6 @@ const lowPriorityEvents = new Set<AnalyticsEventName>([
   'tab_opened',
   'tab_closed',
   'tab_switched',
-  'url_visited',
 ])
 
 export class AnalyticsQueue {

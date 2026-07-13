@@ -1,5 +1,5 @@
 import electron from 'electron'
-import { getSafeHostname, sanitizeFeatureName, sanitizeIdentifier, sanitizeLifetimeSeconds, sanitizeTabType } from './analytics-privacy.js'
+import { sanitizeFeatureName, sanitizeLifetimeSeconds, sanitizeTabType } from './analytics-privacy.js'
 import type { AnalyticsClient } from './analytics-client.js'
 import type { AnalyticsErrorCode, AnalyticsErrorSeverity } from './analytics-types.js'
 import { AnalyticsErrorCodes } from './analytics-types.js'
@@ -18,30 +18,6 @@ export function registerAnalyticsIpcHandlers(options: {
   ipcMain.on('analytics:connectivity-restored', (event) => {
     assertTrustedSender(event)
     void analytics.flush().catch(() => undefined)
-  })
-
-  ipcMain.on('analytics:role-created', (event, payload: { roleId?: unknown }) => {
-    assertTrustedSender(event)
-    const roleId = sanitizeIdentifier(payload?.roleId)
-    if (roleId) {
-      void analytics.track({ event_name: 'role_created', properties: { role_id: roleId } })
-    }
-  })
-
-  ipcMain.on('analytics:role-updated', (event, payload: { roleId?: unknown }) => {
-    assertTrustedSender(event)
-    const roleId = sanitizeIdentifier(payload?.roleId)
-    if (roleId) {
-      void analytics.track({ event_name: 'role_updated', properties: { role_id: roleId } })
-    }
-  })
-
-  ipcMain.on('analytics:role-deleted', (event, payload: { roleId?: unknown }) => {
-    assertTrustedSender(event)
-    const roleId = sanitizeIdentifier(payload?.roleId)
-    if (roleId) {
-      void analytics.track({ event_name: 'role_deleted', properties: { role_id: roleId } })
-    }
   })
 
   ipcMain.on('analytics:tab-opened', (event, payload: { tabType?: unknown }) => {
@@ -75,46 +51,6 @@ export function registerAnalyticsIpcHandlers(options: {
     })
   })
 
-  ipcMain.on('analytics:url-visited', (event, payload: { url?: unknown }) => {
-    assertTrustedSender(event)
-    const hostname = typeof payload?.url === 'string' ? getSafeHostname(payload.url) : null
-    if (hostname) {
-      void analytics.track({ event_name: 'url_visited', properties: { hostname } })
-    }
-  })
-
-  ipcMain.on('analytics:extension-installed', (event, payload: { extensionId?: unknown }) => {
-    assertTrustedSender(event)
-    const extensionId = sanitizeIdentifier(payload?.extensionId)
-    if (extensionId) {
-      void analytics.track({ event_name: 'extension_installed', properties: { extension_id: extensionId } })
-    }
-  })
-
-  ipcMain.on('analytics:extension-enabled', (event, payload: { extensionId?: unknown }) => {
-    assertTrustedSender(event)
-    const extensionId = sanitizeIdentifier(payload?.extensionId)
-    if (extensionId) {
-      void analytics.track({ event_name: 'extension_enabled', properties: { extension_id: extensionId } })
-    }
-  })
-
-  ipcMain.on('analytics:extension-disabled', (event, payload: { extensionId?: unknown }) => {
-    assertTrustedSender(event)
-    const extensionId = sanitizeIdentifier(payload?.extensionId)
-    if (extensionId) {
-      void analytics.track({ event_name: 'extension_disabled', properties: { extension_id: extensionId } })
-    }
-  })
-
-  ipcMain.on('analytics:extension-removed', (event, payload: { extensionId?: unknown }) => {
-    assertTrustedSender(event)
-    const extensionId = sanitizeIdentifier(payload?.extensionId)
-    if (extensionId) {
-      void analytics.track({ event_name: 'extension_removed', properties: { extension_id: extensionId } })
-    }
-  })
-
   ipcMain.on('analytics:feature-used', (event, payload: { feature?: unknown }) => {
     assertTrustedSender(event)
     const feature = sanitizeFeatureName(payload?.feature)
@@ -128,14 +64,12 @@ export function trackApplicationError(
   analytics: AnalyticsClient | null,
   errorCode: AnalyticsErrorCode,
   severity: AnalyticsErrorSeverity,
-  component?: string,
 ): void {
   void analytics?.track({
     event_name: 'application_error',
     properties: {
       error_code: errorCode,
       severity,
-      ...(component ? { component } : {}),
     },
   })
 }

@@ -23,6 +23,7 @@ exports.defaultAppSettings = {
     defaultRoleColors: exports.defaultRoleColors,
     keyboardShortcuts: exports.defaultKeyboardShortcuts,
     hasSeenOnboarding: false,
-    shareAnonymousAnalytics: true,
+    shareAnonymousAnalytics: false,
+    analyticsConsentVersion: null,
 };
 //# sourceMappingURL=workspace.js.map

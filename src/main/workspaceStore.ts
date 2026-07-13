@@ -141,9 +141,8 @@ function sanitizeSettings(settings: AppSettings | undefined, projects: ProjectSu
         ? settings.hasSeenOnboarding
         : defaultAppSettings.hasSeenOnboarding,
     shareAnonymousAnalytics:
-      typeof settings?.shareAnonymousAnalytics === 'boolean'
-        ? settings.shareAnonymousAnalytics
-        : defaultAppSettings.shareAnonymousAnalytics,
+      settings?.analyticsConsentVersion === 1 && settings.shareAnonymousAnalytics === true,
+    analyticsConsentVersion: settings?.analyticsConsentVersion === 1 ? 1 : null,
   }
 }
 

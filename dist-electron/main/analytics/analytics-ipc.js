@@ -16,27 +16,6 @@ function registerAnalyticsIpcHandlers(options) {
         assertTrustedSender(event);
         void analytics.flush().catch(() => undefined);
     });
-    ipcMain.on('analytics:role-created', (event, payload) => {
-        assertTrustedSender(event);
-        const roleId = (0, analytics_privacy_js_1.sanitizeIdentifier)(payload?.roleId);
-        if (roleId) {
-            void analytics.track({ event_name: 'role_created', properties: { role_id: roleId } });
-        }
-    });
-    ipcMain.on('analytics:role-updated', (event, payload) => {
-        assertTrustedSender(event);
-        const roleId = (0, analytics_privacy_js_1.sanitizeIdentifier)(payload?.roleId);
-        if (roleId) {
-            void analytics.track({ event_name: 'role_updated', properties: { role_id: roleId } });
-        }
-    });
-    ipcMain.on('analytics:role-deleted', (event, payload) => {
-        assertTrustedSender(event);
-        const roleId = (0, analytics_privacy_js_1.sanitizeIdentifier)(payload?.roleId);
-        if (roleId) {
-            void analytics.track({ event_name: 'role_deleted', properties: { role_id: roleId } });
-        }
-    });
     ipcMain.on('analytics:tab-opened', (event, payload) => {
         assertTrustedSender(event);
         void analytics.track({
@@ -65,41 +44,6 @@ function registerAnalyticsIpcHandlers(options) {
             },
         });
     });
-    ipcMain.on('analytics:url-visited', (event, payload) => {
-        assertTrustedSender(event);
-        const hostname = typeof payload?.url === 'string' ? (0, analytics_privacy_js_1.getSafeHostname)(payload.url) : null;
-        if (hostname) {
-            void analytics.track({ event_name: 'url_visited', properties: { hostname } });
-        }
-    });
-    ipcMain.on('analytics:extension-installed', (event, payload) => {
-        assertTrustedSender(event);
-        const extensionId = (0, analytics_privacy_js_1.sanitizeIdentifier)(payload?.extensionId);
-        if (extensionId) {
-            void analytics.track({ event_name: 'extension_installed', properties: { extension_id: extensionId } });
-        }
-    });
-    ipcMain.on('analytics:extension-enabled', (event, payload) => {
-        assertTrustedSender(event);
-        const extensionId = (0, analytics_privacy_js_1.sanitizeIdentifier)(payload?.extensionId);
-        if (extensionId) {
-            void analytics.track({ event_name: 'extension_enabled', properties: { extension_id: extensionId } });
-        }
-    });
-    ipcMain.on('analytics:extension-disabled', (event, payload) => {
-        assertTrustedSender(event);
-        const extensionId = (0, analytics_privacy_js_1.sanitizeIdentifier)(payload?.extensionId);
-        if (extensionId) {
-            void analytics.track({ event_name: 'extension_disabled', properties: { extension_id: extensionId } });
-        }
-    });
-    ipcMain.on('analytics:extension-removed', (event, payload) => {
-        assertTrustedSender(event);
-        const extensionId = (0, analytics_privacy_js_1.sanitizeIdentifier)(payload?.extensionId);
-        if (extensionId) {
-            void analytics.track({ event_name: 'extension_removed', properties: { extension_id: extensionId } });
-        }
-    });
     ipcMain.on('analytics:feature-used', (event, payload) => {
         assertTrustedSender(event);
         const feature = (0, analytics_privacy_js_1.sanitizeFeatureName)(payload?.feature);
@@ -108,13 +52,12 @@ function registerAnalyticsIpcHandlers(options) {
         }
     });
 }
-function trackApplicationError(analytics, errorCode, severity, component) {
+function trackApplicationError(analytics, errorCode, severity) {
     void analytics?.track({
         event_name: 'application_error',
         properties: {
             error_code: errorCode,
             severity,
-            ...(component ? { component } : {}),
         },
     });
 }
