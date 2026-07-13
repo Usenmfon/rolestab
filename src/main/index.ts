@@ -1,6 +1,8 @@
 import electron from 'electron'
 import { applyTitleBarTheme, createAppWindow } from './browserWindow.js'
 import { logInternalError } from './errorLogger.js'
+import { ExtensionManager } from './extensions/extension-manager.js'
+import { registerExtensionIpcHandlers } from './extensions/extension-ipc.js'
 import {
   checkForUpdates,
   getUpdateStatus,
@@ -47,6 +49,7 @@ const trustedDevServerUrl = process.env.VITE_DEV_SERVER_URL ?? 'http://127.0.0.1
 const windowsAppUserModelId = 'com.rolestab.app'
 
 let mainWindow: AppBrowserWindow | null = null
+const extensionManager = new ExtensionManager()
 
 app.setName('RolesTab')
 
@@ -315,6 +318,12 @@ ipcMain.handle('workspace:import-project-config', async (event) => {
     filePath,
     ...importResult,
   }
+})
+
+registerExtensionIpcHandlers({
+  extensionManager,
+  getMainWindow: () => mainWindow,
+  assertTrustedSender,
 })
 
 function parseHttpUrl(url: string): URL {

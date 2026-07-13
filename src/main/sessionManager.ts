@@ -47,7 +47,7 @@ export async function getRoleSessionUsage(partition: string): Promise<SessionUsa
   }
 }
 
-function getRoleSession(partition: string): Electron.Session {
+export function getRoleSession(partition: string): Electron.Session {
   const roleSession = session.fromPartition(partition)
 
   roleSession.setPermissionRequestHandler((_webContents, _permission, callback) => {
