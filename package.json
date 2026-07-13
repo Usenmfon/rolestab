@@ -22,7 +22,7 @@
     "dist:mac:x64": "npm run build && electron-builder --mac --x64 --publish never",
     "dist:linux": "npm run build && electron-builder --linux --publish never"
   },
-  "author": "RolesTab",
+  "author": "Usenmfon",
   "license": "UNLICENSED",
   "dependencies": {
     "@tailwindcss/vite": "^4.3.2",
