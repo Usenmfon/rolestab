@@ -6,6 +6,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const electron_1 = __importDefault(require("electron"));
 const browserWindow_js_1 = require("./browserWindow.js");
 const errorLogger_js_1 = require("./errorLogger.js");
+const extension_manager_js_1 = require("./extensions/extension-manager.js");
+const extension_ipc_js_1 = require("./extensions/extension-ipc.js");
 const autoUpdater_js_1 = require("./autoUpdater.js");
 const sessionManager_js_1 = require("./sessionManager.js");
 const workspaceStore_js_1 = require("./workspaceStore.js");
@@ -20,6 +22,7 @@ if (!app.requestSingleInstanceLock()) {
 const trustedDevServerUrl = process.env.VITE_DEV_SERVER_URL ?? 'http://127.0.0.1:5174';
 const windowsAppUserModelId = 'com.rolestab.app';
 let mainWindow = null;
+const extensionManager = new extension_manager_js_1.ExtensionManager();
 app.setName('RolesTab');
 if (process.platform === 'win32') {
     app.setAppUserModelId(windowsAppUserModelId);
@@ -216,6 +219,11 @@ ipcMain.handle('workspace:import-project-config', async (event) => {
         filePath,
         ...importResult,
     };
+});
+(0, extension_ipc_js_1.registerExtensionIpcHandlers)({
+    extensionManager,
+    getMainWindow: () => mainWindow,
+    assertTrustedSender,
 });
 function parseHttpUrl(url) {
     const parsed = new URL(url);

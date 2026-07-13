@@ -99,6 +99,32 @@ const api = {
             return ipcRenderer.invoke('workspace:import-project-config');
         },
     },
+    extensions: {
+        list() {
+            return ipcRenderer.invoke('extensions:list');
+        },
+        install() {
+            return ipcRenderer.invoke('extensions:install');
+        },
+        remove(extensionId) {
+            return ipcRenderer.invoke('extensions:remove', extensionId);
+        },
+        setGlobalEnabled(extensionId, enabled) {
+            return ipcRenderer.invoke('extensions:set-global-enabled', extensionId, enabled);
+        },
+        setRoleEnabled(extensionId, roleId, enabled) {
+            return ipcRenderer.invoke('extensions:set-role-enabled', extensionId, roleId, enabled);
+        },
+        loadForRole(roleId) {
+            return ipcRenderer.invoke('extensions:load-for-role', roleId);
+        },
+        reloadForRole(extensionId, roleId) {
+            return ipcRenderer.invoke('extensions:reload-for-role', extensionId, roleId);
+        },
+        openFolder(extensionId) {
+            return ipcRenderer.invoke('extensions:open-folder', extensionId);
+        },
+    },
 };
 contextBridge.exposeInMainWorld('rolesTab', api);
 //# sourceMappingURL=index.js.map

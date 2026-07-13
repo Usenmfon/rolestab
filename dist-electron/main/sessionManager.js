@@ -7,6 +7,7 @@ exports.createRolePartition = createRolePartition;
 exports.clearRoleSession = clearRoleSession;
 exports.clearRoleSessions = clearRoleSessions;
 exports.getRoleSessionUsage = getRoleSessionUsage;
+exports.getRoleSession = getRoleSession;
 exports.getRoleSessionsUsage = getRoleSessionsUsage;
 const electron_1 = __importDefault(require("electron"));
 const promises_1 = require("node:fs/promises");
