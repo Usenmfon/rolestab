@@ -2,6 +2,7 @@ import {
   ArrowLeft,
   ArrowRight,
   Bug,
+  Check,
   Clipboard,
   Copy,
   ExternalLink,
@@ -16,7 +17,7 @@ import {
   XCircle,
   X,
 } from 'lucide-react'
-import { type ChangeEvent, type FormEvent, type RefObject, useEffect, useState } from 'react'
+import { type ChangeEvent, type FormEvent, type RefObject, useEffect, useRef, useState } from 'react'
 import { IconButton } from './IconButton'
 import type { InstalledExtension, RoleExtensionRuntimeState } from '../../shared/extensions'
 
@@ -43,7 +44,7 @@ type TopBarProps = {
   onStop: () => void
   onHome: () => void
   onNavigate: (url: string) => void
-  onCopyUrl: () => void
+  onCopyUrl: () => Promise<void> | void
   onOpenExternal: () => void
   onOpenDevTools: () => void
   onInspectElement: () => void
@@ -80,12 +81,22 @@ export function TopBar({
 }: TopBarProps) {
   const [urlDraft, setUrlDraft] = useState(currentUrl)
   const [extensionMenuOpen, setExtensionMenuOpen] = useState(false)
+  const [copiedUrl, setCopiedUrl] = useState(false)
+  const copiedTimerRef = useRef<number | null>(null)
 
   useEffect(() => {
     if (document.activeElement !== urlInputRef.current) {
       setUrlDraft(currentUrl)
     }
   }, [currentUrl, urlInputRef])
+
+  useEffect(() => {
+    return () => {
+      if (copiedTimerRef.current) {
+        window.clearTimeout(copiedTimerRef.current)
+      }
+    }
+  }, [])
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -98,6 +109,25 @@ export function TopBar({
 
   function handleUrlChange(event: ChangeEvent<HTMLInputElement>) {
     setUrlDraft(event.target.value)
+  }
+
+  function handleCopyUrl() {
+    void Promise.resolve(onCopyUrl())
+      .then(() => {
+        setCopiedUrl(true)
+
+        if (copiedTimerRef.current) {
+          window.clearTimeout(copiedTimerRef.current)
+        }
+
+        copiedTimerRef.current = window.setTimeout(() => {
+          setCopiedUrl(false)
+          copiedTimerRef.current = null
+        }, 1400)
+      })
+      .catch(() => {
+        setCopiedUrl(false)
+      })
   }
 
   return (
@@ -140,7 +170,12 @@ export function TopBar({
       <IconButton label="Rename Tab" icon={PencilLine} onClick={onRenameTab} disabled={!hasActiveTab} />
       <IconButton label="Reset Active Role Session" icon={RotateCcw} onClick={onResetSession} disabled={!hasActiveTab} />
       <IconButton label="Close Tab" icon={X} onClick={onCloseTab} disabled={!hasActiveTab} />
-      <IconButton label="Copy Current URL" icon={Clipboard} onClick={onCopyUrl} disabled={!hasActiveTab} />
+      <IconButton
+        label={copiedUrl ? 'Copied Current URL' : 'Copy Current URL'}
+        icon={copiedUrl ? Check : Clipboard}
+        onClick={handleCopyUrl}
+        disabled={!hasActiveTab}
+      />
       <IconButton label="Open External Browser" icon={ExternalLink} onClick={onOpenExternal} disabled={!hasActiveTab} />
       <div className="relative">
         <IconButton

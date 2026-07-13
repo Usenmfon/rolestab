@@ -1192,10 +1192,15 @@ function App() {
     }
 
     try {
-      await navigator.clipboard.writeText(activeTab.url)
+      if (window.rolesTab?.app.copyText) {
+        await window.rolesTab.app.copyText(activeTab.url)
+      } else {
+        await navigator.clipboard.writeText(activeTab.url)
+      }
       setWorkspaceError(null)
-    } catch {
-      reportError('clipboard-copy', 'Unable to copy the current URL.', null, setWorkspaceError)
+    } catch (error) {
+      reportError('clipboard-copy', 'Unable to copy the current URL.', error, setWorkspaceError)
+      throw error
     }
   }
 
@@ -1345,9 +1350,7 @@ function App() {
       onHome={homeActiveTab}
       onNavigate={navigateActiveTab}
       onRetryActiveTab={retryActiveTab}
-      onCopyUrl={() => {
-        void copyActiveUrl()
-      }}
+      onCopyUrl={copyActiveUrl}
       onOpenExternal={() => {
         void openActiveUrlExternal()
       }}
