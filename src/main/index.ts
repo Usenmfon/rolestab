@@ -4,6 +4,12 @@ import { logInternalError } from './errorLogger.js'
 import { ExtensionManager } from './extensions/extension-manager.js'
 import { registerExtensionIpcHandlers } from './extensions/extension-ipc.js'
 import {
+  AnalyticsClient,
+  getAnalyticsErrorCodeForScope,
+  registerAnalyticsIpcHandlers,
+  trackApplicationError,
+} from './analytics/index.js'
+import {
   checkForUpdates,
   getUpdateStatus,
   initAutoUpdater,
@@ -50,6 +56,7 @@ const windowsAppUserModelId = 'com.rolestab.app'
 
 let mainWindow: AppBrowserWindow | null = null
 const extensionManager = new ExtensionManager()
+let analytics: AnalyticsClient | null = null
 
 app.setName('RolesTab')
 
@@ -76,6 +83,17 @@ function ignoreBrokenPipeExceptions(): void {
 }
 
 app.whenReady().then(() => {
+  analytics = new AnalyticsClient({
+    userDataPath: app.getPath('userData'),
+    appVersion: app.getVersion(),
+    locale: app.getLocale(),
+    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC',
+  })
+  void analytics.initialize().catch(() => {
+    // Analytics failures must never interrupt app startup.
+  })
+  registerAnalyticsIpcHandlers({ analytics, assertTrustedSender })
+
   electron.session.defaultSession.setPermissionRequestHandler((_webContents, _permission, callback) => {
     callback(false)
   })
@@ -109,6 +127,18 @@ app.on('window-all-closed', () => {
   }
 })
 
+app.on('before-quit', (event) => {
+  const currentAnalytics = analytics
+
+  if (!currentAnalytics) {
+    return
+  }
+
+  event.preventDefault()
+  analytics = null
+  void currentAnalytics.shutdown().finally(() => app.quit())
+})
+
 ipcMain.handle('app:get-version', (event) => {
   assertTrustedSender(event)
 
@@ -139,12 +169,14 @@ ipcMain.handle('app:get-update-status', (event) => {
 
 ipcMain.handle('app:check-for-updates', (event) => {
   assertTrustedSender(event)
+  void analytics?.track({ event_name: 'feature_used', properties: { feature: 'check_for_updates' } })
 
   return checkForUpdates()
 })
 
 ipcMain.handle('app:quit-and-install', (event) => {
   assertTrustedSender(event)
+  void analytics?.track({ event_name: 'feature_used', properties: { feature: 'install_update' } })
 
   quitAndInstall()
 })
@@ -152,6 +184,7 @@ ipcMain.handle('app:quit-and-install', (event) => {
 ipcMain.handle('app:open-external', async (event, url: string) => {
   assertTrustedSender(event)
   const parsed = parseHttpUrl(url)
+  void analytics?.track({ event_name: 'feature_used', properties: { feature: 'open_external_url' } })
 
   await shell.openExternal(parsed.toString())
 })
@@ -170,6 +203,12 @@ ipcMain.handle(
     assertTrustedSender(event)
 
     await logInternalError(entry)
+    trackApplicationError(
+      analytics,
+      getAnalyticsErrorCodeForScope(entry.scope),
+      'warning',
+      entry.scope,
+    )
   },
 )
 
@@ -245,7 +284,9 @@ ipcMain.handle('workspace:delete-role-profile', async (event, roleProfileId: str
 
 ipcMain.handle('workspace:save-settings', async (event, settings: AppSettings) => {
   assertTrustedSender(event)
-  return saveSettings(settings)
+  const workspace = await saveSettings(settings)
+  await analytics?.setEnabled(workspace.settings.shareAnonymousAnalytics)
+  return workspace
 })
 
 ipcMain.handle('workspace:save-recent-url', async (event, recentUrl: RecentUrl) => {

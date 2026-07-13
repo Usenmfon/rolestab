@@ -8,6 +8,7 @@ const browserWindow_js_1 = require("./browserWindow.js");
 const errorLogger_js_1 = require("./errorLogger.js");
 const extension_manager_js_1 = require("./extensions/extension-manager.js");
 const extension_ipc_js_1 = require("./extensions/extension-ipc.js");
+const index_js_1 = require("./analytics/index.js");
 const autoUpdater_js_1 = require("./autoUpdater.js");
 const sessionManager_js_1 = require("./sessionManager.js");
 const workspaceStore_js_1 = require("./workspaceStore.js");
@@ -23,6 +24,7 @@ const trustedDevServerUrl = process.env.VITE_DEV_SERVER_URL ?? 'http://127.0.0.1
 const windowsAppUserModelId = 'com.rolestab.app';
 let mainWindow = null;
 const extensionManager = new extension_manager_js_1.ExtensionManager();
+let analytics = null;
 app.setName('RolesTab');
 if (process.platform === 'win32') {
     app.setAppUserModelId(windowsAppUserModelId);
@@ -43,6 +45,16 @@ function ignoreBrokenPipeExceptions() {
     });
 }
 app.whenReady().then(() => {
+    analytics = new index_js_1.AnalyticsClient({
+        userDataPath: app.getPath('userData'),
+        appVersion: app.getVersion(),
+        locale: app.getLocale(),
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC',
+    });
+    void analytics.initialize().catch(() => {
+        // Analytics failures must never interrupt app startup.
+    });
+    (0, index_js_1.registerAnalyticsIpcHandlers)({ analytics, assertTrustedSender });
     electron_1.default.session.defaultSession.setPermissionRequestHandler((_webContents, _permission, callback) => {
         callback(false);
     });
@@ -69,6 +81,15 @@ app.on('window-all-closed', () => {
         app.quit();
     }
 });
+app.on('before-quit', (event) => {
+    const currentAnalytics = analytics;
+    if (!currentAnalytics) {
+        return;
+    }
+    event.preventDefault();
+    analytics = null;
+    void currentAnalytics.shutdown().finally(() => app.quit());
+});
 ipcMain.handle('app:get-version', (event) => {
     assertTrustedSender(event);
     return app.getVersion();
@@ -90,20 +111,24 @@ ipcMain.handle('app:get-update-status', (event) => {
 });
 ipcMain.handle('app:check-for-updates', (event) => {
     assertTrustedSender(event);
+    void analytics?.track({ event_name: 'feature_used', properties: { feature: 'check_for_updates' } });
     return (0, autoUpdater_js_1.checkForUpdates)();
 });
 ipcMain.handle('app:quit-and-install', (event) => {
     assertTrustedSender(event);
+    void analytics?.track({ event_name: 'feature_used', properties: { feature: 'install_update' } });
     (0, autoUpdater_js_1.quitAndInstall)();
 });
 ipcMain.handle('app:open-external', async (event, url) => {
     assertTrustedSender(event);
     const parsed = parseHttpUrl(url);
+    void analytics?.track({ event_name: 'feature_used', properties: { feature: 'open_external_url' } });
     await shell.openExternal(parsed.toString());
 });
 ipcMain.handle('app:log-error', async (event, entry) => {
     assertTrustedSender(event);
     await (0, errorLogger_js_1.logInternalError)(entry);
+    (0, index_js_1.trackApplicationError)(analytics, (0, index_js_1.getAnalyticsErrorCodeForScope)(entry.scope), 'warning', entry.scope);
 });
 ipcMain.handle('session:create-role-partition', (event, projectId, roleProfileId) => {
     assertTrustedSender(event);
@@ -160,7 +185,9 @@ ipcMain.handle('workspace:delete-role-profile', async (event, roleProfileId) => 
 });
 ipcMain.handle('workspace:save-settings', async (event, settings) => {
     assertTrustedSender(event);
-    return (0, workspaceStore_js_1.saveSettings)(settings);
+    const workspace = await (0, workspaceStore_js_1.saveSettings)(settings);
+    await analytics?.setEnabled(workspace.settings.shareAnonymousAnalytics);
+    return workspace;
 });
 ipcMain.handle('workspace:save-recent-url', async (event, recentUrl) => {
     assertTrustedSender(event);
