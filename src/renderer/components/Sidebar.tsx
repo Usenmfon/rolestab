@@ -11,6 +11,7 @@ type SidebarProps = {
   settings: AppSettings
   recentUrls: RecentUrl[]
   sessionUsage: SessionUsage[]
+  updateReady: boolean
   activeProjectId: string | null
   onCreateProject: () => void
   onEditProject: (projectId: string) => void
@@ -39,6 +40,7 @@ export function Sidebar({
   settings,
   recentUrls,
   sessionUsage,
+  updateReady,
   activeProjectId,
   onCreateProject,
   onEditProject,
@@ -210,10 +212,17 @@ export function Sidebar({
           <button
             type="button"
             onClick={onOpenSettings}
-            className="flex h-9 items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-700 hover:bg-slate-50"
+            className="relative flex h-9 items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-700 hover:bg-slate-50"
+            aria-label={updateReady ? 'Settings, update ready' : 'Settings'}
           >
             <Settings aria-hidden="true" size={15} />
-            Settings
+            <span>{updateReady ? 'Update ready' : 'Settings'}</span>
+            {updateReady ? (
+              <span
+                aria-hidden="true"
+                className="absolute right-2 top-2 h-2 w-2 rounded-full bg-red-500 ring-2 ring-white"
+              />
+            ) : null}
           </button>
         </div>
       </div>

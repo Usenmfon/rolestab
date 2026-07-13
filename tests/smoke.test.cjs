@@ -194,11 +194,19 @@ test('role launcher keeps tabs isolated by project', () => {
 
 test('update checker keeps transport errors readable in settings', () => {
   const autoUpdaterSource = readProjectFile('src/main/autoUpdater.ts')
+  const appSource = readProjectFile('src/renderer/app/App.tsx')
+  const layoutSource = readProjectFile('src/renderer/layouts/DesktopLayout.tsx')
+  const sidebarSource = readProjectFile('src/renderer/components/Sidebar.tsx')
 
   assert.match(autoUpdaterSource, /getUpdateErrorMessage/)
   assert.match(autoUpdaterSource, /GitHub is temporarily unavailable/)
   assert.match(autoUpdaterSource, /message\.split\(\s*\/\\r\?\\n\//)
   assert.match(autoUpdaterSource, /logInternalError\(\{\s*scope:\s*'auto-updater',\s*message:\s*error\.message/)
+  assert.match(appSource, /onUpdateStatus/)
+  assert.match(appSource, /updateStatus\.state === 'downloaded'/)
+  assert.match(layoutSource, /updateReady/)
+  assert.match(sidebarSource, /Update ready/)
+  assert.match(sidebarSource, /Settings, update ready/)
 })
 
 test('sidebar can be shown and hidden from the browser toolbar', () => {

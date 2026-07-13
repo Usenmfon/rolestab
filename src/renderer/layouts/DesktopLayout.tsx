@@ -34,6 +34,7 @@ type DesktopLayoutProps = {
   settings: AppSettings
   recentUrls: RecentUrl[]
   sessionUsage: SessionUsage[]
+  updateReady: boolean
   activeProject: ProjectSummary | null
   tabs: BrowserTab[]
   activeTab: BrowserTab | null
@@ -117,6 +118,7 @@ export function DesktopLayout({
   settings,
   recentUrls,
   sessionUsage,
+  updateReady,
   activeProject,
   tabs,
   activeTab,
@@ -199,6 +201,7 @@ export function DesktopLayout({
           settings={settings}
           recentUrls={recentUrls}
           sessionUsage={sessionUsage}
+          updateReady={updateReady}
           activeProjectId={activeProject?.id ?? null}
           onCreateProject={onCreateProject}
           onEditProject={onEditProject}

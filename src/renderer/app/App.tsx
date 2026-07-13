@@ -16,6 +16,7 @@ import type {
 import { defaultAppSettings } from '../../shared/workspace'
 import type { SessionUsage } from '../../shared/session'
 import type { InstalledExtension, RoleExtensionRuntimeState } from '../../shared/extensions'
+import type { UpdateStatus } from '../../shared/update'
 import { isProductionUrl, normalizeHttpUrl } from '../utils/url'
 
 const commonRoleNames = ['Admin', 'Manager', 'Staff', 'Customer', 'Guest']
@@ -59,6 +60,7 @@ function App() {
   const [sessionUsage, setSessionUsage] = useState<SessionUsage[]>([])
   const [installedExtensions, setInstalledExtensions] = useState<InstalledExtension[]>([])
   const [extensionRuntimeStates, setExtensionRuntimeStates] = useState<RoleExtensionRuntimeState[]>([])
+  const [updateStatus, setUpdateStatus] = useState<UpdateStatus>({ state: 'idle' })
   const [sidebarOpen, setSidebarOpen] = useState(true)
   const [renamingTabId, setRenamingTabId] = useState<string | null>(null)
   const [firstRunGuideAutoOpen, setFirstRunGuideAutoOpen] = useState(false)
@@ -103,6 +105,7 @@ function App() {
     !roleProfileFormOpen &&
     !settingsPanelOpen &&
     !confirmationRequest
+  const updateReady = updateStatus.state === 'downloaded'
   const activeRoleExtensions = useMemo(
     () =>
       activeTab
@@ -201,6 +204,25 @@ function App() {
     return () => {
       window.removeEventListener('error', handleError)
       window.removeEventListener('unhandledrejection', handleUnhandledRejection)
+    }
+  }, [])
+
+  useEffect(() => {
+    let active = true
+
+    void window.rolesTab?.app.getUpdateStatus().then((status) => {
+      if (active) {
+        setUpdateStatus(status)
+      }
+    })
+
+    const unsubscribe = window.rolesTab?.app.onUpdateStatus((status) => {
+      setUpdateStatus(status)
+    })
+
+    return () => {
+      active = false
+      unsubscribe?.()
     }
   }, [])
 
@@ -1256,6 +1278,7 @@ function App() {
       settings={settings}
       recentUrls={recentUrls}
       sessionUsage={sessionUsage}
+      updateReady={updateReady}
       activeProject={activeProject}
       tabs={activeProjectTabs}
       activeTab={activeTab}
