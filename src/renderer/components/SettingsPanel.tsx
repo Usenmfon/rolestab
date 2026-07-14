@@ -216,8 +216,8 @@ export function SettingsPanel({
         <div className="space-y-7">
           <section className="space-y-3.5">
             <h3 className="text-sm font-semibold text-slate-950">Startup</h3>
-            <label className="space-y-2">
-              <span className="text-sm font-medium text-slate-700">Default Homepage</span>
+            <label className="block space-y-1.5">
+              <span className="block text-sm font-medium text-slate-700">Default Homepage</span>
               <input
                 value={draft.defaultHomepage}
                 onChange={(event) =>
@@ -228,8 +228,8 @@ export function SettingsPanel({
               />
             </label>
 
-            <label className="space-y-2">
-              <span className="text-sm font-medium text-slate-700">Default Project</span>
+            <label className="block space-y-1.5">
+              <span className="block text-sm font-medium text-slate-700">Default Project</span>
               <select
                 value={draft.defaultProjectId ?? ''}
                 onChange={(event) =>
