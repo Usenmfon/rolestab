@@ -1,4 +1,4 @@
-import { Layers, Plus, Pencil, Play, Sparkles, Trash2 } from 'lucide-react'
+import { Layers, Plus, Pencil, Play, Trash2, UsersRound } from 'lucide-react'
 import type { RoleProfile } from '../../shared/workspace'
 
 type RoleProfileListProps = {
@@ -48,7 +48,7 @@ export function RoleProfileList({
             onClick={onCreateCommonRoles}
             className="flex h-9 items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-2 text-xs font-semibold text-slate-700 hover:bg-slate-50"
           >
-            <Sparkles aria-hidden="true" size={14} />
+            <UsersRound aria-hidden="true" size={14} />
             Common
           </button>
           <button
