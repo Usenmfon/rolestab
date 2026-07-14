@@ -2,7 +2,7 @@ import { Sidebar } from '../components/Sidebar'
 import { TabBar } from '../components/TabBar'
 import { TopBar } from '../components/TopBar'
 import { WebviewArea } from '../components/WebviewArea'
-import { ConfirmationDialog } from '../components/ConfirmationDialog'
+import { ConfirmationDialog, type ConfirmationRequest } from '../components/ConfirmationDialog'
 import { FirstRunGuide, type FirstRunGuideStep } from '../components/FirstRunGuide'
 import { ProjectFormPanel, type ProjectDraft } from '../components/ProjectFormPanel'
 import { SettingsPanel } from '../components/SettingsPanel'
@@ -21,12 +21,6 @@ import type {
 } from '../../shared/workspace'
 import type { SessionUsage } from '../../shared/session'
 import type { InstalledExtension, RoleExtensionRuntimeState } from '../../shared/extensions'
-
-type ConfirmationRequest = {
-  title: string
-  message: string
-  confirmLabel: string
-}
 
 const privacyPolicyUrl = 'https://rolestab.app/privacy'
 
@@ -82,6 +76,7 @@ type DesktopLayoutProps = {
   onCloseSettings: () => void
   onSaveSettings: (settings: AppSettings) => Promise<void>
   onResetSettings: () => Promise<void>
+  onRequestConfirmation: (request: ConfirmationRequest) => Promise<boolean>
   onFirstRunGuideAction: () => void
   onFirstRunGuideAnalyticsChoice: (enabled: boolean) => void
   onDismissFirstRunGuide: () => void
@@ -164,6 +159,7 @@ export function DesktopLayout({
   onCloseSettings,
   onSaveSettings,
   onResetSettings,
+  onRequestConfirmation,
   onFirstRunGuideAction,
   onFirstRunGuideAnalyticsChoice,
   onDismissFirstRunGuide,
@@ -329,6 +325,7 @@ export function DesktopLayout({
           onOpenPrivacyPolicy={openPrivacyPolicy}
           onSubmit={onSaveSettings}
           onReset={onResetSettings}
+          onRequestConfirmation={onRequestConfirmation}
         />
       ) : null}
 

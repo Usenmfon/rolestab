@@ -5,6 +5,7 @@ import type { RoleProfile } from '../../shared/workspace'
 import type { UpdateStatus } from '../../shared/update'
 import { normalizeHttpUrl } from '../utils/url'
 import { ExtensionsSettingsSection } from './ExtensionsSettingsSection'
+import type { ConfirmationRequest } from './ConfirmationDialog'
 
 type SettingsPanelProps = {
   settings: AppSettings
@@ -14,6 +15,7 @@ type SettingsPanelProps = {
   onOpenPrivacyPolicy: () => void
   onSubmit: (settings: AppSettings) => Promise<void>
   onReset: () => Promise<void>
+  onRequestConfirmation: (request: ConfirmationRequest) => Promise<boolean>
 }
 
 const releasesUrl = 'https://github.com/Usenmfon/rolestab/releases'
@@ -60,6 +62,7 @@ export function SettingsPanel({
   onOpenPrivacyPolicy,
   onSubmit,
   onReset,
+  onRequestConfirmation,
 }: SettingsPanelProps) {
   const [draft, setDraft] = useState<AppSettings>(settings)
   const [error, setError] = useState<string | null>(null)
@@ -372,7 +375,10 @@ export function SettingsPanel({
             </div>
           </section>
 
-          <ExtensionsSettingsSection roleProfiles={roleProfiles} />
+          <ExtensionsSettingsSection
+            roleProfiles={roleProfiles}
+            onRequestConfirmation={onRequestConfirmation}
+          />
 
           <section className="space-y-3.5">
             <h3 className="text-sm font-semibold text-slate-950">About</h3>

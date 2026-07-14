@@ -224,16 +224,19 @@ svg {
 .roles-tab-webview {
   position: absolute;
   inset: 0;
+  display: inline-flex;
   width: 100%;
   height: 100%;
 }
 
-.roles-tab-webview.block {
-  display: inline-flex;
+.roles-tab-webview.is-active {
+  visibility: visible;
+  pointer-events: auto;
 }
 
-.roles-tab-webview.hidden {
-  display: none;
+.roles-tab-webview.is-inactive {
+  visibility: hidden;
+  pointer-events: none;
 }
 
 .app-drag-region {

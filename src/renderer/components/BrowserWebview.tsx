@@ -325,13 +325,40 @@ export function BrowserWebview({ tab, active, command, onUpdate }: BrowserWebvie
       return undefined
     }
 
-    const frameId = window.requestAnimationFrame(() => {
-      if (!isEditableHostElement(document.activeElement)) {
-        webview.focus()
-      }
-    })
+    const webviewElement = webview
 
-    return () => window.cancelAnimationFrame(frameId)
+    function focusGuest() {
+      if (!isEditableHostElement(document.activeElement)) {
+        webviewElement.focus()
+      }
+    }
+
+    let frameId = 0
+
+    function scheduleGuestFocus() {
+      window.cancelAnimationFrame(frameId)
+      frameId = window.requestAnimationFrame(focusGuest)
+    }
+
+    scheduleGuestFocus()
+
+    // The first dom-ready event can arrive before BrowserWindow has finished
+    // showing. Retry once after activation, and again whenever navigation has
+    // completely settled, so the guest owns the keyboard from the first click.
+    const delayedFocusId = window.setTimeout(scheduleGuestFocus, 300)
+    webviewElement.addEventListener('did-stop-loading', scheduleGuestFocus)
+
+    // Chromium can leave an OOPIF guest without a focused WebContents when the
+    // desktop window is restored or reactivated. Reassert the active guest so
+    // its currently selected input receives keyboard events immediately.
+    window.addEventListener('focus', scheduleGuestFocus)
+
+    return () => {
+      window.cancelAnimationFrame(frameId)
+      window.clearTimeout(delayedFocusId)
+      webviewElement.removeEventListener('did-stop-loading', scheduleGuestFocus)
+      window.removeEventListener('focus', scheduleGuestFocus)
+    }
   }, [active, domReady])
 
   return (
@@ -341,7 +368,7 @@ export function BrowserWebview({ tab, active, command, onUpdate }: BrowserWebvie
       partition={tab.sessionPartition}
       useragent={browserUserAgent}
       webpreferences="contextIsolation=yes,nodeIntegration=no,sandbox=yes,webSecurity=yes,allowRunningInsecureContent=no"
-      className={`roles-tab-webview ${active ? 'block' : 'hidden'}`}
+      className={`roles-tab-webview ${active ? 'is-active' : 'is-inactive'}`}
     />
   )
 }

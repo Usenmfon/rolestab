@@ -3,6 +3,7 @@ import { DesktopLayout } from '../layouts/DesktopLayout'
 import type { ProjectDraft } from '../components/ProjectFormPanel'
 import type { RoleProfileDraft } from '../components/RoleProfileFormPanel'
 import type { FirstRunGuideStep } from '../components/FirstRunGuide'
+import type { ConfirmationRequest } from '../components/ConfirmationDialog'
 import type { BrowserCommand, BrowserCommandInput } from '../../shared/browser'
 import type {
   AppSettings,
@@ -20,12 +21,6 @@ import type { UpdateStatus } from '../../shared/update'
 import { isProductionUrl, normalizeHttpUrl } from '../utils/url'
 
 const commonRoleNames = ['Admin', 'Manager', 'Staff', 'Customer', 'Guest']
-
-type ConfirmationRequest = {
-  title: string
-  message: string
-  confirmLabel: string
-}
 
 type ShortcutAction =
   | 'newTab'
@@ -624,9 +619,11 @@ function App() {
       return
     }
 
-    const confirmed = window.confirm(
-      `Delete "${roleProfile.name}"? Open tabs for this role will close, but its persisted browser session is not cleared.`,
-    )
+    const confirmed = await requestConfirmation({
+      title: `Delete ${roleProfile.name}?`,
+      message: 'Open tabs for this role will close, but its persisted browser session will not be cleared.',
+      confirmLabel: 'Delete Role',
+    })
 
     if (!confirmed) {
       return
@@ -660,9 +657,11 @@ function App() {
       return
     }
 
-    const confirmed = window.confirm(
-      `Delete "${project.name}"? Open tabs for this project will close, but persisted role sessions are kept until you clear them.`,
-    )
+    const confirmed = await requestConfirmation({
+      title: `Delete ${project.name}?`,
+      message: 'Open tabs for this project will close, but persisted role sessions are kept until you clear them.',
+      confirmLabel: 'Delete Project',
+    })
 
     if (!confirmed) {
       return
@@ -805,7 +804,7 @@ function App() {
   }
 
   async function openRoleProfileTab(roleProfile: RoleProfile, initialUrl = roleProfile.startUrl, title = roleProfile.name) {
-    if (!confirmProductionUrl(initialUrl)) {
+    if (!(await confirmProductionUrl(initialUrl))) {
       return
     }
 
@@ -832,17 +831,17 @@ function App() {
     setActiveTabId(tabId)
   }
 
-  function openAllRoles() {
+  async function openAllRoles() {
     if (activeProjectRoleProfiles.length === 0) {
       openCreateRoleProfileForm()
       return
     }
 
-    activeProjectRoleProfiles.forEach((roleProfile) => {
+    for (const roleProfile of activeProjectRoleProfiles) {
       if (!tabs.some((tab) => tab.projectId === roleProfile.projectId && tab.roleProfileId === roleProfile.id)) {
-        void openRoleProfileTab(roleProfile)
+        await openRoleProfileTab(roleProfile)
       }
-    })
+    }
   }
 
   async function ensureRoleProfileSession(roleProfile: RoleProfile): Promise<string> {
@@ -1004,6 +1003,10 @@ function App() {
       return true
     }
 
+    return requestConfirmation(request)
+  }
+
+  function requestConfirmation(request: ConfirmationRequest): Promise<boolean> {
     return new Promise((resolve) => {
       confirmationResolverRef.current = resolve
       setConfirmationRequest(request)
@@ -1246,7 +1249,7 @@ function App() {
     window.rolesTab?.analytics.tabSwitched('web', 'web')
   }
 
-  function navigateActiveTab(url: string) {
+  async function navigateActiveTab(url: string) {
     if (!activeTab) {
       return
     }
@@ -1254,7 +1257,7 @@ function App() {
     try {
       const normalizedUrl = normalizeHttpUrl(url)
 
-      if (!confirmProductionUrl(normalizedUrl)) {
+      if (!(await confirmProductionUrl(normalizedUrl))) {
         return
       }
 
@@ -1317,7 +1320,13 @@ function App() {
     }
 
     try {
-      if (!window.confirm(`Open this URL in your external browser?\n\n${activeTab.url}`)) {
+      const confirmed = await requestConfirmation({
+        title: 'Open in external browser?',
+        message: activeTab.url,
+        confirmLabel: 'Open Browser',
+      })
+
+      if (!confirmed) {
         return
       }
 
@@ -1328,13 +1337,16 @@ function App() {
     }
   }
 
-  function confirmProductionUrl(url: string): boolean {
-    return (
-      !isProductionUrl(url) ||
-      window.confirm(
-        `This looks like a production URL:\n\n${url}\n\nContinue only if you intend to test against production.`,
-      )
-    )
+  async function confirmProductionUrl(url: string): Promise<boolean> {
+    if (!isProductionUrl(url)) {
+      return true
+    }
+
+    return requestConfirmation({
+      title: 'Open production URL?',
+      message: `${url}\n\nContinue only if you intend to test against production.`,
+      confirmLabel: 'Continue',
+    })
   }
 
   shortcutHandlersRef.current = {
@@ -1424,6 +1436,7 @@ function App() {
       onCloseSettings={closeSettingsPanel}
       onSaveSettings={saveAppSettings}
       onResetSettings={resetAppSettings}
+      onRequestConfirmation={requestConfirmation}
       onFirstRunGuideAction={handleFirstRunGuideAction}
       onFirstRunGuideAnalyticsChoice={chooseFirstRunAnalytics}
       onDismissFirstRunGuide={dismissFirstRunGuide}

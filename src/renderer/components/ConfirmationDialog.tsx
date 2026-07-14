@@ -1,9 +1,12 @@
 import { AlertTriangle } from 'lucide-react'
 
-type ConfirmationDialogProps = {
+export type ConfirmationRequest = {
   title: string
   message: string
   confirmLabel: string
+}
+
+type ConfirmationDialogProps = ConfirmationRequest & {
   onConfirm: () => void
   onCancel: () => void
 }
@@ -31,7 +34,7 @@ export function ConfirmationDialog({
             <h2 id="confirmation-title" className="text-base font-semibold text-slate-950">
               {title}
             </h2>
-            <p className="mt-2 text-sm leading-6 text-slate-600">{message}</p>
+            <p className="mt-2 whitespace-pre-line text-sm leading-6 text-slate-600">{message}</p>
           </div>
         </div>
 

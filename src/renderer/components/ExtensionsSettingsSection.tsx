@@ -6,12 +6,17 @@ import type {
   RoleExtensionRuntimeState,
 } from '../../shared/extensions'
 import type { RoleProfile } from '../../shared/workspace'
+import type { ConfirmationRequest } from './ConfirmationDialog'
 
 type ExtensionsSettingsSectionProps = {
   roleProfiles: RoleProfile[]
+  onRequestConfirmation: (request: ConfirmationRequest) => Promise<boolean>
 }
 
-export function ExtensionsSettingsSection({ roleProfiles }: ExtensionsSettingsSectionProps) {
+export function ExtensionsSettingsSection({
+  roleProfiles,
+  onRequestConfirmation,
+}: ExtensionsSettingsSectionProps) {
   const [extensions, setExtensions] = useState<InstalledExtension[]>([])
   const [runtimeStates, setRuntimeStates] = useState<RoleExtensionRuntimeState[]>([])
   const [selectedExtensionId, setSelectedExtensionId] = useState<string | null>(null)
@@ -154,7 +159,13 @@ export function ExtensionsSettingsSection({ roleProfiles }: ExtensionsSettingsSe
   }
 
   async function removeExtension(extension: InstalledExtension) {
-    if (!window.confirm(`Remove "${extension.name}" from RolesTab? Role-specific settings will be removed.`)) {
+    const confirmed = await onRequestConfirmation({
+      title: `Remove ${extension.name}?`,
+      message: 'The extension and all of its role-specific settings will be removed from RolesTab.',
+      confirmLabel: 'Remove Extension',
+    })
+
+    if (!confirmed) {
       return
     }
 

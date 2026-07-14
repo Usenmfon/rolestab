@@ -235,10 +235,29 @@ test('active webviews receive focus without stealing it from editable app contro
     path.join(root, 'src/renderer/components/BrowserWebview.tsx'),
     'utf8',
   )
+  const stylesSource = readProjectFile('src/index.css')
 
   assert.match(browserWebviewSource, /if \(!active \|\| !domReady \|\| !webview\)/)
   assert.match(browserWebviewSource, /isEditableHostElement\(document\.activeElement\)/)
-  assert.match(browserWebviewSource, /webview\.focus\(\)/)
+  assert.match(browserWebviewSource, /window\.setTimeout\(scheduleGuestFocus, 300\)/)
+  assert.match(browserWebviewSource, /addEventListener\('did-stop-loading', scheduleGuestFocus\)/)
+  assert.match(browserWebviewSource, /window\.addEventListener\('focus', scheduleGuestFocus\)/)
+  assert.match(browserWebviewSource, /webviewElement\.focus\(\)/)
+  assert.match(browserWebviewSource, /active \? 'is-active' : 'is-inactive'/)
+  assert.match(stylesSource, /\.roles-tab-webview\s*{[^}]*display:\s*inline-flex;/s)
+  assert.match(stylesSource, /\.roles-tab-webview\.is-inactive\s*{[^}]*visibility:\s*hidden;/s)
+  assert.doesNotMatch(stylesSource, /\.roles-tab-webview\.hidden\s*{[^}]*display:\s*none;/s)
+})
+
+test('browser workflows use non-blocking confirmations to preserve Electron input focus', () => {
+  const appSource = readProjectFile('src/renderer/app/App.tsx')
+  const extensionsSource = readProjectFile('src/renderer/components/ExtensionsSettingsSection.tsx')
+
+  assert.match(appSource, /function requestConfirmation\(request: ConfirmationRequest\)/)
+  assert.match(appSource, /title: `Delete \$\{project\.name\}\?`/)
+  assert.doesNotMatch(appSource, /window\.confirm\(/)
+  assert.match(extensionsSource, /await onRequestConfirmation\(/)
+  assert.doesNotMatch(extensionsSource, /window\.confirm\(/)
 })
 
 test('first-run guide is wired to onboarding settings', () => {
