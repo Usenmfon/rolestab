@@ -44,6 +44,7 @@ function App() {
   const [activeProjectId, setActiveProjectId] = useState<string | null>(null)
   const [tabs, setTabs] = useState<BrowserTab[]>([])
   const [activeTabId, setActiveTabId] = useState<string | null>(null)
+  const [splitTabId, setSplitTabId] = useState<string | null>(null)
   const [projectFormOpen, setProjectFormOpen] = useState(false)
   const [roleProfileFormOpen, setRoleProfileFormOpen] = useState(false)
   const [settingsPanelOpen, setSettingsPanelOpen] = useState(false)
@@ -55,7 +56,9 @@ function App() {
   const [sessionUsage, setSessionUsage] = useState<SessionUsage[]>([])
   const [installedExtensions, setInstalledExtensions] = useState<InstalledExtension[]>([])
   const [extensionRuntimeStates, setExtensionRuntimeStates] = useState<RoleExtensionRuntimeState[]>([])
-  const [updateStatus, setUpdateStatus] = useState<UpdateStatus>({ state: 'idle' })
+  const [updateStatus, setUpdateStatus] = useState<UpdateStatus>({
+    state: 'idle',
+  })
   const [sidebarOpen, setSidebarOpen] = useState(true)
   const [renamingTabId, setRenamingTabId] = useState<string | null>(null)
   const [firstRunGuideAutoOpen, setFirstRunGuideAutoOpen] = useState(false)
@@ -87,17 +90,20 @@ function App() {
     () => tabs.find((tab) => tab.id === activeTabId && tab.projectId === activeProjectId) ?? null,
     [activeProjectId, activeTabId, tabs],
   )
+  const splitTab = useMemo(
+    () =>
+      tabs.find(
+        (tab) => tab.id === splitTabId && tab.id !== activeTabId && tab.projectId === activeProjectId,
+      ) ?? null,
+    [activeProjectId, activeTabId, splitTabId, tabs],
+  )
   const activeProjectTabs = useMemo(
     () => tabs.filter((tab) => tab.projectId === activeProject?.id),
     [activeProject?.id, tabs],
   )
   const firstRunGuideStep: FirstRunGuideStep = firstRunGuideAnalyticsStep
     ? 'analytics'
-    : getFirstRunGuideStep(
-        projects.length,
-        activeProjectRoleProfiles.length,
-        activeProjectTabs.length,
-      )
+    : getFirstRunGuideStep(projects.length, activeProjectRoleProfiles.length, activeProjectTabs.length)
   const firstRunGuideOpen =
     (firstRunGuideAutoOpen || firstRunGuideManuallyOpen) &&
     !projectFormOpen &&
@@ -105,6 +111,7 @@ function App() {
     !settingsPanelOpen &&
     !confirmationRequest
   const updateReady = updateStatus.state === 'downloaded'
+
   const activeRoleExtensions = useMemo(
     () =>
       activeTab
@@ -125,16 +132,19 @@ function App() {
     [activeTab, extensionRuntimeStates, installedExtensions],
   )
 
-  const refreshSessionUsage = useCallback(async (nextRoleProfiles = roleProfiles) => {
-    const partitions = nextRoleProfiles.map((roleProfile) => roleProfile.sessionPartition)
+  const refreshSessionUsage = useCallback(
+    async (nextRoleProfiles = roleProfiles) => {
+      const partitions = nextRoleProfiles.map((roleProfile) => roleProfile.sessionPartition)
 
-    try {
-      const usage = await window.rolesTab?.sessions.getRoleSessionsUsage(partitions)
-      setSessionUsage(usage ?? [])
-    } catch (error) {
-      reportError('session-usage', 'Unable to read session usage.', error, setWorkspaceError)
-    }
-  }, [roleProfiles])
+      try {
+        const usage = await window.rolesTab?.sessions.getRoleSessionsUsage(partitions)
+        setSessionUsage(usage ?? [])
+      } catch (error) {
+        reportError('session-usage', 'Unable to read session usage.', error, setWorkspaceError)
+      }
+    },
+    [roleProfiles],
+  )
 
   useEffect(() => {
     let mounted = true
@@ -315,10 +325,12 @@ function App() {
           setRecentUrls(workspace.recentUrls)
         }
       } catch {
-        setRecentUrls((currentRecentUrls) => [
-          recentUrl,
-          ...currentRecentUrls.filter((currentRecentUrl) => currentRecentUrl.url !== recentUrl.url),
-        ].slice(0, 50))
+        setRecentUrls((currentRecentUrls) =>
+          [
+            recentUrl,
+            ...currentRecentUrls.filter((currentRecentUrl) => currentRecentUrl.url !== recentUrl.url),
+          ].slice(0, 50),
+        )
       }
     }
 
@@ -575,9 +587,7 @@ function App() {
     const existingNames = new Set(
       activeProjectRoleProfiles.map((roleProfile) => roleProfile.name.trim().toLowerCase()),
     )
-    const missingTemplates = commonRoleNames.filter(
-      (roleName) => !existingNames.has(roleName.toLowerCase()),
-    )
+    const missingTemplates = commonRoleNames.filter((roleName) => !existingNames.has(roleName.toLowerCase()))
 
     if (missingTemplates.length === 0) {
       setWorkspaceError('Common roles already exist for this project.')
@@ -608,7 +618,6 @@ function App() {
       if (!workspace) {
         await persistRoleProfile(roleProfile)
       }
-
     }
 
     if (workspace) {
@@ -651,7 +660,7 @@ function App() {
     setActiveTabId((currentActiveTabId) => {
       return remainingTabs.some((tab) => tab.id === currentActiveTabId)
         ? currentActiveTabId
-        : remainingTabs.at(-1)?.id ?? null
+        : (remainingTabs.at(-1)?.id ?? null)
     })
     setWorkspaceError(null)
   }
@@ -665,7 +674,8 @@ function App() {
 
     const confirmed = await requestConfirmation({
       title: `Delete ${project.name}?`,
-      message: 'Open tabs for this project will close, but persisted role sessions are kept until you clear them.',
+      message:
+        'Open tabs for this project will close, but persisted role sessions are kept until you clear them.',
       confirmLabel: 'Delete Project',
     })
 
@@ -678,7 +688,9 @@ function App() {
     if (workspace) {
       applyWorkspace(workspace)
     } else {
-      setProjects((currentProjects) => currentProjects.filter((currentProject) => currentProject.id !== projectId))
+      setProjects((currentProjects) =>
+        currentProjects.filter((currentProject) => currentProject.id !== projectId),
+      )
       setRoleProfiles((currentRoleProfiles) =>
         currentRoleProfiles.filter((currentRoleProfile) => currentRoleProfile.projectId !== projectId),
       )
@@ -693,7 +705,7 @@ function App() {
     setActiveTabId((currentActiveTabId) => {
       return remainingTabs.some((tab) => tab.id === currentActiveTabId)
         ? currentActiveTabId
-        : remainingTabs.at(-1)?.id ?? null
+        : (remainingTabs.at(-1)?.id ?? null)
     })
     setWorkspaceError(null)
   }
@@ -734,7 +746,7 @@ function App() {
           const nextTabs = tabs.filter((tab) => tab.projectId !== result.projectId)
           return nextTabs.some((tab) => tab.id === currentActiveTabId)
             ? currentActiveTabId
-            : nextTabs.at(-1)?.id ?? null
+            : (nextTabs.at(-1)?.id ?? null)
         })
       }
 
@@ -753,6 +765,7 @@ function App() {
   async function selectProject(projectId: string) {
     setActiveProjectId(projectId)
     setActiveTabId(null)
+    setSplitTabId(null)
 
     try {
       const workspace = await window.rolesTab?.workspace.setLastActiveProject(projectId)
@@ -809,7 +822,11 @@ function App() {
     void openRoleProfileTab(roleProfile)
   }
 
-  async function openRoleProfileTab(roleProfile: RoleProfile, initialUrl = roleProfile.startUrl, title = roleProfile.name) {
+  async function openRoleProfileTab(
+    roleProfile: RoleProfile,
+    initialUrl = roleProfile.startUrl,
+    title = roleProfile.name,
+  ) {
     if (!(await confirmProductionUrl(initialUrl))) {
       return
     }
@@ -844,7 +861,9 @@ function App() {
     }
 
     for (const roleProfile of activeProjectRoleProfiles) {
-      if (!tabs.some((tab) => tab.projectId === roleProfile.projectId && tab.roleProfileId === roleProfile.id)) {
+      if (
+        !tabs.some((tab) => tab.projectId === roleProfile.projectId && tab.roleProfileId === roleProfile.id)
+      ) {
         await openRoleProfileTab(roleProfile)
       }
     }
@@ -866,11 +885,19 @@ function App() {
       }
 
       await persistRoleProfile(repairedRoleProfile)
-      await logError('session-partition-repair', `Repaired missing session partition for ${roleProfile.name}.`)
+      await logError(
+        'session-partition-repair',
+        `Repaired missing session partition for ${roleProfile.name}.`,
+      )
 
       return sessionPartition
     } catch (error) {
-      reportError('session-partition-repair', 'Unable to repair the role session partition.', error, setWorkspaceError)
+      reportError(
+        'session-partition-repair',
+        'Unable to repair the role session partition.',
+        error,
+        setWorkspaceError,
+      )
       throw error
     }
   }
@@ -1044,12 +1071,46 @@ function App() {
     setWorkspaceError(null)
   }
 
+  function toggleSplitView() {
+    if (splitTab) {
+      setSplitTabId(null)
+      return
+    }
+
+    if (!activeTab) {
+      return
+    }
+
+    const nextSplitTab = activeProjectTabs.find((tab) => tab.id !== activeTab.id)
+
+    if (!nextSplitTab) {
+      setWorkspaceError('Open another role tab before starting split view.')
+      return
+    }
+
+    setSplitTabId(nextSplitTab.id)
+    setWorkspaceError(null)
+    window.rolesTab?.analytics.featureUsed('split_view')
+  }
+
+  function toggleSplitTab(tabId: string) {
+    if (tabId === activeTabId) {
+      return
+    }
+
+    setSplitTabId((currentSplitTabId) => (currentSplitTabId === tabId ? null : tabId))
+    setWorkspaceError(null)
+    window.rolesTab?.analytics.featureUsed('split_view')
+  }
+
   function duplicateActiveTab() {
     if (!activeTab) {
       return
     }
 
-    const roleProfile = roleProfiles.find((currentRoleProfile) => currentRoleProfile.id === activeTab.roleProfileId)
+    const roleProfile = roleProfiles.find(
+      (currentRoleProfile) => currentRoleProfile.id === activeTab.roleProfileId,
+    )
 
     if (roleProfile) {
       void openRoleProfileTab(roleProfile, activeTab.url, `${activeTab.roleName} Copy`)
@@ -1119,7 +1180,9 @@ function App() {
       return
     }
 
-    const projectRoleProfiles = roleProfiles.filter((roleProfile) => roleProfile.projectId === activeProject.id)
+    const projectRoleProfiles = roleProfiles.filter(
+      (roleProfile) => roleProfile.projectId === activeProject.id,
+    )
 
     if (projectRoleProfiles.length === 0) {
       setWorkspaceError('This project has no role sessions to clear.')
@@ -1146,7 +1209,7 @@ function App() {
       setActiveTabId((currentActiveTabId) => {
         return remainingTabs.some((tab) => tab.id === currentActiveTabId)
           ? currentActiveTabId
-          : remainingTabs.at(-1)?.id ?? null
+          : (remainingTabs.at(-1)?.id ?? null)
       })
       setWorkspaceError(null)
       window.rolesTab?.analytics.featureUsed('clear_project_sessions')
@@ -1198,15 +1261,18 @@ function App() {
 
     delete tabOpenedAtRef.current[tabId]
 
-    setTabs((currentTabs) => {
-      const nextTabs = currentTabs.filter((tab) => tab.id !== tabId)
+    const nextActiveTabId =
+      activeTabId === tabId ? (tabs.filter((tab) => tab.id !== tabId).at(-1)?.id ?? null) : activeTabId
 
-      if (activeTabId === tabId) {
-        setActiveTabId(nextTabs.at(-1)?.id ?? null)
-      }
+    setSplitTabId((currentSplitTabId) =>
+      currentSplitTabId === tabId || currentSplitTabId === nextActiveTabId ? null : currentSplitTabId,
+    )
 
-      return nextTabs
-    })
+    setTabs((currentTabs) => currentTabs.filter((tab) => tab.id !== tabId))
+
+    if (activeTabId === tabId) {
+      setActiveTabId(nextActiveTabId)
+    }
     setRenamingTabId((currentRenamingTabId) => (currentRenamingTabId === tabId ? null : currentRenamingTabId))
   }
 
@@ -1229,9 +1295,7 @@ function App() {
   }
 
   function updateTab(tabId: string, updates: Partial<BrowserTab>) {
-    setTabs((currentTabs) =>
-      currentTabs.map((tab) => (tab.id === tabId ? { ...tab, ...updates } : tab)),
-    )
+    setTabs((currentTabs) => currentTabs.map((tab) => (tab.id === tabId ? { ...tab, ...updates } : tab)))
   }
 
   function sendBrowserCommand(command: BrowserCommandInput) {
@@ -1244,6 +1308,11 @@ function App() {
 
   function selectTab(tabId: string | null) {
     trackTabSwitch(activeTabId, tabId)
+
+    if (tabId && tabId === splitTabId) {
+      setSplitTabId(activeTabId)
+    }
+
     setActiveTabId(tabId)
   }
 
@@ -1268,7 +1337,11 @@ function App() {
       }
 
       sendBrowserCommand({ type: 'navigate', url: normalizedUrl })
-      updateTab(activeTab.id, { consoleErrors: [], loadError: undefined, loadErrorDetails: undefined })
+      updateTab(activeTab.id, {
+        consoleErrors: [],
+        loadError: undefined,
+        loadErrorDetails: undefined,
+      })
       setWorkspaceError(null)
     } catch (error) {
       setWorkspaceError(error instanceof Error ? error.message : 'Enter a valid http(s) URL.')
@@ -1294,7 +1367,9 @@ function App() {
       return
     }
 
-    const roleProfile = roleProfiles.find((currentRoleProfile) => currentRoleProfile.id === activeTab.roleProfileId)
+    const roleProfile = roleProfiles.find(
+      (currentRoleProfile) => currentRoleProfile.id === activeTab.roleProfileId,
+    )
     sendBrowserCommand({
       type: 'home',
       url: settings.defaultHomepage || roleProfile?.startUrl || activeProject?.baseUrl || activeTab.url,
@@ -1386,6 +1461,8 @@ function App() {
       tabs={activeProjectTabs}
       activeTab={activeTab}
       activeTabId={activeTabId}
+      splitTab={splitTab}
+      splitTabId={splitTabId}
       renamingTabId={renamingTabId}
       browserCommand={browserCommand}
       activeRoleExtensions={activeRoleExtensions}
@@ -1463,6 +1540,8 @@ function App() {
         }
       }}
       onDuplicateTab={duplicateActiveTab}
+      onToggleSplitView={toggleSplitView}
+      onToggleSplitTab={toggleSplitTab}
       onRenameTab={renameActiveTab}
       onRenameTabTitle={renameTab}
       onCancelRenameTab={() => setRenamingTabId(null)}
@@ -1542,10 +1621,7 @@ function shouldIgnoreShortcut(event: KeyboardEvent): boolean {
   return editable && normalizeKey(event.key) !== 'escape'
 }
 
-function getShortcutAction(
-  event: KeyboardEvent,
-  shortcuts: Record<string, string>,
-): ShortcutAction | null {
+function getShortcutAction(event: KeyboardEvent, shortcuts: Record<string, string>): ShortcutAction | null {
   const entries: Array<[ShortcutAction, string | undefined]> = [
     ['newTab', shortcuts.newTab],
     ['closeTab', shortcuts.closeTab],
@@ -1578,15 +1654,13 @@ function shortcutMatchesEvent(shortcut: string, event: KeyboardEvent): boolean {
   )
 }
 
-function parseShortcut(shortcut: string):
-  | {
-      key: string
-      ctrl: boolean
-      alt: boolean
-      shift: boolean
-      meta: boolean
-    }
-  | null {
+function parseShortcut(shortcut: string): {
+  key: string
+  ctrl: boolean
+  alt: boolean
+  shift: boolean
+  meta: boolean
+} | null {
   const parts = shortcut
     .split('+')
     .map((part) => part.trim())

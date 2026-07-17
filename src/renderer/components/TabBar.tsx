@@ -1,27 +1,31 @@
-import { Loader2, X } from 'lucide-react'
+import { Columns2, Loader2, X } from 'lucide-react'
 import { type KeyboardEvent, useEffect, useRef, useState } from 'react'
 import type { BrowserTab } from '../../shared/workspace'
 
 type TabBarProps = {
   tabs: BrowserTab[]
   activeTabId: string | null
+  splitTabId: string | null
   renamingTabId: string | null
   onSelectTab: (tabId: string) => void
   onCloseTab: (tabId: string) => void
   onStartRename: (tabId: string) => void
   onRenameTab: (tabId: string, title: string) => void
   onCancelRename: () => void
+  onToggleSplitTab: (tabId: string) => void
 }
 
 export function TabBar({
   tabs,
   activeTabId,
+  splitTabId,
   renamingTabId,
   onSelectTab,
   onCloseTab,
   onStartRename,
   onRenameTab,
   onCancelRename,
+  onToggleSplitTab,
 }: TabBarProps) {
   return (
     <div className="app-drag-region relative z-10 flex h-11 shrink-0 items-end gap-1.5 overflow-x-auto border-b border-[#d8dee8] bg-[#e8edf4] px-2.5 pr-36 pt-1.5">
@@ -30,6 +34,7 @@ export function TabBar({
       ) : (
         tabs.map((tab) => {
           const active = tab.id === activeTabId
+          const split = tab.id === splitTabId
 
           return (
             <div
@@ -37,7 +42,9 @@ export function TabBar({
               className={`app-no-drag group flex h-9 w-56 shrink-0 items-center gap-2 rounded-t-lg border-t-[3px] px-3 transition ${
                 active
                   ? 'bg-[#fbfcfe] text-slate-950 shadow-[0_-1px_0_rgba(15,23,42,0.08),1px_0_0_rgba(15,23,42,0.08),-1px_0_0_rgba(15,23,42,0.08)]'
-                  : 'bg-[#dce3ed] text-slate-600 hover:bg-[#edf2f7]'
+                  : split
+                    ? 'bg-blue-50 text-blue-700 shadow-[0_-1px_0_rgba(37,99,235,0.16),1px_0_0_rgba(37,99,235,0.16),-1px_0_0_rgba(37,99,235,0.16)]'
+                    : 'bg-[#dce3ed] text-slate-600 hover:bg-[#edf2f7]'
               }`}
               style={{ borderTopColor: tab.roleColor }}
             >
@@ -72,6 +79,28 @@ export function TabBar({
               ) : null}
               <button
                 type="button"
+                title={
+                  split
+                    ? 'Remove from split view'
+                    : active
+                      ? 'Active tab is the left pane'
+                      : 'Show beside active tab'
+                }
+                aria-label={
+                  split ? `Remove ${tab.title} from split view` : `Show ${tab.title} beside active tab`
+                }
+                onClick={() => onToggleSplitTab(tab.id)}
+                disabled={active}
+                className={`app-no-drag grid h-6 w-6 shrink-0 place-items-center rounded-md ${
+                  split
+                    ? 'bg-blue-100 text-blue-700 hover:bg-blue-200'
+                    : 'text-slate-400 hover:bg-slate-200 hover:text-slate-700 disabled:cursor-not-allowed disabled:opacity-40'
+                }`}
+              >
+                <Columns2 aria-hidden="true" size={14} />
+              </button>
+              <button
+                type="button"
                 title="Close Tab"
                 aria-label={`Close ${tab.title}`}
                 onClick={() => onCloseTab(tab.id)}
@@ -94,12 +123,7 @@ type RenameTabInputProps = {
   onCancelRename: () => void
 }
 
-function RenameTabInput({
-  tabId,
-  initialTitle,
-  onRenameTab,
-  onCancelRename,
-}: RenameTabInputProps) {
+function RenameTabInput({ tabId, initialTitle, onRenameTab, onCancelRename }: RenameTabInputProps) {
   const [titleDraft, setTitleDraft] = useState(initialTitle)
   const inputRef = useRef<HTMLInputElement | null>(null)
   const cancelRenameRef = useRef(false)

@@ -6,19 +6,10 @@ import { ConfirmationDialog, type ConfirmationRequest } from '../components/Conf
 import { FirstRunGuide, type FirstRunGuideStep } from '../components/FirstRunGuide'
 import { ProjectFormPanel, type ProjectDraft } from '../components/ProjectFormPanel'
 import { SettingsPanel } from '../components/SettingsPanel'
-import {
-  RoleProfileFormPanel,
-  type RoleProfileDraft,
-} from '../components/RoleProfileFormPanel'
+import { RoleProfileFormPanel, type RoleProfileDraft } from '../components/RoleProfileFormPanel'
 import type { BrowserCommand } from '../../shared/browser'
 import type { RefObject } from 'react'
-import type {
-  AppSettings,
-  BrowserTab,
-  ProjectSummary,
-  RecentUrl,
-  RoleProfile,
-} from '../../shared/workspace'
+import type { AppSettings, BrowserTab, ProjectSummary, RecentUrl, RoleProfile } from '../../shared/workspace'
 import type { SessionUsage } from '../../shared/session'
 import type { InstalledExtension, RoleExtensionRuntimeState } from '../../shared/extensions'
 
@@ -35,6 +26,8 @@ type DesktopLayoutProps = {
   tabs: BrowserTab[]
   activeTab: BrowserTab | null
   activeTabId: string | null
+  splitTab: BrowserTab | null
+  splitTabId: string | null
   renamingTabId: string | null
   browserCommand: BrowserCommand | null
   activeRoleExtensions: Array<{
@@ -88,6 +81,8 @@ type DesktopLayoutProps = {
   onStartRenameTab: (tabId: string) => void
   onCloseActiveTab: () => void
   onDuplicateTab: () => void
+  onToggleSplitView: () => void
+  onToggleSplitTab: (tabId: string) => void
   onRenameTab: () => void
   onRenameTabTitle: (tabId: string, title: string) => void
   onCancelRenameTab: () => void
@@ -120,6 +115,8 @@ export function DesktopLayout({
   tabs,
   activeTab,
   activeTabId,
+  splitTab,
+  splitTabId,
   renamingTabId,
   browserCommand,
   activeRoleExtensions,
@@ -170,6 +167,8 @@ export function DesktopLayout({
   onStartRenameTab,
   onCloseActiveTab,
   onDuplicateTab,
+  onToggleSplitView,
+  onToggleSplitTab,
   onRenameTab,
   onRenameTabTitle,
   onCancelRenameTab,
@@ -243,12 +242,14 @@ export function DesktopLayout({
         <TabBar
           tabs={tabs}
           activeTabId={activeTabId}
+          splitTabId={splitTabId}
           renamingTabId={renamingTabId}
           onSelectTab={onSelectTab}
           onCloseTab={onCloseTab}
           onStartRename={onStartRenameTab}
           onRenameTab={onRenameTabTitle}
           onCancelRename={onCancelRenameTab}
+          onToggleSplitTab={onToggleSplitTab}
         />
         <TopBar
           currentUrl={activeTab?.url ?? activeProject?.baseUrl ?? ''}
@@ -257,10 +258,13 @@ export function DesktopLayout({
           isLoading={activeTab?.loading ?? false}
           hasActiveProject={Boolean(activeProject)}
           hasActiveTab={Boolean(activeTab)}
+          splitViewEnabled={Boolean(splitTab)}
+          canSplitView={Boolean(activeTab) && tabs.length > 1}
           sidebarOpen={sidebarOpen}
           onNewTab={onCreateRoleProfile}
           onCloseTab={onCloseActiveTab}
           onDuplicateTab={onDuplicateTab}
+          onToggleSplitView={onToggleSplitView}
           onRenameTab={onRenameTab}
           onResetSession={onResetSession}
           onBack={onBack}
@@ -282,11 +286,13 @@ export function DesktopLayout({
           tabs={tabs}
           activeTab={activeTab}
           activeTabId={activeTabId}
+          splitTab={splitTab}
           roleProfiles={activeProjectRoleProfiles}
           command={browserCommand}
           onCreateProject={onCreateProject}
           onCreateRoleProfile={onCreateRoleProfile}
           onOpenRoleProfile={onOpenRoleProfile}
+          onSelectTab={onSelectTab}
           onNavigate={onNavigate}
           onRetryActiveTab={onRetryActiveTab}
           onCloseActiveTab={onCloseActiveTab}

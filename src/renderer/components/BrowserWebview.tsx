@@ -64,11 +64,18 @@ type RenderProcessGoneEvent = Event & {
 type BrowserWebviewProps = {
   tab: BrowserTab
   active: boolean
+  pane?: 'full' | 'left' | 'right' | 'hidden'
   command: BrowserCommand | null
   onUpdate: (tabId: string, updates: Partial<BrowserTab>) => void
 }
 
-export function BrowserWebview({ tab, active, command, onUpdate }: BrowserWebviewProps) {
+export function BrowserWebview({
+  tab,
+  active,
+  pane = active ? 'full' : 'hidden',
+  command,
+  onUpdate,
+}: BrowserWebviewProps) {
   const webviewRef = useRef<WebviewDomElement | null>(null)
   const [initialUrl] = useState(tab.url)
   const [browserUserAgent] = useState(getBrowserUserAgent)
@@ -102,7 +109,11 @@ export function BrowserWebview({ tab, active, command, onUpdate }: BrowserWebvie
     }
 
     function handleStartLoading() {
-      onUpdate(tab.id, { loading: true, loadError: undefined, loadErrorDetails: undefined })
+      onUpdate(tab.id, {
+        loading: true,
+        loadError: undefined,
+        loadErrorDetails: undefined,
+      })
     }
 
     function handleDomReady() {
@@ -127,7 +138,11 @@ export function BrowserWebview({ tab, active, command, onUpdate }: BrowserWebvie
       const url = (event as NavigationEvent).url ?? webviewElement.getURL?.()
 
       if (url) {
-        onUpdate(tab.id, { url, loadError: undefined, loadErrorDetails: undefined })
+        onUpdate(tab.id, {
+          url,
+          loadError: undefined,
+          loadErrorDetails: undefined,
+        })
       }
     }
 
@@ -153,9 +168,7 @@ export function BrowserWebview({ tab, active, command, onUpdate }: BrowserWebvie
       event.preventDefault()
 
       onUpdate(tab.id, {
-        loadError: windowEvent.url
-          ? `Blocked pop-up window: ${windowEvent.url}`
-          : 'Blocked pop-up window.',
+        loadError: windowEvent.url ? `Blocked pop-up window: ${windowEvent.url}` : 'Blocked pop-up window.',
         loadErrorDetails: windowEvent.url,
       })
     }
@@ -368,7 +381,7 @@ export function BrowserWebview({ tab, active, command, onUpdate }: BrowserWebvie
       partition={tab.sessionPartition}
       useragent={browserUserAgent}
       webpreferences="contextIsolation=yes,nodeIntegration=no,sandbox=yes,webSecurity=yes,allowRunningInsecureContent=no"
-      className={`roles-tab-webview ${active ? 'is-active' : 'is-inactive'}`}
+      className={`roles-tab-webview roles-tab-webview--${pane} ${pane === 'hidden' ? 'is-hidden' : 'is-visible'} ${active ? 'is-active' : 'is-inactive'}`}
     />
   )
 }

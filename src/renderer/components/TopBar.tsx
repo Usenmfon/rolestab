@@ -4,6 +4,7 @@ import {
   Bug,
   Check,
   Clipboard,
+  Columns2,
   Copy,
   ExternalLink,
   Home,
@@ -28,6 +29,8 @@ type TopBarProps = {
   isLoading: boolean
   hasActiveProject: boolean
   hasActiveTab: boolean
+  splitViewEnabled: boolean
+  canSplitView: boolean
   sidebarOpen: boolean
   activeRoleExtensions: Array<{
     extension: InstalledExtension
@@ -36,6 +39,7 @@ type TopBarProps = {
   onNewTab: () => void
   onCloseTab: () => void
   onDuplicateTab: () => void
+  onToggleSplitView: () => void
   onRenameTab: () => void
   onResetSession: () => void
   onBack: () => void
@@ -59,11 +63,14 @@ export function TopBar({
   isLoading,
   hasActiveProject,
   hasActiveTab,
+  splitViewEnabled,
+  canSplitView,
   sidebarOpen,
   activeRoleExtensions,
   onNewTab,
   onCloseTab,
   onDuplicateTab,
+  onToggleSplitView,
   onRenameTab,
   onResetSession,
   onBack,
@@ -167,8 +174,19 @@ export function TopBar({
 
       <IconButton label="Add Role" icon={Plus} onClick={onNewTab} disabled={!hasActiveProject} />
       <IconButton label="Duplicate Role Tab" icon={Copy} onClick={onDuplicateTab} disabled={!hasActiveTab} />
+      <IconButton
+        label={splitViewEnabled ? 'Exit Split View' : 'Split View'}
+        icon={Columns2}
+        onClick={onToggleSplitView}
+        disabled={!canSplitView}
+      />
       <IconButton label="Rename Tab" icon={PencilLine} onClick={onRenameTab} disabled={!hasActiveTab} />
-      <IconButton label="Reset Active Role Session" icon={RotateCcw} onClick={onResetSession} disabled={!hasActiveTab} />
+      <IconButton
+        label="Reset Active Role Session"
+        icon={RotateCcw}
+        onClick={onResetSession}
+        disabled={!hasActiveTab}
+      />
       <IconButton label="Close Tab" icon={X} onClick={onCloseTab} disabled={!hasActiveTab} />
       <IconButton
         label={copiedUrl ? 'Copied Current URL' : 'Copy Current URL'}
@@ -176,7 +194,12 @@ export function TopBar({
         onClick={handleCopyUrl}
         disabled={!hasActiveTab}
       />
-      <IconButton label="Open External Browser" icon={ExternalLink} onClick={onOpenExternal} disabled={!hasActiveTab} />
+      <IconButton
+        label="Open External Browser"
+        icon={ExternalLink}
+        onClick={onOpenExternal}
+        disabled={!hasActiveTab}
+      />
       <div className="relative">
         <IconButton
           label="Active Role Extensions"
