@@ -4,6 +4,10 @@ RolesTab is a desktop mini-browser for testing the same web application as multi
 
 It is useful for QA, support, demos, and development workflows where you need to compare how one product behaves for admins, staff, customers, or other account types without constantly signing in and out.
 
+## AI-assisted development
+
+RolesTab was built with assistance from OpenAI's developer tools. Codex and GPT-5.6 supported implementation, architecture, debugging, documentation, and project planning while development remained focused on solving multi-role browser testing.
+
 ## Features
 
 - Create and manage projects.
@@ -173,6 +177,32 @@ RolesTab stores project, role, tab, URL, and settings metadata. Browser login st
 - IPC calls are exposed through a preload bridge.
 - Role webviews use isolated persistent partitions.
 - Session clearing is handled through Electron session APIs.
+
+## Built with OpenAI
+
+RolesTab was developed with assistance from OpenAI's developer tools throughout the project.
+
+### Codex
+
+Codex accelerated implementation by helping with:
+
+- Designing and implementing Electron features
+- Refactoring and improving existing code
+- Debugging Chromium and Electron issues
+- Generating boilerplate and repetitive code
+- Prototyping new browser capabilities
+
+### GPT-5.6
+
+GPT-5.6 was used as an engineering assistant for:
+
+- Brainstorming architecture and feature design
+- Reviewing implementation approaches
+- Explaining Electron and Chromium APIs
+- Writing technical documentation
+- Improving developer experience and project planning
+
+OpenAI tools helped reduce development time while allowing me to focus on solving the core problem of multi-role browser testing.
 
 ## Documentation
 
