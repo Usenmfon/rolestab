@@ -165,7 +165,7 @@ export function TopBar({
         />
       </form>
 
-      <IconButton label="New Role Tab" icon={Plus} onClick={onNewTab} disabled={!hasActiveProject} />
+      <IconButton label="Add Role" icon={Plus} onClick={onNewTab} disabled={!hasActiveProject} />
       <IconButton label="Duplicate Role Tab" icon={Copy} onClick={onDuplicateTab} disabled={!hasActiveTab} />
       <IconButton label="Rename Tab" icon={PencilLine} onClick={onRenameTab} disabled={!hasActiveTab} />
       <IconButton label="Reset Active Role Session" icon={RotateCcw} onClick={onResetSession} disabled={!hasActiveTab} />

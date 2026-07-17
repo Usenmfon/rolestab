@@ -306,6 +306,23 @@ test('first-run guide is wired to onboarding settings', () => {
   assert.match(settingsSource, /Read privacy policy/)
 })
 
+test('role creation can optionally open the new role immediately', () => {
+  const roleFormSource = readProjectFile('src/renderer/components/RoleProfileFormPanel.tsx')
+  const appSource = readProjectFile('src/renderer/app/App.tsx')
+  const layoutSource = readProjectFile('src/renderer/layouts/DesktopLayout.tsx')
+  const topBarSource = readProjectFile('src/renderer/components/TopBar.tsx')
+
+  assert.match(roleFormSource, /openImmediately: boolean/)
+  assert.match(roleFormSource, /useState\(!roleProfile\)/)
+  assert.match(roleFormSource, /checked=\{openImmediately\}/)
+  assert.match(roleFormSource, /Open this role after saving/)
+  assert.match(roleFormSource, /openImmediately: !roleProfile && openImmediately/)
+  assert.match(appSource, /const shouldOpenImmediately = !editingRoleProfile && draft\.openImmediately/)
+  assert.match(appSource, /if \(shouldOpenImmediately\) \{\s*await openRoleProfileTab\(roleProfile\)/s)
+  assert.match(layoutSource, /onNewTab=\{onCreateRoleProfile\}/)
+  assert.match(topBarSource, /label="Add Role"/)
+  assert.doesNotMatch(topBarSource, /New Role Tab/)
+})
 test('right-side panel close controls clear the titlebar overlay', () => {
   const projectFormSource = readProjectFile('src/renderer/components/ProjectFormPanel.tsx')
   const roleFormSource = readProjectFile('src/renderer/components/RoleProfileFormPanel.tsx')

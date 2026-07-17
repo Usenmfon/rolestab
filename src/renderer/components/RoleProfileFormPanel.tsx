@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react'
-import { X } from 'lucide-react'
 import type { ProjectSummary, RoleProfile } from '../../shared/workspace'
 import { normalizeHttpUrl } from '../utils/url'
 
-export type RoleProfileDraft = Pick<RoleProfile, 'name' | 'color' | 'startUrl'>
+export type RoleProfileDraft = Pick<RoleProfile, 'name' | 'color' | 'startUrl'> & {
+  openImmediately: boolean
+}
 
 type RoleProfileFormPanelProps = {
   project: ProjectSummary
@@ -24,6 +25,7 @@ export function RoleProfileFormPanel({
   const [name, setName] = useState(roleProfile?.name ?? '')
   const [color, setColor] = useState(roleProfile?.color ?? presetColors[0] ?? '#2563eb')
   const [startUrl, setStartUrl] = useState(roleProfile?.startUrl ?? project.baseUrl)
+  const [openImmediately, setOpenImmediately] = useState(!roleProfile)
   const [error, setError] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
 
@@ -52,6 +54,7 @@ export function RoleProfileFormPanel({
         name: trimmedName,
         color,
         startUrl: normalizeHttpUrl(startUrl.trim() || project.baseUrl),
+        openImmediately: !roleProfile && openImmediately,
       })
     } catch (submitError) {
       setError(submitError instanceof Error ? submitError.message : 'Unable to save role profile.')
@@ -71,15 +74,6 @@ export function RoleProfileFormPanel({
             {roleProfile ? 'Edit Role' : 'New Role'}
           </h2>
         </div>
-        <button
-          type="button"
-          aria-label="Close role form"
-          title="Close"
-          onClick={onClose}
-          className="grid h-9 w-9 place-items-center rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50"
-        >
-          <X aria-hidden="true" size={17} />
-        </button>
       </div>
 
       <form onSubmit={handleSubmit} className="flex flex-1 flex-col gap-5 p-5">
@@ -131,6 +125,19 @@ export function RoleProfileFormPanel({
           />
         </label>
 
+        {!roleProfile ? (
+          <label className="flex items-start gap-3 rounded-lg border border-slate-200 bg-slate-50 px-3 py-3 text-sm text-slate-700">
+            <input
+              type="checkbox"
+              checked={openImmediately}
+              onChange={(event) => setOpenImmediately(event.target.checked)}
+              className="mt-0.5 h-4 w-4 rounded border-slate-300 text-slate-900 accent-slate-900"
+            />
+            <span>
+              <span className="block font-medium text-slate-800">Open this role after saving</span>
+            </span>
+          </label>
+        ) : null}
         {error ? (
           <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
             {error}

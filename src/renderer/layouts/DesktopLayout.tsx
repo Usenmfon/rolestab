@@ -83,7 +83,6 @@ type DesktopLayoutProps = {
   onCloseRoleProfileForm: () => void
   onSaveRoleProfile: (draft: RoleProfileDraft) => Promise<void>
   onSelectProject: (projectId: string) => void
-  onNewTab: () => void
   onSelectTab: (tabId: string) => void
   onCloseTab: (tabId: string) => void
   onStartRenameTab: (tabId: string) => void
@@ -166,7 +165,6 @@ export function DesktopLayout({
   onCloseRoleProfileForm,
   onSaveRoleProfile,
   onSelectProject,
-  onNewTab,
   onSelectTab,
   onCloseTab,
   onStartRenameTab,
@@ -260,7 +258,7 @@ export function DesktopLayout({
           hasActiveProject={Boolean(activeProject)}
           hasActiveTab={Boolean(activeTab)}
           sidebarOpen={sidebarOpen}
-          onNewTab={onNewTab}
+          onNewTab={onCreateRoleProfile}
           onCloseTab={onCloseActiveTab}
           onDuplicateTab={onDuplicateTab}
           onRenameTab={onRenameTab}

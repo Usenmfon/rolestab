@@ -512,6 +512,8 @@ function App() {
       updatedAt: now,
     }
 
+    const shouldOpenImmediately = !editingRoleProfile && draft.openImmediately
+
     const workspace = await window.rolesTab?.workspace.saveRoleProfile(roleProfile)
 
     if (workspace) {
@@ -535,6 +537,10 @@ function App() {
 
     closeRoleProfileForm()
     setWorkspaceError(null)
+
+    if (shouldOpenImmediately) {
+      await openRoleProfileTab(roleProfile)
+    }
   }
 
   async function persistRoleProfile(roleProfile: RoleProfile) {
@@ -1445,7 +1451,6 @@ function App() {
       onSelectProject={(projectId) => {
         void selectProject(projectId)
       }}
-      onNewTab={createRoleTab}
       onSelectTab={selectTab}
       onCloseTab={closeTab}
       onStartRenameTab={(tabId) => {
