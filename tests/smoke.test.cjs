@@ -244,8 +244,9 @@ test('active webviews receive focus without stealing it from editable app contro
   assert.match(browserWebviewSource, /window\.addEventListener\('focus', scheduleGuestFocus\)/)
   assert.match(browserWebviewSource, /webviewElement\.focus\(\)/)
   assert.match(browserWebviewSource, /active \? 'is-active' : 'is-inactive'/)
+  assert.match(browserWebviewSource, /pane === 'hidden' \? 'is-hidden' : 'is-visible'/)
   assert.match(stylesSource, /\.roles-tab-webview\s*{[^}]*display:\s*inline-flex;/s)
-  assert.match(stylesSource, /\.roles-tab-webview\.is-inactive\s*{[^}]*visibility:\s*hidden;/s)
+  assert.match(stylesSource, /\.roles-tab-webview\.is-hidden\s*{[^}]*visibility:\s*hidden;/s)
   assert.doesNotMatch(stylesSource, /\.roles-tab-webview\.hidden\s*{[^}]*display:\s*none;/s)
 })
 
