@@ -23,11 +23,14 @@ export function RoleProfileList({
   onOpenAllRoles,
 }: RoleProfileListProps) {
   return (
-    <section className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+    <section>
       <div className="flex items-center justify-between gap-2 px-1">
-        <h2 className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-          Role Profiles
-        </h2>
+        <div>
+          <h2 className="rt-eyebrow">Role Profiles</h2>
+          <p className="mt-1 text-[11px] text-[var(--rt-text-soft)]">
+            {hasActiveProject ? `${roleProfiles.length} isolated sessions` : 'Select a project'}
+          </p>
+        </div>
         <button
           type="button"
           title="New Role Profile"
@@ -35,19 +38,15 @@ export function RoleProfileList({
           disabled={!hasActiveProject}
           onClick={onCreateRoleProfile}
           data-tour-id="new-role-profile"
-          className="grid h-7 w-7 place-items-center rounded-lg border border-slate-200 text-slate-500 hover:bg-slate-100 hover:text-slate-900 disabled:cursor-not-allowed disabled:text-slate-300"
+          className="rt-icon-button h-8 w-8 border border-[var(--rt-border)] bg-[var(--rt-surface)]"
         >
-          <Plus aria-hidden="true" size={14} />
+          <Plus aria-hidden="true" size={15} />
         </button>
       </div>
 
       {hasActiveProject ? (
         <div className="mt-3 grid grid-cols-2 gap-2">
-          <button
-            type="button"
-            onClick={onCreateCommonRoles}
-            className="flex h-9 items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-2 text-xs font-semibold text-slate-700 hover:bg-slate-50"
-          >
+          <button type="button" onClick={onCreateCommonRoles} className="rt-button rt-button-secondary rt-button-small">
             <UsersRound aria-hidden="true" size={14} />
             Common
           </button>
@@ -55,7 +54,7 @@ export function RoleProfileList({
             type="button"
             onClick={onOpenAllRoles}
             disabled={roleProfiles.length === 0}
-            className="flex h-9 items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:text-slate-300 disabled:hover:bg-white"
+            className="rt-button rt-button-secondary rt-button-small"
           >
             <Layers aria-hidden="true" size={14} />
             Open All
@@ -64,66 +63,70 @@ export function RoleProfileList({
       ) : null}
 
       {!hasActiveProject ? (
-        <div className="mt-3 rounded-lg border border-dashed border-slate-300 bg-white/70 p-4 text-sm leading-6 text-slate-500">
+        <div className="mt-3 rounded-lg border border-dashed border-[var(--rt-border)] bg-[var(--rt-surface)] p-4 text-sm leading-6 text-[var(--rt-text-muted)]">
           Select a project before adding reusable role profiles.
         </div>
       ) : roleProfiles.length === 0 ? (
-        <div className="mt-3 rounded-lg border border-dashed border-slate-300 bg-white/70 p-4 text-sm leading-6 text-slate-500">
-          No roles yet. Add Admin, Staff, Customer, or any role you test often.
+        <div className="mt-3 rounded-lg border border-dashed border-[var(--rt-border)] bg-[var(--rt-surface)] p-4 text-sm leading-6 text-[var(--rt-text-muted)]">
+          Add Admin, Staff, Customer, or any role you test often.
         </div>
       ) : (
-        <div className="mt-3 space-y-3">
+        <div className="mt-3 space-y-1.5">
           {roleProfiles.map((roleProfile) => (
             <div
               key={roleProfile.id}
-              className="rounded-lg border border-slate-200 bg-white px-3.5 py-3 text-slate-700 transition hover:border-slate-300 hover:bg-slate-50"
+              className="group rounded-lg border border-transparent px-3 py-2.5 text-[var(--rt-text-muted)] transition hover:border-[var(--rt-border)] hover:bg-[var(--rt-surface)]"
             >
-              <button
-                type="button"
-                onClick={() => onOpenRoleProfile(roleProfile.id)}
-                className="flex w-full min-w-0 items-center gap-2 text-left"
-              >
-                <span
-                  className="h-3 w-3 shrink-0 rounded-full"
-                  style={{ backgroundColor: roleProfile.color }}
-                />
-                <span className="min-w-0 flex-1">
-                  <span className="block truncate text-sm font-semibold text-slate-950">{roleProfile.name}</span>
-                  <span className="mt-1 block truncate text-xs text-slate-500">
-                    {roleProfile.startUrl}
-                  </span>
-                </span>
-              </button>
-
-              <div className="mt-3 flex gap-2">
+              <div className="flex items-start gap-2">
                 <button
                   type="button"
-                  title="Open Role Tab"
-                  aria-label={`Open ${roleProfile.name} role tab`}
                   onClick={() => onOpenRoleProfile(roleProfile.id)}
-                  data-tour-id="open-role-tab"
-                  className="grid h-7 w-7 place-items-center rounded-lg border border-slate-200 text-slate-500 hover:bg-slate-100 hover:text-slate-900"
+                  className="flex min-w-0 flex-1 items-center gap-2 text-left"
                 >
-                  <Play aria-hidden="true" size={14} />
+                  <span
+                    className="h-3 w-3 shrink-0 rounded-full ring-2 ring-[var(--rt-surface)]"
+                    style={{ backgroundColor: roleProfile.color }}
+                  />
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate text-sm font-semibold text-[var(--rt-text)]">
+                      {roleProfile.name}
+                    </span>
+                    <span className="mt-0.5 block truncate text-xs text-[var(--rt-text-muted)]">
+                      {roleProfile.startUrl}
+                    </span>
+                  </span>
                 </button>
-                <button
-                  type="button"
-                  title="Edit Role Profile"
-                  aria-label={`Edit ${roleProfile.name}`}
-                  onClick={() => onEditRoleProfile(roleProfile.id)}
-                  className="grid h-7 w-7 place-items-center rounded-lg border border-slate-200 text-slate-500 hover:bg-slate-100 hover:text-slate-900"
-                >
-                  <Pencil aria-hidden="true" size={14} />
-                </button>
-                <button
-                  type="button"
-                  title="Delete Role Profile"
-                  aria-label={`Delete ${roleProfile.name}`}
-                  onClick={() => onDeleteRoleProfile(roleProfile.id)}
-                  className="grid h-7 w-7 place-items-center rounded-lg border border-slate-200 text-slate-500 hover:bg-slate-100 hover:text-slate-900"
-                >
-                  <Trash2 aria-hidden="true" size={14} />
-                </button>
+
+                <div className="flex shrink-0 gap-1 opacity-0 transition group-hover:opacity-100 group-focus-within:opacity-100">
+                  <button
+                    type="button"
+                    title="Open Role Tab"
+                    aria-label={`Open ${roleProfile.name} role tab`}
+                    onClick={() => onOpenRoleProfile(roleProfile.id)}
+                    data-tour-id="open-role-tab"
+                    className="rt-icon-button h-7 w-7"
+                  >
+                    <Play aria-hidden="true" size={14} />
+                  </button>
+                  <button
+                    type="button"
+                    title="Edit Role Profile"
+                    aria-label={`Edit ${roleProfile.name}`}
+                    onClick={() => onEditRoleProfile(roleProfile.id)}
+                    className="rt-icon-button h-7 w-7"
+                  >
+                    <Pencil aria-hidden="true" size={14} />
+                  </button>
+                  <button
+                    type="button"
+                    title="Delete Role Profile"
+                    aria-label={`Delete ${roleProfile.name}`}
+                    onClick={() => onDeleteRoleProfile(roleProfile.id)}
+                    className="rt-icon-button h-7 w-7"
+                  >
+                    <Trash2 aria-hidden="true" size={14} />
+                  </button>
+                </div>
               </div>
             </div>
           ))}

@@ -4,6 +4,7 @@ import {
   Bug,
   Check,
   Clipboard,
+  Command,
   Columns2,
   Copy,
   ExternalLink,
@@ -53,6 +54,7 @@ type TopBarProps = {
   onOpenDevTools: () => void
   onInspectElement: () => void
   onToggleSidebar: () => void
+  onOpenCommandPalette: () => void
   urlInputRef: RefObject<HTMLInputElement | null>
 }
 
@@ -84,6 +86,7 @@ export function TopBar({
   onOpenDevTools,
   onInspectElement,
   onToggleSidebar,
+  onOpenCommandPalette,
   urlInputRef,
 }: TopBarProps) {
   const [urlDraft, setUrlDraft] = useState(currentUrl)
@@ -138,13 +141,14 @@ export function TopBar({
   }
 
   return (
-    <header className="relative z-10 flex h-14 shrink-0 items-center gap-1.5 border-b border-[#d8dee8] bg-[#fbfcfe] px-3.5">
+    <header className="rt-surface-raised relative z-10 flex h-14 shrink-0 items-center gap-1.5 border-b px-3.5">
       <IconButton
         label={sidebarOpen ? 'Hide Sidebar' : 'Show Sidebar'}
         icon={Sidebar}
         onClick={onToggleSidebar}
       />
-      <div className="mx-1 h-6 w-px bg-slate-200" />
+      <IconButton label="Command Palette" icon={Command} onClick={onOpenCommandPalette} />
+      <div className="mx-1 h-6 w-px bg-[var(--rt-border)]" />
       <IconButton label="Back" icon={ArrowLeft} onClick={onBack} disabled={!hasActiveTab || !canGoBack} />
       <IconButton
         label="Forward"
@@ -168,7 +172,7 @@ export function TopBar({
           disabled={!hasActiveTab}
           onFocus={(event) => event.currentTarget.select()}
           placeholder="Select a role tab to start browsing"
-          className="h-10 w-full rounded-lg border border-transparent bg-[#eef3f8] px-4 text-[13px] text-slate-700 outline-none transition placeholder:text-slate-400 hover:bg-[#e7edf4] focus:border-blue-300 focus:bg-white focus:shadow-[0_0_0_3px_rgba(37,99,235,0.12)] disabled:text-slate-400"
+          className="rt-field rt-field-toolbar border-transparent bg-[var(--rt-surface-muted)] px-4 text-[13px] hover:bg-[var(--rt-surface-hover)] focus:bg-[var(--rt-surface)]"
         />
       </form>
 
@@ -208,7 +212,7 @@ export function TopBar({
           disabled={!hasActiveTab}
         />
         {extensionMenuOpen && hasActiveTab ? (
-          <div className="absolute right-0 top-10 z-30 w-72 rounded-lg border border-slate-200 bg-white p-2 text-sm shadow-xl">
+          <div className="rt-surface absolute right-0 top-10 z-30 w-72 rounded-lg border p-2 text-sm shadow-xl">
             <p className="px-2 py-1 text-xs font-semibold uppercase tracking-wide text-slate-500">
               Role extensions
             </p>

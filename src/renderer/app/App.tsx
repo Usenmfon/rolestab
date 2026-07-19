@@ -3,6 +3,7 @@ import { DesktopLayout } from '../layouts/DesktopLayout'
 import type { ProjectDraft } from '../components/ProjectFormPanel'
 import type { RoleProfileDraft } from '../components/RoleProfileFormPanel'
 import type { FirstRunGuideStep } from '../components/FirstRunGuide'
+import type { ToastMessage } from '../components/ToastViewport'
 import type { ConfirmationRequest } from '../components/ConfirmationDialog'
 import type { BrowserCommand, BrowserCommandInput } from '../../shared/browser'
 import type {
@@ -48,9 +49,11 @@ function App() {
   const [projectFormOpen, setProjectFormOpen] = useState(false)
   const [roleProfileFormOpen, setRoleProfileFormOpen] = useState(false)
   const [settingsPanelOpen, setSettingsPanelOpen] = useState(false)
+  const [commandPaletteOpen, setCommandPaletteOpen] = useState(false)
   const [editingProjectId, setEditingProjectId] = useState<string | null>(null)
   const [editingRoleProfileId, setEditingRoleProfileId] = useState<string | null>(null)
   const [workspaceError, setWorkspaceError] = useState<string | null>(null)
+  const [toasts, setToasts] = useState<ToastMessage[]>([])
   const [browserCommand, setBrowserCommand] = useState<BrowserCommand | null>(null)
   const [workspaceLoaded, setWorkspaceLoaded] = useState(false)
   const [sessionUsage, setSessionUsage] = useState<SessionUsage[]>([])
@@ -339,6 +342,12 @@ function App() {
 
   useEffect(() => {
     function handleKeyDown(event: KeyboardEvent) {
+      if ((event.ctrlKey || event.metaKey) && normalizeKey(event.key) === 'k') {
+        event.preventDefault()
+        setCommandPaletteOpen(true)
+        return
+      }
+
       if (shouldIgnoreShortcut(event)) {
         return
       }
@@ -361,6 +370,14 @@ function App() {
     }
   }, [settings.keyboardShortcuts])
 
+  function showToast(title: string, detail?: string, tone: ToastMessage['tone'] = 'success') {
+    const id = crypto.randomUUID()
+    setToasts((currentToasts) => [...currentToasts.slice(-2), { id, title, detail, tone }])
+
+    window.setTimeout(() => {
+      setToasts((currentToasts) => currentToasts.filter((toast) => toast.id !== id))
+    }, 3600)
+  }
   function applyWorkspace(workspace: WorkspaceData) {
     setProjects(workspace.projects)
     setRoleProfiles(workspace.roleProfiles)
@@ -499,6 +516,7 @@ function App() {
 
     closeProjectForm()
     setWorkspaceError(null)
+    showToast(editingProject ? 'Project updated' : 'Project created', project.name)
   }
 
   async function saveRoleProfile(draft: RoleProfileDraft) {
@@ -549,6 +567,7 @@ function App() {
 
     closeRoleProfileForm()
     setWorkspaceError(null)
+    showToast(editingRoleProfile ? 'Role updated' : 'Role created', roleProfile.name)
 
     if (shouldOpenImmediately) {
       await openRoleProfileTab(roleProfile)
@@ -625,6 +644,7 @@ function App() {
     }
 
     setWorkspaceError(null)
+    showToast('Common roles created', `${missingTemplates.length} role profile${missingTemplates.length === 1 ? '' : 's'} added`)
   }
 
   async function deleteRoleProfile(roleProfileId: string) {
@@ -722,6 +742,7 @@ function App() {
       if (!result?.canceled) {
         window.rolesTab?.analytics.featureUsed('export_project_config')
         setWorkspaceError(null)
+        showToast('Project exported', activeProject.name)
       }
     } catch (error) {
       reportError('project-export', 'Unable to export this project configuration.', error, setWorkspaceError)
@@ -757,6 +778,7 @@ function App() {
       setEditingRoleProfileId(null)
       window.rolesTab?.analytics.featureUsed('import_project_config')
       setWorkspaceError(null)
+      showToast('Project imported')
     } catch (error) {
       reportError('project-import', 'Unable to import the project configuration.', error, setWorkspaceError)
     }
@@ -947,6 +969,7 @@ function App() {
       if (workspace) {
         applyWorkspace(workspace)
       }
+      showToast('Settings saved')
     } catch (error) {
       reportError('settings-save', 'Unable to save settings.', error, setWorkspaceError)
     }
@@ -1074,6 +1097,7 @@ function App() {
   function toggleSplitView() {
     if (splitTab) {
       setSplitTabId(null)
+      showToast('Split view closed', undefined, 'info')
       return
     }
 
@@ -1091,6 +1115,7 @@ function App() {
     setSplitTabId(nextSplitTab.id)
     setWorkspaceError(null)
     window.rolesTab?.analytics.featureUsed('split_view')
+    showToast('Split view started', nextSplitTab.roleName, 'info')
   }
 
   function toggleSplitTab(tabId: string) {
@@ -1101,6 +1126,7 @@ function App() {
     setSplitTabId((currentSplitTabId) => (currentSplitTabId === tabId ? null : tabId))
     setWorkspaceError(null)
     window.rolesTab?.analytics.featureUsed('split_view')
+    showToast('Split target updated', 'Side-by-side role comparison', 'info')
   }
 
   function duplicateActiveTab() {
@@ -1169,6 +1195,7 @@ function App() {
       )
       sendBrowserCommand({ type: 'reload' })
       setWorkspaceError(null)
+      showToast('Role session reset', activeTab.roleName)
       window.rolesTab?.analytics.featureUsed('clear_role_session')
     } catch (error) {
       reportError('session-reset', 'Unable to reset the active role session.', error, setWorkspaceError)
@@ -1212,6 +1239,7 @@ function App() {
           : (remainingTabs.at(-1)?.id ?? null)
       })
       setWorkspaceError(null)
+      showToast('Project sessions cleared', activeProject.name)
       window.rolesTab?.analytics.featureUsed('clear_project_sessions')
     } catch (error) {
       reportError('session-clear-project', 'Unable to clear project sessions.', error, setWorkspaceError)
@@ -1242,6 +1270,7 @@ function App() {
       setTabs([])
       setActiveTabId(null)
       setWorkspaceError(null)
+      showToast('All sessions cleared', `${partitions.length} partition${partitions.length === 1 ? '' : 's'} reset`)
       window.rolesTab?.analytics.featureUsed('clear_all_sessions')
     } catch (error) {
       reportError('session-clear-all', 'Unable to clear all sessions.', error, setWorkspaceError)
@@ -1389,6 +1418,7 @@ function App() {
       }
       window.rolesTab?.analytics.featureUsed('copy_active_url')
       setWorkspaceError(null)
+      showToast('URL copied', activeTab.title)
     } catch (error) {
       reportError('clipboard-copy', 'Unable to copy the current URL.', error, setWorkspaceError)
       throw error
@@ -1413,6 +1443,7 @@ function App() {
 
       await window.rolesTab?.app.openExternal(activeTab.url)
       setWorkspaceError(null)
+      showToast('Opened externally', activeTab.url, 'info')
     } catch (error) {
       reportError('open-external', 'Unable to open the current URL externally.', error, setWorkspaceError)
     }
@@ -1468,7 +1499,9 @@ function App() {
       activeRoleExtensions={activeRoleExtensions}
       sidebarOpen={sidebarOpen}
       workspaceError={workspaceError}
+      toasts={toasts}
       onClearWorkspaceError={() => setWorkspaceError(null)}
+      onDismissToast={(toastId) => setToasts((currentToasts) => currentToasts.filter((toast) => toast.id !== toastId))}
       onToggleSidebar={() => setSidebarOpen((currentSidebarOpen) => !currentSidebarOpen)}
       editingProject={editingProject}
       editingRoleProfile={editingRoleProfile}
@@ -1476,6 +1509,7 @@ function App() {
       roleProfileFormOpen={roleProfileFormOpen}
       settingsPanelOpen={settingsPanelOpen}
       firstRunGuideOpen={firstRunGuideOpen}
+      commandPaletteOpen={commandPaletteOpen}
       firstRunGuideStep={firstRunGuideStep}
       confirmationRequest={confirmationRequest}
       onCreateProject={openCreateProjectForm}
@@ -1516,6 +1550,8 @@ function App() {
       }}
       onOpenSettings={openSettingsPanel}
       onOpenFirstRunGuide={openFirstRunGuide}
+      onOpenCommandPalette={() => setCommandPaletteOpen(true)}
+      onCloseCommandPalette={() => setCommandPaletteOpen(false)}
       onCloseSettings={closeSettingsPanel}
       onSaveSettings={saveAppSettings}
       onResetSettings={resetAppSettings}

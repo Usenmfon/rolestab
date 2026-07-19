@@ -16,7 +16,7 @@ export function IconButton({ label, icon: Icon, onClick, disabled = false }: Ico
       aria-label={label}
       onClick={onClick}
       disabled={disabled}
-      className="grid h-8 w-8 place-items-center rounded-lg text-slate-500 transition hover:bg-slate-100 hover:text-slate-900 disabled:cursor-not-allowed disabled:text-slate-300 disabled:hover:bg-transparent"
+      className="rt-icon-button"
     >
       <Icon aria-hidden="true" size={17} strokeWidth={1.75} />
     </button>

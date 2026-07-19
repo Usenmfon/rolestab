@@ -22,7 +22,7 @@ const appIconPath = process.platform === 'win32'
         : node_path_1.default.join(currentDirectory, '../../public/android-chrome-512x512.png');
 const titleBarThemes = {
     light: {
-        color: '#e8eaed',
+        color: '#eef3f8',
         symbolColor: '#334155',
     },
     dark: {
@@ -35,7 +35,7 @@ function applyTitleBarTheme(window, theme) {
         ...titleBarThemes[theme],
         height: 40,
     });
-    window.setBackgroundColor(theme === 'dark' ? '#0f172a' : '#f5f7fb');
+    window.setBackgroundColor(theme === 'dark' ? '#0b1120' : '#edf1f6');
 }
 function isSafeExternalUrl(url) {
     try {
@@ -74,7 +74,7 @@ function createAppWindow() {
         show: false,
         title: 'RolesTab',
         icon: appIconPath,
-        backgroundColor: '#f5f7fb',
+        backgroundColor: '#edf1f6',
         autoHideMenuBar: true,
         titleBarStyle: 'hidden',
         titleBarOverlay: {

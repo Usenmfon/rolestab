@@ -26,41 +26,40 @@ export function WorkspacePersistencePanel({
   const totalSessionBytes = sessionUsage.reduce((total, usage) => total + usage.totalBytes, 0)
 
   return (
-    <section className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
-      <label
-        data-tour-id="restore-workspace"
-        className="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-semibold text-slate-700"
-      >
-        <input
-          type="checkbox"
-          checked={settings.restoreTabsOnStartup}
-          onChange={onToggleRestoreTabs}
-          className="h-4 w-4"
-        />
-        Restore tabs on startup
-      </label>
-
-      <label className="mt-2 flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-semibold text-slate-700">
-        <input
-          type="checkbox"
-          checked={settings.confirmBeforeClearingSessions}
-          onChange={onToggleConfirmSessionClear}
-          className="h-4 w-4"
-        />
-        Confirm session clears
-      </label>
-
-      <div className="mt-4 flex items-center gap-2 px-1 text-xs font-semibold uppercase tracking-wide text-slate-500">
-        <ShieldAlert aria-hidden="true" size={14} />
-        Sessions
+    <section className="border-t border-[var(--rt-border)] pt-5">
+      <div className="flex items-center gap-2 px-1">
+        <ShieldAlert aria-hidden="true" size={14} className="text-[var(--rt-text-soft)]" />
+        <h2 className="rt-eyebrow">Sessions</h2>
       </div>
 
-      <div className="mt-3 rounded-lg border border-slate-200 bg-white px-3 py-2.5">
+      <div className="mt-3 space-y-2">
+        <label data-tour-id="restore-workspace" className="rt-check-row flex items-center gap-2 px-3 py-2 text-xs font-semibold">
+          <input
+            type="checkbox"
+            checked={settings.restoreTabsOnStartup}
+            onChange={onToggleRestoreTabs}
+            className="h-4 w-4 accent-blue-600"
+          />
+          Restore tabs on startup
+        </label>
+
+        <label className="rt-check-row flex items-center gap-2 px-3 py-2 text-xs font-semibold">
+          <input
+            type="checkbox"
+            checked={settings.confirmBeforeClearingSessions}
+            onChange={onToggleConfirmSessionClear}
+            className="h-4 w-4 accent-blue-600"
+          />
+          Confirm session clears
+        </label>
+      </div>
+
+      <div className="mt-3 rounded-lg border border-[var(--rt-border)] bg-[var(--rt-surface)] px-3 py-2.5">
         <div className="flex items-center justify-between gap-3 text-xs">
-          <span className="font-semibold text-slate-700">Stored role data</span>
-          <span className="font-mono text-[11px] text-slate-500">{formatBytes(totalSessionBytes)}</span>
+          <span className="font-semibold text-[var(--rt-text)]">Stored role data</span>
+          <span className="font-mono text-[11px] text-[var(--rt-text-muted)]">{formatBytes(totalSessionBytes)}</span>
         </div>
-        <p className="mt-1 text-[11px] leading-4 text-slate-500">
+        <p className="mt-1 text-[11px] leading-4 text-[var(--rt-text-muted)]">
           {sessionUsage.length === 0
             ? 'No persistent role sessions yet.'
             : `${sessionUsage.length} persistent role partition${sessionUsage.length === 1 ? '' : 's'}.`}
@@ -68,46 +67,40 @@ export function WorkspacePersistencePanel({
       </div>
 
       <div className="mt-3 grid grid-cols-2 gap-2">
-        <button
-          type="button"
-          onClick={onClearProjectSessions}
-          className="flex h-9 items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-2 text-xs font-semibold text-slate-700 hover:bg-slate-50"
-        >
+        <button type="button" onClick={onClearProjectSessions} className="rt-button rt-button-secondary rt-button-small">
           <RotateCcw aria-hidden="true" size={14} />
           Project
         </button>
-        <button
-          type="button"
-          onClick={onClearAllSessions}
-          className="flex h-9 items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-2 text-xs font-semibold text-slate-700 hover:bg-slate-50"
-        >
+        <button type="button" onClick={onClearAllSessions} className="rt-button rt-button-secondary rt-button-small">
           <RotateCcw aria-hidden="true" size={14} />
           All
         </button>
       </div>
 
-      <div className="mt-4 flex items-center gap-2 px-1 text-xs font-semibold uppercase tracking-wide text-slate-500">
-        <Clock3 aria-hidden="true" size={14} />
-        Recent URLs
+      <div className="mt-5 flex items-center gap-2 px-1">
+        <Clock3 aria-hidden="true" size={14} className="text-[var(--rt-text-soft)]" />
+        <h2 className="rt-eyebrow">Recent URLs</h2>
       </div>
 
       {recentUrls.length === 0 ? (
-        <div className="mt-3 rounded-lg border border-dashed border-slate-300 bg-white/70 p-3 text-xs leading-5 text-slate-500">
+        <div className="mt-3 rounded-lg border border-dashed border-[var(--rt-border)] bg-[var(--rt-surface)] p-3 text-xs leading-5 text-[var(--rt-text-muted)]">
           Visited URLs will appear here.
         </div>
       ) : (
-        <div className="mt-3 space-y-2">
+        <div className="mt-3 space-y-1.5">
           {recentUrls.slice(0, 5).map((recentUrl) => (
             <button
               key={recentUrl.id}
               type="button"
               onClick={() => onOpenRecentUrl(recentUrl)}
-              className="block w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-left transition hover:border-slate-300 hover:bg-slate-50"
+              className="block w-full rounded-lg border border-transparent px-3 py-2 text-left transition hover:border-[var(--rt-border)] hover:bg-[var(--rt-surface)]"
             >
-              <span className="block truncate text-xs font-semibold text-slate-700">
+              <span className="block truncate text-xs font-semibold text-[var(--rt-text)]">
                 {recentUrl.title || recentUrl.url}
               </span>
-              <span className="mt-1 block truncate text-[11px] text-slate-500">{recentUrl.url}</span>
+              <span className="mt-1 block truncate text-[11px] text-[var(--rt-text-muted)]">
+                {recentUrl.url}
+              </span>
             </button>
           ))}
         </div>

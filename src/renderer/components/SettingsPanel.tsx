@@ -211,32 +211,32 @@ export function SettingsPanel({
   }
 
   return (
-    <aside ref={panelRef} className="app-no-drag relative z-20 flex w-[30rem] shrink-0 flex-col border-l border-slate-200 bg-white shadow-[-12px_0_28px_rgba(15,23,42,0.08)]">
-      <div className="flex h-24 items-start border-b border-slate-200 px-5 pt-10">
+    <aside ref={panelRef} className="rt-panel app-no-drag relative z-20 flex w-[30rem] shrink-0 flex-col border-l">
+      <div className="flex h-24 items-start border-b border-[var(--rt-border)] px-5 pt-10">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Workspace</p>
-          <h2 className="text-lg font-semibold text-slate-950">Settings</h2>
+          <p className="rt-eyebrow">Workspace</p>
+          <h2 className="rt-heading text-lg">Settings</h2>
         </div>
       </div>
 
       <form onSubmit={handleSubmit} className="min-h-0 flex-1 overflow-y-auto p-5">
         <div className="space-y-7">
           <section className="space-y-3.5">
-            <h3 className="text-sm font-semibold text-slate-950">Startup</h3>
+            <h3 className="rt-heading text-sm">Startup</h3>
             <label className="block space-y-1.5">
-              <span className="block text-sm font-medium text-slate-700">Default Homepage</span>
+              <span className="rt-label block">Default Homepage</span>
               <input
                 value={draft.defaultHomepage}
                 onChange={(event) =>
                   setDraft((currentDraft) => ({ ...currentDraft, defaultHomepage: event.target.value }))
                 }
                 placeholder="http://localhost:8000"
-                className="h-11 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm outline-none transition focus:border-blue-300 focus:shadow-[0_0_0_3px_rgba(37,99,235,0.1)]"
+                className="rt-field"
               />
             </label>
 
             <label className="block space-y-1.5">
-              <span className="block text-sm font-medium text-slate-700">Default Project</span>
+              <span className="rt-label block">Default Project</span>
               <select
                 value={draft.defaultProjectId ?? ''}
                 onChange={(event) =>
@@ -245,7 +245,7 @@ export function SettingsPanel({
                     defaultProjectId: event.target.value || null,
                   }))
                 }
-                className="h-11 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm outline-none transition focus:border-blue-300 focus:shadow-[0_0_0_3px_rgba(37,99,235,0.1)]"
+                className="rt-field"
               >
                 <option value="">Last active project</option>
                 {projects.map((project) => (
@@ -256,7 +256,7 @@ export function SettingsPanel({
               </select>
             </label>
 
-            <label className="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm font-medium text-slate-700">
+            <label className="rt-check-row flex items-center gap-2 px-3 py-2.5 text-sm font-medium">
               <input
                 type="checkbox"
                 checked={draft.restoreTabsOnStartup}
@@ -273,7 +273,7 @@ export function SettingsPanel({
           </section>
 
           <section className="space-y-3.5">
-            <h3 className="text-sm font-semibold text-slate-950">Appearance</h3>
+            <h3 className="rt-heading text-sm">Appearance</h3>
             <div className="grid grid-cols-3 gap-2">
               {(['system', 'light', 'dark'] as const).map((theme) => (
                 <button
@@ -282,8 +282,8 @@ export function SettingsPanel({
                   onClick={() => setDraft((currentDraft) => ({ ...currentDraft, theme }))}
                     className={`h-9 rounded-lg border px-3 text-sm font-semibold capitalize ${
                     draft.theme === theme
-                      ? 'border-slate-900 bg-slate-900 text-white'
-                      : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
+                      ? 'border-[var(--rt-primary)] bg-[var(--rt-primary)] text-white shadow-[var(--rt-shadow-sm)]'
+                      : 'border-[var(--rt-border)] bg-[var(--rt-surface)] text-[var(--rt-text-muted)] hover:bg-[var(--rt-surface-hover)] hover:text-[var(--rt-text)]'
                   }`}
                 >
                   {theme}
@@ -293,7 +293,7 @@ export function SettingsPanel({
           </section>
 
           <section className="space-y-3.5">
-            <h3 className="text-sm font-semibold text-slate-950">Role Colors</h3>
+            <h3 className="rt-heading text-sm">Role Colors</h3>
             <div className="grid grid-cols-6 gap-2">
               {draft.defaultRoleColors.map((color, index) => (
                 <input
@@ -308,7 +308,7 @@ export function SettingsPanel({
                       ),
                     }))
                   }
-                  className="h-9 w-full cursor-pointer rounded-lg border border-slate-200 bg-white p-1"
+                  className="h-9 w-full cursor-pointer rounded-lg border border-[var(--rt-border)] bg-[var(--rt-surface)] p-1"
                   aria-label={`Default role color ${index + 1}`}
                 />
               ))}
@@ -316,8 +316,8 @@ export function SettingsPanel({
           </section>
 
           <section className="space-y-3.5">
-            <h3 className="text-sm font-semibold text-slate-950">Sessions</h3>
-            <label className="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm font-medium text-slate-700">
+            <h3 className="rt-heading text-sm">Sessions</h3>
+            <label className="rt-check-row flex items-center gap-2 px-3 py-2.5 text-sm font-medium">
               <input
                 type="checkbox"
                 checked={draft.confirmBeforeClearingSessions}
@@ -334,8 +334,8 @@ export function SettingsPanel({
           </section>
 
           <section className="space-y-3.5">
-            <h3 className="text-sm font-semibold text-slate-950">Privacy</h3>
-            <label className="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm font-medium text-slate-700">
+            <h3 className="rt-heading text-sm">Privacy</h3>
+            <label className="rt-check-row flex items-center gap-2 px-3 py-2.5 text-sm font-medium">
               <input
                 type="checkbox"
                 checked={draft.shareAnonymousAnalytics}
@@ -365,7 +365,7 @@ export function SettingsPanel({
           </section>
 
           <section className="space-y-3.5">
-            <h3 className="text-sm font-semibold text-slate-950">Keyboard Shortcuts</h3>
+            <h3 className="rt-heading text-sm">Keyboard Shortcuts</h3>
             <div className="grid grid-cols-2 gap-2">
               {Object.entries(draft.keyboardShortcuts).map(([shortcutKey, shortcut]) => (
                 <label key={shortcutKey} className="space-y-1">
@@ -375,7 +375,7 @@ export function SettingsPanel({
                   <input
                     value={shortcut}
                     onChange={(event) => updateShortcut(shortcutKey, event.target.value)}
-                    className="h-9 w-full rounded-lg border border-slate-200 bg-white px-2 text-sm outline-none transition focus:border-blue-300 focus:shadow-[0_0_0_3px_rgba(37,99,235,0.1)]"
+                    className="rt-field rt-field-compact px-2"
                   />
                 </label>
               ))}
@@ -388,7 +388,7 @@ export function SettingsPanel({
           />
 
           <section className="space-y-3.5">
-            <h3 className="text-sm font-semibold text-slate-950">About</h3>
+            <h3 className="rt-heading text-sm">About</h3>
             <dl className="overflow-hidden rounded-lg border border-slate-200 text-sm">
               <div className="flex items-center justify-between gap-4 border-b border-slate-100 px-3 py-2">
                 <dt className="font-medium text-slate-500">Version</dt>
@@ -466,16 +466,16 @@ export function SettingsPanel({
         </div>
 
         {error ? (
-          <div className="mt-5 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+          <div className="rt-alert-danger mt-5 rounded-lg px-3 py-2 text-sm">
             {error}
           </div>
         ) : null}
 
-        <div className="mt-6 flex gap-2 border-t border-slate-200 pt-5">
+        <div className="mt-6 flex gap-2 border-t border-[var(--rt-border)] pt-5">
           <button
             type="submit"
             disabled={saving}
-            className="settings-save-button h-10 flex-1 rounded-lg bg-slate-900 px-4 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-400"
+            className="settings-save-button rt-button rt-button-primary flex-1"
           >
             {saving ? 'Saving...' : 'Save Settings'}
           </button>
@@ -483,7 +483,7 @@ export function SettingsPanel({
             type="button"
             onClick={handleReset}
             disabled={saving}
-            className="flex h-10 items-center gap-2 rounded-lg border border-slate-200 px-4 text-sm font-semibold text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:text-slate-400"
+            className="rt-button rt-button-secondary"
           >
             <RotateCcw aria-hidden="true" size={15} />
             Reset

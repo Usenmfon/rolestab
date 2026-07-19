@@ -23,7 +23,7 @@ type TitleBarTheme = 'light' | 'dark'
 
 const titleBarThemes: Record<TitleBarTheme, { color: string; symbolColor: string }> = {
   light: {
-    color: '#e8eaed',
+    color: '#eef3f8',
     symbolColor: '#334155',
   },
   dark: {
@@ -37,7 +37,7 @@ export function applyTitleBarTheme(window: AppBrowserWindow, theme: TitleBarThem
     ...titleBarThemes[theme],
     height: 40,
   })
-  window.setBackgroundColor(theme === 'dark' ? '#0f172a' : '#f5f7fb')
+  window.setBackgroundColor(theme === 'dark' ? '#0b1120' : '#edf1f6')
 }
 
 function isSafeExternalUrl(url: string): boolean {
@@ -78,7 +78,7 @@ export function createAppWindow(): AppBrowserWindow {
     show: false,
     title: 'RolesTab',
     icon: appIconPath,
-    backgroundColor: '#f5f7fb',
+    backgroundColor: '#edf1f6',
     autoHideMenuBar: true,
     titleBarStyle: 'hidden',
     titleBarOverlay: {

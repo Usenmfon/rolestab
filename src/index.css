@@ -1,11 +1,32 @@
 @import 'tailwindcss';
 
+:root {
+  --rt-bg: #edf1f6;
+  --rt-bg-subtle: #f6f8fb;
+  --rt-surface: #ffffff;
+  --rt-surface-raised: #fbfcfe;
+  --rt-surface-muted: #eef3f8;
+  --rt-surface-hover: #e7edf4;
+  --rt-border: #d8dee8;
+  --rt-border-soft: #e5eaf1;
+  --rt-text: #0f172a;
+  --rt-text-muted: #64748b;
+  --rt-text-soft: #94a3b8;
+  --rt-primary: #2563eb;
+  --rt-primary-hover: #1d4ed8;
+  --rt-danger: #dc2626;
+  --rt-danger-soft: #fef2f2;
+  --rt-danger-border: #fecaca;
+  --rt-shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.06);
+  --rt-focus: 0 0 0 3px rgba(100, 116, 139, 0.16);
+  --rt-radius: 8px;
+}
 body {
   margin: 0;
   min-width: 980px;
   min-height: 100vh;
-  background: #eef2f7;
-  color: #111827;
+  background: var(--rt-bg);
+  color: var(--rt-text);
   font-family:
     'SF Pro Text',
     'Avenir Next',
@@ -26,11 +47,29 @@ body {
 
 html.theme-dark {
   color-scheme: dark;
+  --rt-bg: #0b1120;
+  --rt-bg-subtle: #0f172a;
+  --rt-surface: #111827;
+  --rt-surface-raised: #172033;
+  --rt-surface-muted: #1e293b;
+  --rt-surface-hover: #263449;
+  --rt-border: #334155;
+  --rt-border-soft: #243244;
+  --rt-text: #e2e8f0;
+  --rt-text-muted: #94a3b8;
+  --rt-text-soft: #64748b;
+  --rt-primary: #3b82f6;
+  --rt-primary-hover: #60a5fa;
+  --rt-danger: #fca5a5;
+  --rt-danger-soft: #450a0a;
+  --rt-danger-border: #7f1d1d;
+  --rt-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.28);
+  --rt-focus: 0 0 0 3px rgba(148, 163, 184, 0.22);
 }
 
 html.theme-dark body {
-  background: #0f172a;
-  color: #e2e8f0;
+  background: var(--rt-bg);
+  color: var(--rt-text);
 }
 
 html.theme-dark [class~='bg-white'],
@@ -61,7 +100,7 @@ html.theme-dark [class~='bg-[#e8edf4]'],
 html.theme-dark [class~='bg-[#dfe3e8]'],
 html.theme-dark [class~='bg-[#dce3ed]'],
 html.theme-dark [class~='bg-[#edf1f5]'] {
-  background-color: #111827;
+  background-color: var(--rt-surface);
 }
 
 html.theme-dark [class~='border-slate-100'],
@@ -199,6 +238,180 @@ svg {
 ::selection {
   background: rgba(37, 99, 235, 0.16);
 }
+.rt-app-shell {
+  background: var(--rt-bg);
+  color: var(--rt-text);
+}
+
+.rt-surface {
+  border-color: var(--rt-border);
+  background: var(--rt-surface);
+  color: var(--rt-text);
+}
+
+.rt-surface-raised {
+  border-color: var(--rt-border);
+  background: var(--rt-surface-raised);
+  color: var(--rt-text);
+}
+
+.rt-muted-surface {
+  border-color: var(--rt-border-soft);
+  background: var(--rt-surface-muted);
+}
+
+.rt-panel {
+  border-color: var(--rt-border);
+  background: var(--rt-surface);
+  box-shadow: -16px 0 32px rgba(15, 23, 42, 0.1);
+}
+
+html.theme-dark .rt-panel {
+  box-shadow: -16px 0 34px rgba(0, 0, 0, 0.34);
+}
+
+.rt-field {
+  height: 2.75rem;
+  width: 100%;
+  border-radius: var(--rt-radius);
+  border: 1px solid var(--rt-border);
+  background: var(--rt-surface);
+  padding: 0 0.75rem;
+  color: var(--rt-text);
+  font-size: 0.875rem;
+  outline: none;
+  transition: border-color 160ms ease, background-color 160ms ease, box-shadow 160ms ease;
+}
+
+.rt-field::placeholder {
+  color: var(--rt-text-soft);
+}
+
+.rt-field:hover:not(:disabled) {
+  border-color: color-mix(in srgb, var(--rt-border) 74%, var(--rt-text-muted));
+}
+
+.rt-field:focus {
+  border-color: var(--rt-border);
+  box-shadow: none;
+}
+
+.rt-field:disabled {
+  cursor: not-allowed;
+  color: var(--rt-text-soft);
+  background: var(--rt-surface-muted);
+}
+
+textarea.rt-field {
+  height: auto;
+  padding-top: 0.625rem;
+  padding-bottom: 0.625rem;
+}
+
+.rt-field-compact {
+  height: 2.25rem;
+}
+
+.rt-field-toolbar {
+  height: 2.5rem;
+}
+
+.rt-label {
+  color: var(--rt-text-muted);
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.rt-eyebrow {
+  color: var(--rt-text-muted);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.rt-heading {
+  color: var(--rt-text);
+  font-weight: 650;
+}
+
+.rt-button {
+  display: inline-flex;
+  height: 2.5rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: var(--rt-radius);
+  padding: 0 1rem;
+  font-size: 0.875rem;
+  font-weight: 650;
+  transition: background-color 160ms ease, border-color 160ms ease, color 160ms ease, box-shadow 160ms ease;
+}
+
+.rt-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.56;
+}
+
+.rt-button-small {
+  height: 1.75rem;
+  padding: 0 0.5rem;
+  font-size: 0.75rem;
+}
+
+.rt-button-primary {
+  background: var(--rt-primary);
+  color: #ffffff;
+  box-shadow: 0 10px 24px rgba(37, 99, 235, 0.18);
+}
+
+.rt-button-primary:hover:not(:disabled) {
+  background: var(--rt-primary-hover);
+}
+
+.rt-button-secondary {
+  border: 1px solid var(--rt-border);
+  background: var(--rt-surface);
+  color: var(--rt-text-muted);
+}
+
+.rt-button-secondary:hover:not(:disabled) {
+  background: var(--rt-surface-hover);
+  color: var(--rt-text);
+}
+
+.rt-icon-button {
+  display: grid;
+  height: 2rem;
+  width: 2rem;
+  place-items: center;
+  border-radius: var(--rt-radius);
+  color: var(--rt-text-muted);
+  transition: background-color 160ms ease, color 160ms ease, box-shadow 160ms ease;
+}
+
+.rt-icon-button:hover:not(:disabled) {
+  background: var(--rt-surface-hover);
+  color: var(--rt-text);
+}
+
+.rt-icon-button:disabled {
+  cursor: not-allowed;
+  color: var(--rt-text-soft);
+}
+
+.rt-alert-danger {
+  border: 1px solid var(--rt-danger-border);
+  background: var(--rt-danger-soft);
+  color: var(--rt-danger);
+}
+
+.rt-check-row {
+  border: 1px solid var(--rt-border);
+  border-radius: var(--rt-radius);
+  background: var(--rt-surface-muted);
+  color: var(--rt-text-muted);
+}
 
 * {
   scrollbar-width: thin;
@@ -281,14 +494,14 @@ svg {
   width: 50%;
   align-items: center;
   gap: 0.5rem;
-  border-bottom: 1px solid #d8dee8;
-  background: #f7f9fc;
+  border-bottom: 1px solid var(--rt-border);
+  background: var(--rt-surface-raised);
   padding: 0 0.75rem;
 }
 
 .roles-tab-split-header-left {
   left: 0;
-  border-right: 1px solid #d8dee8;
+  border-right: 1px solid var(--rt-border);
 }
 
 .roles-tab-split-header-right {
@@ -332,10 +545,17 @@ button:focus-visible,
 input:focus-visible,
 select:focus-visible,
 textarea:focus-visible {
-  outline: 2px solid rgba(37, 99, 235, 0.42);
+  outline: 2px solid color-mix(in srgb, var(--rt-primary) 62%, transparent);
   outline-offset: 2px;
 }
 
 * {
   box-sizing: border-box;
+}
+
+
+.rt-command-input:focus,
+.rt-command-input:focus-visible {
+  outline: none;
+  box-shadow: none;
 }

@@ -28,9 +28,9 @@ export function TabBar({
   onToggleSplitTab,
 }: TabBarProps) {
   return (
-    <div className="app-drag-region relative z-10 flex h-11 shrink-0 items-end gap-1.5 overflow-x-auto border-b border-[#d8dee8] bg-[#e8edf4] px-2.5 pr-36 pt-1.5">
+    <div className="app-drag-region rt-muted-surface relative z-10 flex h-12 shrink-0 items-end gap-1 overflow-x-auto border-b border-[var(--rt-border)] px-2.5 pr-36 pt-2">
       {tabs.length === 0 ? (
-        <span className="mb-2.5 px-3 text-sm text-slate-500">No role tabs open</span>
+        <span className="mb-2.5 px-3 text-sm text-[var(--rt-text-muted)]">No role tabs open</span>
       ) : (
         tabs.map((tab) => {
           const active = tab.id === activeTabId
@@ -39,15 +39,19 @@ export function TabBar({
           return (
             <div
               key={tab.id}
-              className={`app-no-drag group flex h-9 w-56 shrink-0 items-center gap-2 rounded-t-lg border-t-[3px] px-3 transition ${
+              className={`app-no-drag group relative flex h-9 w-56 shrink-0 items-center gap-2 rounded-t-lg border px-2.5 transition ${
                 active
-                  ? 'bg-[#fbfcfe] text-slate-950 shadow-[0_-1px_0_rgba(15,23,42,0.08),1px_0_0_rgba(15,23,42,0.08),-1px_0_0_rgba(15,23,42,0.08)]'
+                  ? 'border-[var(--rt-border)] border-b-[var(--rt-surface-raised)] bg-[var(--rt-surface-raised)] text-[var(--rt-text)] shadow-[0_-1px_0_rgba(15,23,42,0.04),1px_0_0_rgba(15,23,42,0.04),-1px_0_0_rgba(15,23,42,0.04)]'
                   : split
-                    ? 'bg-blue-50 text-blue-700 shadow-[0_-1px_0_rgba(37,99,235,0.16),1px_0_0_rgba(37,99,235,0.16),-1px_0_0_rgba(37,99,235,0.16)]'
-                    : 'bg-[#dce3ed] text-slate-600 hover:bg-[#edf2f7]'
+                    ? 'border-blue-300 bg-blue-50 text-blue-700'
+                    : 'border-transparent bg-transparent text-[var(--rt-text-muted)] hover:border-[var(--rt-border)] hover:bg-[var(--rt-surface)]'
               }`}
-              style={{ borderTopColor: tab.roleColor }}
             >
+              <span
+                aria-hidden="true"
+                className="absolute inset-x-2 top-0 h-0.5 rounded-full"
+                style={{ backgroundColor: tab.roleColor }}
+              />
               {renamingTabId === tab.id ? (
                 <RenameTabInput
                   key={tab.id}
@@ -71,11 +75,11 @@ export function TabBar({
                       style={{ backgroundColor: tab.roleColor }}
                     />
                   )}
-                  <span className="truncate text-[13px] font-medium">{tab.title}</span>
+                  <span className="truncate text-[13px] font-semibold">{tab.title}</span>
                 </button>
               )}
               {tab.loading ? (
-                <Loader2 aria-hidden="true" size={13} className="shrink-0 animate-spin text-slate-400" />
+                <Loader2 aria-hidden="true" size={13} className="shrink-0 animate-spin text-[var(--rt-text-soft)]" />
               ) : null}
               <button
                 type="button"
@@ -91,10 +95,10 @@ export function TabBar({
                 }
                 onClick={() => onToggleSplitTab(tab.id)}
                 disabled={active}
-                className={`app-no-drag grid h-6 w-6 shrink-0 place-items-center rounded-md ${
+                className={`app-no-drag grid h-6 w-6 shrink-0 place-items-center rounded-md transition ${
                   split
                     ? 'bg-blue-100 text-blue-700 hover:bg-blue-200'
-                    : 'text-slate-400 hover:bg-slate-200 hover:text-slate-700 disabled:cursor-not-allowed disabled:opacity-40'
+                    : 'text-[var(--rt-text-soft)] opacity-0 hover:bg-[var(--rt-surface-hover)] hover:text-[var(--rt-text)] group-hover:opacity-100 disabled:cursor-not-allowed disabled:opacity-30'
                 }`}
               >
                 <Columns2 aria-hidden="true" size={14} />
@@ -104,7 +108,7 @@ export function TabBar({
                 title="Close Tab"
                 aria-label={`Close ${tab.title}`}
                 onClick={() => onCloseTab(tab.id)}
-                className="app-no-drag grid h-6 w-6 shrink-0 place-items-center rounded-md text-slate-400 hover:bg-slate-200 hover:text-slate-700"
+                className="app-no-drag grid h-6 w-6 shrink-0 place-items-center rounded-md text-[var(--rt-text-soft)] opacity-0 transition hover:bg-[var(--rt-surface-hover)] hover:text-[var(--rt-text)] group-hover:opacity-100"
               >
                 <X aria-hidden="true" size={14} />
               </button>
@@ -171,7 +175,7 @@ function RenameTabInput({ tabId, initialTitle, onRenameTab, onCancelRename }: Re
       onChange={(event) => setTitleDraft(event.target.value)}
       onBlur={finishRename}
       onKeyDown={handleRenameKeyDown}
-      className="app-no-drag min-w-0 flex-1 rounded border border-blue-300 bg-white px-2 py-1 text-[13px] font-medium text-slate-950 outline-none"
+      className="rt-field rt-field-compact app-no-drag min-w-0 flex-1 px-2 text-[13px] font-semibold"
       aria-label="Tab title"
     />
   )

@@ -64,13 +64,13 @@ export function RoleProfileFormPanel({
   }
 
   return (
-    <aside className="app-no-drag relative z-20 flex w-96 shrink-0 flex-col border-l border-slate-200 bg-white shadow-[-12px_0_28px_rgba(15,23,42,0.08)]">
-      <div className="flex h-24 items-start justify-between border-b border-slate-200 px-5 pt-10">
+    <aside className="rt-panel app-no-drag relative z-20 flex w-96 shrink-0 flex-col border-l">
+      <div className="flex h-24 items-start justify-between border-b border-[var(--rt-border)] px-5 pt-10">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+          <p className="rt-eyebrow">
             {project.name}
           </p>
-          <h2 className="text-lg font-semibold text-slate-950">
+          <h2 className="rt-heading text-lg">
             {roleProfile ? 'Edit Role' : 'New Role'}
           </h2>
         </div>
@@ -78,19 +78,19 @@ export function RoleProfileFormPanel({
 
       <form onSubmit={handleSubmit} className="flex flex-1 flex-col gap-5 p-5">
         <label className="space-y-2">
-          <span className="text-sm font-medium text-slate-700">Role Name</span>
+          <span className="rt-label">Role Name</span>
           <input
             ref={nameInputRef}
             autoFocus
             value={name}
             onChange={(event) => setName(event.target.value)}
             placeholder="Admin"
-            className="h-11 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm outline-none transition focus:border-blue-300 focus:shadow-[0_0_0_3px_rgba(37,99,235,0.1)]"
+            className="rt-field"
           />
         </label>
 
         <div className="space-y-2">
-          <span className="text-sm font-medium text-slate-700">Color</span>
+          <span className="rt-label">Color</span>
           <div className="flex items-center gap-2">
             {presetColors.map((presetColor) => (
               <button
@@ -109,53 +109,53 @@ export function RoleProfileFormPanel({
               type="color"
               value={color}
               onChange={(event) => setColor(event.target.value)}
-              className="h-8 w-10 cursor-pointer rounded-lg border border-slate-200 bg-white p-1"
+              className="h-8 w-10 cursor-pointer rounded-lg border border-[var(--rt-border)] bg-[var(--rt-surface)] p-1"
               aria-label="Custom role color"
             />
           </div>
         </div>
 
         <label className="space-y-2">
-          <span className="text-sm font-medium text-slate-700">Start URL</span>
+          <span className="rt-label">Start URL</span>
           <input
             value={startUrl}
             onChange={(event) => setStartUrl(event.target.value)}
             placeholder={project.baseUrl}
-            className="h-11 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm outline-none transition focus:border-blue-300 focus:shadow-[0_0_0_3px_rgba(37,99,235,0.1)]"
+            className="rt-field"
           />
         </label>
 
         {!roleProfile ? (
-          <label className="flex items-start gap-3 rounded-lg border border-slate-200 bg-slate-50 px-3 py-3 text-sm text-slate-700">
+          <label className="rt-check-row flex items-start gap-3 px-3 py-3 text-sm">
             <input
               type="checkbox"
               checked={openImmediately}
               onChange={(event) => setOpenImmediately(event.target.checked)}
-              className="mt-0.5 h-4 w-4 rounded border-slate-300 text-slate-900 accent-slate-900"
+              className="mt-0.5 h-4 w-4 rounded border-slate-300 accent-blue-600"
             />
             <span>
-              <span className="block font-medium text-slate-800">Open this role after saving</span>
+              <span className="block font-medium text-[var(--rt-text)]">Open this role after saving</span>
             </span>
           </label>
         ) : null}
         {error ? (
-          <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+          <div className="rt-alert-danger rounded-lg px-3 py-2 text-sm">
             {error}
           </div>
         ) : null}
 
-        <div className="mt-auto flex gap-2 border-t border-slate-200 pt-5">
+        <div className="mt-auto flex gap-2 border-t border-[var(--rt-border)] pt-5">
           <button
             type="submit"
             disabled={saving}
-            className="h-10 flex-1 rounded-lg bg-slate-900 px-4 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-400"
+            className="rt-button rt-button-primary flex-1"
           >
             {saving ? 'Saving...' : 'Save Role'}
           </button>
           <button
             type="button"
             onClick={onClose}
-            className="h-10 rounded-lg border border-slate-200 px-4 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+            className="rt-button rt-button-secondary"
           >
             Cancel
           </button>

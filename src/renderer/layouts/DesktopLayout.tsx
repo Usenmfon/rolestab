@@ -1,7 +1,9 @@
 import { Sidebar } from '../components/Sidebar'
 import { TabBar } from '../components/TabBar'
 import { TopBar } from '../components/TopBar'
+import { ToastViewport, type ToastMessage } from '../components/ToastViewport'
 import { WebviewArea } from '../components/WebviewArea'
+import { CommandPalette } from '../components/CommandPalette'
 import { ConfirmationDialog, type ConfirmationRequest } from '../components/ConfirmationDialog'
 import { FirstRunGuide, type FirstRunGuideStep } from '../components/FirstRunGuide'
 import { ProjectFormPanel, type ProjectDraft } from '../components/ProjectFormPanel'
@@ -36,7 +38,9 @@ type DesktopLayoutProps = {
   }>
   sidebarOpen: boolean
   workspaceError: string | null
+  toasts: ToastMessage[]
   onClearWorkspaceError: () => void
+  onDismissToast: (toastId: string) => void
   onToggleSidebar: () => void
   editingProject: ProjectSummary | null
   editingRoleProfile: RoleProfile | null
@@ -44,6 +48,7 @@ type DesktopLayoutProps = {
   roleProfileFormOpen: boolean
   settingsPanelOpen: boolean
   firstRunGuideOpen: boolean
+  commandPaletteOpen: boolean
   firstRunGuideStep: FirstRunGuideStep
   confirmationRequest: ConfirmationRequest | null
   onCreateProject: () => void
@@ -66,6 +71,8 @@ type DesktopLayoutProps = {
   onImportProjectConfig: () => void
   onOpenSettings: () => void
   onOpenFirstRunGuide: () => void
+  onOpenCommandPalette: () => void
+  onCloseCommandPalette: () => void
   onCloseSettings: () => void
   onSaveSettings: (settings: AppSettings) => Promise<void>
   onResetSettings: () => Promise<void>
@@ -122,7 +129,9 @@ export function DesktopLayout({
   activeRoleExtensions,
   sidebarOpen,
   workspaceError,
+  toasts,
   onClearWorkspaceError,
+  onDismissToast,
   onToggleSidebar,
   editingProject,
   editingRoleProfile,
@@ -130,6 +139,7 @@ export function DesktopLayout({
   roleProfileFormOpen,
   settingsPanelOpen,
   firstRunGuideOpen,
+  commandPaletteOpen,
   firstRunGuideStep,
   confirmationRequest,
   onCreateProject,
@@ -152,6 +162,8 @@ export function DesktopLayout({
   onImportProjectConfig,
   onOpenSettings,
   onOpenFirstRunGuide,
+  onOpenCommandPalette,
+  onCloseCommandPalette,
   onCloseSettings,
   onSaveSettings,
   onResetSettings,
@@ -194,7 +206,7 @@ export function DesktopLayout({
   }
 
   return (
-    <main className="relative flex h-screen overflow-hidden bg-[#eef2f7] text-slate-900">
+    <main className="rt-app-shell relative flex h-screen overflow-hidden">
       {sidebarOpen ? (
         <Sidebar
           projects={projects}
@@ -226,14 +238,14 @@ export function DesktopLayout({
         />
       ) : null}
 
-      <section className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden bg-white">
+      <section className="rt-surface flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
         {workspaceError ? (
-          <div className="flex items-center justify-between gap-3 border-b border-red-200 bg-red-50 px-4 py-2 text-sm text-red-700">
+          <div className="rt-alert-danger flex items-center justify-between gap-3 border-b px-4 py-2 text-sm">
             <span>{workspaceError}</span>
             <button
               type="button"
               onClick={onClearWorkspaceError}
-              className="rounded border border-red-200 bg-white px-2 py-1 text-xs font-semibold text-red-700 hover:bg-red-100"
+              className="rt-button rt-button-secondary rt-button-small"
             >
               Dismiss
             </button>
@@ -278,6 +290,7 @@ export function DesktopLayout({
           onOpenDevTools={onOpenDevTools}
           onInspectElement={onInspectElement}
           onToggleSidebar={onToggleSidebar}
+          onOpenCommandPalette={onOpenCommandPalette}
           activeRoleExtensions={activeRoleExtensions}
           urlInputRef={urlInputRef}
         />
@@ -290,6 +303,7 @@ export function DesktopLayout({
           roleProfiles={activeProjectRoleProfiles}
           command={browserCommand}
           onCreateProject={onCreateProject}
+          onOpenCommandPalette={onOpenCommandPalette}
           onCreateRoleProfile={onCreateRoleProfile}
           onOpenRoleProfile={onOpenRoleProfile}
           onSelectTab={onSelectTab}
@@ -342,6 +356,38 @@ export function DesktopLayout({
         />
       ) : null}
 
+
+      <CommandPalette
+        open={commandPaletteOpen}
+        projects={projects}
+        activeProject={activeProject}
+        roleProfiles={activeProjectRoleProfiles}
+        recentUrls={recentUrls}
+        tabs={tabs}
+        activeTab={activeTab}
+        splitViewEnabled={Boolean(splitTab)}
+        canSplitView={Boolean(activeTab) && tabs.length > 1}
+        sidebarOpen={sidebarOpen}
+        onClose={onCloseCommandPalette}
+        onCreateProject={onCreateProject}
+        onCreateRoleProfile={onCreateRoleProfile}
+        onCreateCommonRoles={onCreateCommonRoles}
+        onOpenAllRoles={onOpenAllRoles}
+        onSelectProject={onSelectProject}
+        onOpenRoleProfile={onOpenRoleProfile}
+        onOpenRecentUrl={onOpenRecentUrl}
+        onSelectTab={onSelectTab}
+        onDuplicateTab={onDuplicateTab}
+        onToggleSplitView={onToggleSplitView}
+        onResetSession={onResetSession}
+        onOpenSettings={onOpenSettings}
+        onOpenFirstRunGuide={onOpenFirstRunGuide}
+        onToggleSidebar={onToggleSidebar}
+        onCopyUrl={onCopyUrl}
+        onOpenExternal={onOpenExternal}
+        onClearProjectSessions={onClearProjectSessions}
+        onClearAllSessions={onClearAllSessions}
+      />
       {firstRunGuideOpen ? (
         <FirstRunGuide
           step={firstRunGuideStep}
@@ -351,6 +397,8 @@ export function DesktopLayout({
           onOpenPrivacyPolicy={openPrivacyPolicy}
         />
       ) : null}
+
+      <ToastViewport toasts={toasts} onDismiss={onDismissToast} />
 
       {confirmationRequest ? (
         <ConfirmationDialog

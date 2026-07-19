@@ -193,7 +193,7 @@ export function FirstRunGuide({
       <section
         role="dialog"
         aria-labelledby="first-run-guide-title"
-        className="pointer-events-auto fixed w-[22rem] max-w-[calc(100vw-2rem)] rounded-lg border border-slate-200 bg-white p-4 shadow-2xl transition-all duration-300"
+        className="rt-surface pointer-events-auto fixed w-[22rem] max-w-[calc(100vw-2rem)] rounded-lg border p-4 shadow-2xl transition-all duration-300"
         style={popoverStyle}
       >
         <div className="flex items-start justify-between gap-4">
@@ -201,15 +201,15 @@ export function FirstRunGuide({
             <p className="text-xs font-semibold uppercase tracking-wide text-blue-600">
               Step {stepIndex + 1} of {steps.length}
             </p>
-            <h2 id="first-run-guide-title" className="mt-1 text-lg font-semibold text-slate-950">
+            <h2 id="first-run-guide-title" className="rt-heading mt-1 text-lg">
               {currentStep.title}
             </h2>
-            <p className="mt-2 text-sm leading-6 text-slate-600">{currentStep.description}</p>
+            <p className="mt-2 text-sm leading-6 text-[var(--rt-text-muted)]">{currentStep.description}</p>
           </div>
           <button
             type="button"
             onClick={dismiss}
-            className="grid h-9 w-9 shrink-0 place-items-center rounded-lg border border-slate-200 text-slate-500 hover:bg-slate-50 hover:text-slate-900"
+            className="rt-icon-button h-9 w-9 shrink-0 border border-[var(--rt-border)]"
             aria-label={isAnalyticsStep ? 'Do not share analytics' : 'Dismiss guide'}
             title={isAnalyticsStep ? 'Not now' : 'Dismiss'}
           >
@@ -218,12 +218,12 @@ export function FirstRunGuide({
         </div>
 
         {isAnalyticsStep ? (
-          <div className="mt-4 space-y-3 rounded-lg border border-slate-200 bg-slate-50 p-3">
-            <p className="text-xs leading-5 text-slate-600">
+          <div className="rt-check-row mt-4 space-y-3 p-3">
+            <p className="text-xs leading-5 text-[var(--rt-text-muted)]">
               Shares a random installation ID, app and session activity, platform details, feature
               usage, and fixed error codes.
             </p>
-            <p className="text-xs leading-5 text-slate-600">
+            <p className="text-xs leading-5 text-[var(--rt-text-muted)]">
               Never includes browsing destinations, page content, role details, extension details,
               or error messages. You can change this choice in Settings at any time.
             </p>
@@ -236,11 +236,11 @@ export function FirstRunGuide({
             </button>
           </div>
         ) : (
-          <div className="mt-4 flex items-center gap-3 rounded-lg bg-slate-50 p-3">
+          <div className="rt-check-row mt-4 flex items-center gap-3 p-3">
             <div className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-blue-50 text-blue-700">
               <Icon aria-hidden="true" size={17} />
             </div>
-            <p className="text-xs leading-5 text-slate-500">
+            <p className="text-xs leading-5 text-[var(--rt-text-muted)]">
               {targetRect
                 ? 'Use the highlighted control, or choose the action below to continue.'
                 : 'Choose the action below to continue. The guide will move to the next control when it appears.'}
@@ -249,7 +249,7 @@ export function FirstRunGuide({
         )}
 
         <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
-          <div className="flex items-center gap-2 text-xs font-medium text-slate-500">
+          <div className="flex items-center gap-2 text-xs font-medium text-[var(--rt-text-muted)]">
             <CheckCircle2 aria-hidden="true" size={15} className="text-emerald-600" />
             {isAnalyticsStep
               ? 'Analytics is off until you choose to share.'
@@ -259,14 +259,14 @@ export function FirstRunGuide({
             <button
               type="button"
               onClick={isAnalyticsStep ? () => onAnalyticsChoice(false) : onDismiss}
-              className="h-10 rounded-lg border border-slate-200 px-4 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+              className="rt-button rt-button-secondary"
             >
               {isAnalyticsStep ? 'Not now' : 'Later'}
             </button>
             <button
               type="button"
               onClick={isAnalyticsStep ? () => onAnalyticsChoice(true) : onAction}
-              className="flex h-10 items-center gap-2 rounded-lg bg-blue-600 px-4 text-sm font-semibold text-white shadow-sm hover:bg-blue-700"
+              className="rt-button rt-button-primary"
             >
               <Icon aria-hidden="true" size={16} />
               {currentStep.actionLabel}

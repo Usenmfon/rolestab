@@ -1,4 +1,4 @@
-import { AlertTriangle, ChevronDown, ChevronUp, Globe2, MonitorUp, X } from 'lucide-react'
+import { AlertTriangle, ChevronDown, ChevronUp, Command, Globe2, MonitorUp, X } from 'lucide-react'
 import { useState } from 'react'
 import type { BrowserCommand } from '../../shared/browser'
 import type { BrowserTab, ProjectSummary, RoleProfile } from '../../shared/workspace'
@@ -20,6 +20,7 @@ type WebviewAreaProps = {
   roleProfiles: RoleProfile[]
   command: BrowserCommand | null
   onCreateProject: () => void
+  onOpenCommandPalette: () => void
   onCreateRoleProfile: () => void
   onOpenRoleProfile: (roleProfileId: string) => void
   onSelectTab: (tabId: string) => void
@@ -38,6 +39,7 @@ export function WebviewArea({
   roleProfiles,
   command,
   onCreateProject,
+  onOpenCommandPalette,
   onCreateRoleProfile,
   onOpenRoleProfile,
   onSelectTab,
@@ -52,22 +54,24 @@ export function WebviewArea({
 
   if (!activeProject) {
     return (
-      <div className="flex min-h-0 flex-1 items-center justify-center bg-[#f6f8fb] p-8">
-        <div className="w-full max-w-xl rounded-lg border border-slate-200 bg-white p-8 text-center shadow-sm">
-          <div className="mx-auto grid h-12 w-12 place-items-center rounded-lg bg-slate-900 text-white">
+      <div className="rt-muted-surface flex min-h-0 flex-1 items-center justify-center p-8">
+        <div className="w-full max-w-xl text-center">
+          <div className="mx-auto grid h-12 w-12 place-items-center rounded-lg bg-[var(--rt-text)] text-[var(--rt-surface)]">
             <MonitorUp aria-hidden="true" size={22} />
           </div>
-          <h2 className="mt-5 text-2xl font-semibold text-slate-950">Create a project</h2>
-          <p className="mt-3 text-sm leading-6 text-slate-600">
+          <h2 className="rt-heading mt-5 text-2xl">Create a project</h2>
+          <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-[var(--rt-text-muted)]">
             Projects group a target application URL with the role profiles you use to test it.
           </p>
-          <button
-            type="button"
-            onClick={onCreateProject}
-            className="mt-6 rounded-lg bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800"
-          >
-            New Project
-          </button>
+          <div className="mt-6 flex flex-wrap justify-center gap-2">
+            <button type="button" onClick={onCreateProject} className="rt-button rt-button-primary">
+              New Project
+            </button>
+            <button type="button" onClick={onOpenCommandPalette} className="rt-button rt-button-secondary">
+              <Command aria-hidden="true" size={16} />
+              Browse actions
+            </button>
+          </div>
         </div>
       </div>
     )
@@ -75,23 +79,25 @@ export function WebviewArea({
 
   if (!activeTab) {
     return (
-      <div className="flex min-h-0 flex-1 items-center justify-center bg-[#f6f8fb] p-8">
-        <div className="w-full max-w-xl rounded-lg border border-slate-200 bg-white p-8 text-center shadow-sm">
-          <div className="mx-auto grid h-12 w-12 place-items-center rounded-lg bg-slate-900 text-white">
+      <div className="rt-muted-surface flex min-h-0 flex-1 items-center justify-center p-8">
+        <div className="w-full max-w-xl text-center">
+          <div className="mx-auto grid h-12 w-12 place-items-center rounded-lg bg-[var(--rt-text)] text-[var(--rt-surface)]">
             <Globe2 aria-hidden="true" size={22} />
           </div>
-          <h2 className="mt-5 text-2xl font-semibold text-slate-950">Open a role tab</h2>
-          <p className="mt-3 text-sm leading-6 text-slate-600">
-            Role tabs will render isolated browser sessions for {activeProject.name}.
+          <h2 className="rt-heading mt-5 text-2xl">Open a role tab</h2>
+          <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-[var(--rt-text-muted)]">
+            Role tabs render isolated browser sessions for {activeProject.name}.
           </p>
           {roleProfiles.length === 0 ? (
-            <button
-              type="button"
-              onClick={onCreateRoleProfile}
-              className="mt-6 rounded-lg bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800"
-            >
-              New Role Profile
-            </button>
+            <div className="mt-6 flex flex-wrap justify-center gap-2">
+              <button type="button" onClick={onCreateRoleProfile} className="rt-button rt-button-primary">
+                New Role Profile
+              </button>
+              <button type="button" onClick={onOpenCommandPalette} className="rt-button rt-button-secondary">
+                <Command aria-hidden="true" size={16} />
+                Browse actions
+              </button>
+            </div>
           ) : (
             <div className="mt-6 flex flex-wrap justify-center gap-2">
               {roleProfiles.map((roleProfile) => (
@@ -99,7 +105,7 @@ export function WebviewArea({
                   key={roleProfile.id}
                   type="button"
                   onClick={() => onOpenRoleProfile(roleProfile.id)}
-                  className="flex h-10 items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+                  className="rt-button rt-button-secondary h-10"
                 >
                   <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: roleProfile.color }} />
                   {roleProfile.name}
@@ -114,6 +120,7 @@ export function WebviewArea({
 
   const primaryTab = activeTab
   const splitView = Boolean(splitTab && splitTab.id !== primaryTab.id)
+  const statusLabel = activeTab.loading ? 'Loading' : activeTab.loadError ? 'Load failed' : 'Ready'
 
   function getWebviewPane(tab: BrowserTab): 'full' | 'left' | 'right' | 'hidden' {
     if (!splitView) {
@@ -132,58 +139,54 @@ export function WebviewArea({
   }
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col bg-white">
-      <div className="flex h-9 shrink-0 items-center gap-3 border-b border-slate-200 bg-[#fbfcfe] px-4 text-xs text-slate-500">
-        <span className="flex min-w-0 flex-1 items-center gap-2">
-          <span className={`shrink-0 rounded-md px-2 py-0.5 text-[11px] font-semibold ${environment.className}`}>
-            {environment.label}
+    <div className="rt-surface flex min-h-0 flex-1 flex-col">
+      <div className="flex h-10 shrink-0 items-center gap-3 border-b border-[var(--rt-border)] bg-[var(--rt-surface-raised)] px-4 text-xs">
+        <span className={`shrink-0 rounded-md px-2 py-0.5 text-[11px] font-semibold ${environment.className}`}>
+          {environment.label}
+        </span>
+        <span className="flex min-w-0 flex-1 items-center gap-2 text-[var(--rt-text-muted)]">
+          <span className="truncate font-semibold text-[var(--rt-text)]">
+            {splitView && splitTab ? `${activeTab.roleName} + ${splitTab.roleName}` : activeTab.roleName}
           </span>
-          <span className="truncate">
-            {splitView && splitTab
-              ? `${activeTab.roleName} + ${splitTab.roleName} sessions`
-              : `${activeTab.roleName} session`}
-          </span>
+          <span className="hidden text-[var(--rt-text-soft)] lg:inline">session</span>
           {sessionPanelOpen ? (
-            <span className="min-w-0 truncate font-mono text-[11px] text-slate-400">
+            <span className="min-w-0 truncate font-mono text-[11px] text-[var(--rt-text-soft)]">
               {activeTab.sessionPartition}
             </span>
           ) : null}
         </span>
-        <span className="flex shrink-0 items-center whitespace-nowrap">
-          {tabs.length} active role tabs
-          <span className="mx-2 text-slate-300">/</span>
-          {activeTab.loading ? 'Loading' : activeTab.loadError ? 'Load failed' : 'Ready'}
+        <span className="flex shrink-0 items-center gap-2 whitespace-nowrap text-[var(--rt-text-muted)]">
+          <span>{tabs.length} role tabs</span>
+          <span className={`rounded-md px-2 py-0.5 text-[11px] font-semibold ${activeTab.loadError ? 'bg-red-100 text-red-700' : activeTab.loading ? 'bg-blue-50 text-blue-700' : 'bg-emerald-100 text-emerald-700'}`}>
+            {statusLabel}
+          </span>
           <button
             type="button"
             title={sessionPanelOpen ? 'Hide session toolbar' : 'Show session toolbar'}
             aria-label={sessionPanelOpen ? 'Hide session toolbar' : 'Show session toolbar'}
             onClick={() => setSessionPanelOpen((currentSessionPanelOpen) => !currentSessionPanelOpen)}
-            className="ml-3 inline-grid h-6 w-6 place-items-center rounded-md text-slate-500 hover:bg-slate-100 hover:text-slate-800"
+            className="rt-icon-button h-7 w-7"
           >
-            {sessionPanelOpen ? (
-              <ChevronUp aria-hidden="true" size={15} />
-            ) : (
-              <ChevronDown aria-hidden="true" size={15} />
-            )}
+            {sessionPanelOpen ? <ChevronUp aria-hidden="true" size={15} /> : <ChevronDown aria-hidden="true" size={15} />}
           </button>
         </span>
       </div>
       {sessionPanelOpen ? (
-        <div className="flex h-10 shrink-0 items-center gap-2 border-b border-slate-200 bg-[#f7f9fc] px-4">
-          <span className="text-xs font-semibold uppercase tracking-wide text-slate-500">Shortcuts</span>
+        <div className="flex h-10 shrink-0 items-center gap-2 overflow-x-auto border-b border-[var(--rt-border)] bg-[var(--rt-surface)] px-4">
+          <span className="rt-eyebrow shrink-0 text-[10px]">Shortcuts</span>
           {localhostShortcuts.map((shortcut) => (
             <button
               key={shortcut}
               type="button"
               onClick={() => onNavigate(shortcut)}
-              className="rounded-lg border border-slate-200 bg-white px-3 py-1 text-xs font-medium text-slate-700 hover:bg-slate-100"
+              className="rt-button rt-button-secondary rt-button-small shrink-0"
             >
               {shortcut.replace('http://', '')}
             </button>
           ))}
         </div>
       ) : null}
-      <div className="roles-tab-webview-frame relative z-0 min-h-0 flex-1 overflow-hidden bg-white">
+      <div className="roles-tab-webview-frame relative z-0 min-h-0 flex-1 overflow-hidden bg-[var(--rt-surface)]">
         {splitView && splitTab ? (
           <>
             <SplitPaneHeader tab={activeTab} label="Primary" side="left" active onSelectTab={onSelectTab} />
@@ -209,29 +212,21 @@ export function WebviewArea({
         ))}
 
         {activeTab.loadError ? (
-          <div className="absolute inset-x-4 bottom-4 z-10 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 shadow-sm">
+          <div className="rt-alert-danger absolute inset-x-4 bottom-4 z-10 rounded-lg px-4 py-3 text-sm shadow-[var(--rt-shadow-sm)]">
             <div className="flex items-start justify-between gap-3">
               <span className="min-w-0">
                 <span className="block font-semibold">{activeTab.loadError}</span>
                 {activeTab.loadErrorDetails ? (
-                  <span className="mt-1 block truncate font-mono text-[11px] text-red-600">
+                  <span className="mt-1 block truncate font-mono text-[11px]">
                     {activeTab.loadErrorDetails}
                   </span>
                 ) : null}
               </span>
               <div className="flex shrink-0 gap-2">
-                <button
-                  type="button"
-                  onClick={onRetryActiveTab}
-                  className="rounded-md border border-red-200 bg-white px-3 py-1 text-xs font-semibold text-red-700 hover:bg-red-100"
-                >
+                <button type="button" onClick={onRetryActiveTab} className="rt-button rt-button-secondary rt-button-small">
                   Retry
                 </button>
-                <button
-                  type="button"
-                  onClick={onCloseActiveTab}
-                  className="rounded-md border border-red-200 bg-white px-3 py-1 text-xs font-semibold text-red-700 hover:bg-red-100"
-                >
+                <button type="button" onClick={onCloseActiveTab} className="rt-button rt-button-secondary rt-button-small">
                   Close
                 </button>
               </div>
@@ -240,7 +235,7 @@ export function WebviewArea({
         ) : null}
 
         {activeTab.consoleErrors && activeTab.consoleErrors.length > 0 ? (
-          <div className="absolute bottom-4 right-4 z-10 max-w-xl rounded-lg border border-amber-200 bg-amber-50 text-xs text-amber-900 shadow-sm">
+          <div className="absolute bottom-4 right-4 z-10 max-w-xl rounded-lg border border-amber-200 bg-amber-50 text-xs text-amber-900 shadow-[var(--rt-shadow-sm)]">
             <div className="flex items-center gap-2 px-3 py-2">
               <AlertTriangle aria-hidden="true" className="shrink-0 text-amber-600" size={15} />
               <button
@@ -301,13 +296,13 @@ function SplitPaneHeader({ tab, label, side, active, onSelectTab }: SplitPaneHea
       <button
         type="button"
         onClick={() => onSelectTab(tab.id)}
-        className="min-w-0 flex-1 truncate text-left text-xs font-semibold text-slate-700 hover:text-slate-950"
+        className="min-w-0 flex-1 truncate text-left text-xs font-semibold text-[var(--rt-text-muted)] hover:text-[var(--rt-text)]"
       >
         {tab.title}
       </button>
       <span
         className={`shrink-0 rounded-md px-2 py-0.5 text-[11px] font-semibold ${
-          active ? 'bg-blue-100 text-blue-700' : 'bg-slate-100 text-slate-500'
+          active ? 'bg-blue-100 text-blue-700' : 'bg-[var(--rt-surface-muted)] text-[var(--rt-text-muted)]'
         }`}
       >
         {label}

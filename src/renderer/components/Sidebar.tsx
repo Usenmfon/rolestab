@@ -63,90 +63,92 @@ export function Sidebar({
   onOpenFirstRunGuide,
 }: SidebarProps) {
   return (
-    <aside className="flex w-[18.5rem] shrink-0 flex-col border-r border-[#d8dee8] bg-[#f7f9fc]">
-      <div className="mac-titlebar-safe flex h-14 items-center gap-3 border-b border-[#d8dee8] px-4">
-        <div className="grid h-9 w-9 place-items-center overflow-hidden rounded-lg bg-white shadow-sm ring-1 ring-slate-200">
+    <aside className="rt-surface-raised flex w-[19.5rem] shrink-0 flex-col border-r">
+      <div className="mac-titlebar-safe flex h-16 items-center gap-3 border-b border-[var(--rt-border)] px-4">
+        <div className="grid h-9 w-9 place-items-center overflow-hidden rounded-lg bg-[var(--rt-surface)] shadow-[var(--rt-shadow-sm)] ring-1 ring-[var(--rt-border)]">
           <img src={logoUrl} alt="" className="h-8 w-8" />
         </div>
-        <div>
-          <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
-            Desktop Browser
-          </p>
-          <h1 className="text-lg font-semibold leading-tight text-slate-950">RolesTab</h1>
+        <div className="min-w-0 flex-1">
+          <p className="rt-eyebrow text-[10px]">Desktop Browser</p>
+          <h1 className="rt-heading truncate text-lg leading-tight">RolesTab</h1>
         </div>
+        <span className="rounded-md border border-[var(--rt-border)] bg-[var(--rt-surface)] px-2 py-1 text-[11px] font-semibold text-[var(--rt-text-muted)]">
+          {projects.length} {projects.length === 1 ? 'project' : 'projects'}
+        </span>
       </div>
 
-      <div className="shrink-0 border-b border-slate-200 p-4">
+      <div className="shrink-0 border-b border-[var(--rt-border)] p-4">
         <button
           type="button"
           onClick={onCreateProject}
           data-tour-id="new-project"
-          className="flex h-10 w-full items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700"
+          className="rt-button rt-button-primary w-full"
         >
           <FolderPlus aria-hidden="true" size={17} />
           New Project
         </button>
 
-        <section className="mt-4">
-          <h2 className="px-1 text-xs font-semibold uppercase tracking-wide text-slate-500">
-            Projects
-          </h2>
+        <section className="mt-5">
+          <div className="flex items-center justify-between px-1">
+            <h2 className="rt-eyebrow">Projects</h2>
+            {activeProjectId ? (
+              <span className="text-[11px] font-medium text-[var(--rt-text-soft)]">
+                {activeProjectRoleProfiles.length} roles
+              </span>
+            ) : null}
+          </div>
 
           {projects.length === 0 ? (
-            <div className="mt-3 rounded-lg border border-dashed border-slate-300 bg-white/70 p-4 text-sm leading-6 text-slate-500">
-              No project selected. Create a project to start opening isolated role tabs.
+            <div className="mt-3 rounded-lg border border-dashed border-[var(--rt-border)] bg-[var(--rt-surface)] p-4 text-sm leading-6 text-[var(--rt-text-muted)]">
+              Create a project to start opening isolated role tabs.
             </div>
           ) : (
-            <div className="mt-3 space-y-2">
+            <div className="mt-3 space-y-1.5">
               {projects.map((project) => {
                 const active = project.id === activeProjectId
 
                 return (
                   <div
                     key={project.id}
-                    className={`w-full rounded-lg border px-3.5 py-3 text-left shadow-sm transition ${
+                    className={`group rounded-lg border px-3 py-2.5 transition ${
                       active
-                        ? 'border-blue-200 bg-blue-50 text-slate-950 shadow-blue-100/60'
-                        : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50'
+                        ? 'border-blue-300 bg-blue-50 text-slate-950 shadow-[var(--rt-shadow-sm)]'
+                        : 'border-transparent text-[var(--rt-text-muted)] hover:border-[var(--rt-border)] hover:bg-[var(--rt-surface)]'
                     }`}
                   >
-                    <button
-                      type="button"
-                      onClick={() => onSelectProject(project.id)}
-                      className="block w-full text-left"
-                    >
-                      <span className="block text-sm font-semibold">{project.name}</span>
-                      <span className={`mt-1 block truncate text-xs ${active ? 'text-blue-700' : 'text-slate-500'}`}>
-                        {project.baseUrl}
-                      </span>
-                    </button>
-                    <div className="mt-3 flex gap-2">
+                    <div className="flex items-start gap-2">
                       <button
                         type="button"
-                        title="Edit Project"
-                        aria-label={`Edit ${project.name}`}
-                        onClick={() => onEditProject(project.id)}
-                        className={`grid h-7 w-7 place-items-center rounded-md border ${
-                          active
-                            ? 'border-blue-200 bg-white text-blue-700 hover:bg-blue-100'
-                            : 'border-slate-200 text-slate-500 hover:bg-slate-100'
-                        }`}
+                        onClick={() => onSelectProject(project.id)}
+                        className="min-w-0 flex-1 text-left"
                       >
-                        <Pencil aria-hidden="true" size={14} />
+                        <span className="block truncate text-sm font-semibold text-[var(--rt-text)]">
+                          {project.name}
+                        </span>
+                        <span className={`mt-0.5 block truncate text-xs ${active ? 'text-blue-700' : 'text-[var(--rt-text-muted)]'}`}>
+                          {project.baseUrl}
+                        </span>
                       </button>
-                      <button
-                        type="button"
-                        title="Delete Project"
-                        aria-label={`Delete ${project.name}`}
-                        onClick={() => onDeleteProject(project.id)}
-                        className={`grid h-7 w-7 place-items-center rounded-md border ${
-                          active
-                            ? 'border-blue-200 bg-white text-blue-700 hover:bg-blue-100'
-                            : 'border-slate-200 text-slate-500 hover:bg-slate-100'
-                        }`}
-                      >
-                        <Trash2 aria-hidden="true" size={14} />
-                      </button>
+                      <div className="flex shrink-0 gap-1 opacity-0 transition group-hover:opacity-100 group-focus-within:opacity-100">
+                        <button
+                          type="button"
+                          title="Edit Project"
+                          aria-label={`Edit ${project.name}`}
+                          onClick={() => onEditProject(project.id)}
+                          className="rt-icon-button h-7 w-7"
+                        >
+                          <Pencil aria-hidden="true" size={14} />
+                        </button>
+                        <button
+                          type="button"
+                          title="Delete Project"
+                          aria-label={`Delete ${project.name}`}
+                          onClick={() => onDeleteProject(project.id)}
+                          className="rt-icon-button h-7 w-7"
+                        >
+                          <Trash2 aria-hidden="true" size={14} />
+                        </button>
+                      </div>
                     </div>
                   </div>
                 )
@@ -156,7 +158,7 @@ export function Sidebar({
         </section>
       </div>
 
-      <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto p-4">
+      <div className="flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto px-4 py-5">
         <RoleProfileList
           roleProfiles={activeProjectRoleProfiles}
           hasActiveProject={Boolean(activeProjectId)}
@@ -180,13 +182,13 @@ export function Sidebar({
         />
       </div>
 
-      <div className="shrink-0 space-y-2 border-t border-[#d8dee8] bg-white/90 p-4 shadow-[0_-8px_20px_rgba(148,163,184,0.12)]">
+      <div className="shrink-0 space-y-2 border-t border-[var(--rt-border)] bg-[var(--rt-surface)]/90 p-4 shadow-[0_-8px_20px_rgba(15,23,42,0.08)]">
         <div className="grid grid-cols-2 gap-2">
           <button
             type="button"
             onClick={onExportProjectConfig}
             disabled={!activeProjectId}
-            className="flex h-9 items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+            className="rt-button rt-button-secondary rt-button-small"
           >
             <Download aria-hidden="true" size={15} />
             Export
@@ -194,7 +196,7 @@ export function Sidebar({
           <button
             type="button"
             onClick={onImportProjectConfig}
-            className="flex h-9 items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-700 hover:bg-slate-50"
+            className="rt-button rt-button-secondary rt-button-small"
           >
             <Upload aria-hidden="true" size={15} />
             Import
@@ -204,7 +206,7 @@ export function Sidebar({
           <button
             type="button"
             onClick={onOpenFirstRunGuide}
-            className="flex h-9 items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-700 hover:bg-slate-50"
+            className="rt-button rt-button-secondary rt-button-small"
           >
             <Map aria-hidden="true" size={15} />
             Tour
@@ -212,15 +214,15 @@ export function Sidebar({
           <button
             type="button"
             onClick={onOpenSettings}
-            className="flex h-9 min-w-0 items-center justify-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2 text-xs font-semibold leading-none text-slate-700 hover:bg-slate-50"
+            className="rt-button rt-button-secondary rt-button-small min-w-0"
             aria-label={updateReady ? 'Settings, update ready' : 'Settings'}
           >
             <Settings aria-hidden="true" size={15} className="shrink-0" />
-            <span className="min-w-0 whitespace-nowrap">{updateReady ? 'Update ready' : 'Settings'}</span>
+            <span className="min-w-0 truncate">{updateReady ? 'Update ready' : 'Settings'}</span>
             {updateReady ? (
               <span
                 aria-hidden="true"
-                className="h-2 w-2 shrink-0 rounded-full bg-red-500 ring-2 ring-white"
+                className="h-2 w-2 shrink-0 rounded-full bg-red-500 ring-2 ring-[var(--rt-surface)]"
               />
             ) : null}
           </button>
