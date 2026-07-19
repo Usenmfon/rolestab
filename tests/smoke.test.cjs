@@ -324,17 +324,21 @@ test('role creation can optionally open the new role immediately', () => {
   assert.match(topBarSource, /label="Add Role"/)
   assert.doesNotMatch(topBarSource, /New Role Tab/)
 })
-test('right-side panel close controls clear the titlebar overlay', () => {
+test('right-side panels clear the titlebar overlay', () => {
   const projectFormSource = readProjectFile('src/renderer/components/ProjectFormPanel.tsx')
   const roleFormSource = readProjectFile('src/renderer/components/RoleProfileFormPanel.tsx')
   const settingsSource = readProjectFile('src/renderer/components/SettingsPanel.tsx')
+  const layoutSource = readProjectFile('src/renderer/layouts/DesktopLayout.tsx')
 
   assert.match(projectFormSource, /h-24 items-start justify-between/)
   assert.match(projectFormSource, /pt-10/)
   assert.match(roleFormSource, /h-24 items-start justify-between/)
   assert.match(roleFormSource, /pt-10/)
-  assert.match(settingsSource, /h-24 items-start justify-between/)
+  assert.match(settingsSource, /h-24 items-start/)
   assert.match(settingsSource, /pt-10/)
+  assert.doesNotMatch(settingsSource, /Close settings/)
+  assert.match(layoutSource, /aria-label=.Close settings./)
+  assert.match(layoutSource, /right-\[30rem\]/)
 })
 
 test('session toolbar can be collapsed from the webview area', () => {

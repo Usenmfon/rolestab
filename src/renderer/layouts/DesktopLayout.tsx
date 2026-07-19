@@ -194,7 +194,7 @@ export function DesktopLayout({
   }
 
   return (
-    <main className="flex h-screen overflow-hidden bg-[#eef2f7] text-slate-900">
+    <main className="relative flex h-screen overflow-hidden bg-[#eef2f7] text-slate-900">
       {sidebarOpen ? (
         <Sidebar
           projects={projects}
@@ -317,6 +317,15 @@ export function DesktopLayout({
           presetColors={settings.defaultRoleColors}
           onClose={onCloseRoleProfileForm}
           onSubmit={onSaveRoleProfile}
+        />
+      ) : null}
+
+      {settingsPanelOpen ? (
+        <button
+          type="button"
+          aria-label="Close settings"
+          onClick={onCloseSettings}
+          className="app-no-drag absolute inset-y-0 left-0 right-[30rem] z-10 cursor-default bg-transparent"
         />
       ) : null}
 

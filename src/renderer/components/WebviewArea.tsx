@@ -133,9 +133,9 @@ export function WebviewArea({
 
   return (
     <div className="flex min-h-0 flex-1 flex-col bg-white">
-      <div className="flex h-9 shrink-0 items-center justify-between border-b border-slate-200 bg-[#fbfcfe] px-4 text-xs text-slate-500">
-        <span className="flex min-w-0 items-center gap-2">
-          <span className={`rounded-md px-2 py-0.5 text-[11px] font-semibold ${environment.className}`}>
+      <div className="flex h-9 shrink-0 items-center gap-3 border-b border-slate-200 bg-[#fbfcfe] px-4 text-xs text-slate-500">
+        <span className="flex min-w-0 flex-1 items-center gap-2">
+          <span className={`shrink-0 rounded-md px-2 py-0.5 text-[11px] font-semibold ${environment.className}`}>
             {environment.label}
           </span>
           <span className="truncate">
@@ -144,10 +144,12 @@ export function WebviewArea({
               : `${activeTab.roleName} session`}
           </span>
           {sessionPanelOpen ? (
-            <span className="ml-2 font-mono text-[11px] text-slate-400">{activeTab.sessionPartition}</span>
+            <span className="min-w-0 truncate font-mono text-[11px] text-slate-400">
+              {activeTab.sessionPartition}
+            </span>
           ) : null}
         </span>
-        <span>
+        <span className="flex shrink-0 items-center whitespace-nowrap">
           {tabs.length} active role tabs
           <span className="mx-2 text-slate-300">/</span>
           {activeTab.loading ? 'Loading' : activeTab.loadError ? 'Load failed' : 'Ready'}

@@ -1,5 +1,5 @@
-import { useEffect, useState, type FormEvent } from 'react'
-import { Check, Copy, Download, ExternalLink, RefreshCw, RotateCcw, X } from 'lucide-react'
+import { useEffect, useRef, useState, type FormEvent } from 'react'
+import { Check, Copy, Download, ExternalLink, RefreshCw, RotateCcw } from 'lucide-react'
 import type { AppSettings, ProjectSummary } from '../../shared/workspace'
 import type { RoleProfile } from '../../shared/workspace'
 import type { UpdateStatus } from '../../shared/update'
@@ -70,6 +70,7 @@ export function SettingsPanel({
   const [appVersion, setAppVersion] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
   const [updateStatus, setUpdateStatus] = useState<UpdateStatus>({ state: 'idle' })
+  const panelRef = useRef<HTMLElement | null>(null)
 
   const engineVersions = window.rolesTab?.app.versions
   const platform = window.rolesTab?.app.platform ?? 'unknown'
@@ -112,6 +113,21 @@ export function SettingsPanel({
     return () => window.clearTimeout(timer)
   }, [copied])
 
+  useEffect(() => {
+    function handlePointerDown(event: PointerEvent) {
+      const panel = panelRef.current
+
+      if (panel && event.target instanceof Node && !panel.contains(event.target)) {
+        onClose()
+      }
+    }
+
+    document.addEventListener('pointerdown', handlePointerDown, true)
+
+    return () => {
+      document.removeEventListener('pointerdown', handlePointerDown, true)
+    }
+  }, [onClose])
   async function handleCopyDiagnostics() {
     const diagnostics = [
       `RolesTab ${appVersion ?? 'unknown'}`,
@@ -195,21 +211,12 @@ export function SettingsPanel({
   }
 
   return (
-    <aside className="app-no-drag relative z-20 flex w-[30rem] shrink-0 flex-col border-l border-slate-200 bg-white shadow-[-12px_0_28px_rgba(15,23,42,0.08)]">
-      <div className="flex h-24 items-start justify-between border-b border-slate-200 px-5 pt-10">
+    <aside ref={panelRef} className="app-no-drag relative z-20 flex w-[30rem] shrink-0 flex-col border-l border-slate-200 bg-white shadow-[-12px_0_28px_rgba(15,23,42,0.08)]">
+      <div className="flex h-24 items-start border-b border-slate-200 px-5 pt-10">
         <div>
           <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Workspace</p>
           <h2 className="text-lg font-semibold text-slate-950">Settings</h2>
         </div>
-        <button
-          type="button"
-          aria-label="Close settings"
-          title="Close"
-          onClick={onClose}
-          className="grid h-9 w-9 place-items-center rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50"
-        >
-          <X aria-hidden="true" size={17} />
-        </button>
       </div>
 
       <form onSubmit={handleSubmit} className="min-h-0 flex-1 overflow-y-auto p-5">
