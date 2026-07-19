@@ -23,6 +23,8 @@ type PageTitleEvent = Event & {
 
 type NavigationEvent = Event & {
   url?: string
+  isMainFrame?: boolean
+  isSameDocument?: boolean
 }
 
 type WindowOpenEvent = Event & {
@@ -81,6 +83,7 @@ export function BrowserWebview({
   const [browserUserAgent] = useState(getBrowserUserAgent)
   const [domReady, setDomReady] = useState(false)
   const lastCommandIdRef = useRef<number | null>(null)
+  const lastEmittedStateRef = useRef<Partial<BrowserTab>>({})
   const lastInspectPointRef = useRef<{ x: number; y: number } | null>(null)
 
   useEffect(() => {
@@ -92,6 +95,20 @@ export function BrowserWebview({
 
     const webviewElement = webview
 
+    function emitUpdate(updates: Partial<BrowserTab>) {
+      const lastState = lastEmittedStateRef.current
+      const changedUpdates = Object.fromEntries(
+        Object.entries(updates).filter(([key, value]) => lastState[key as keyof BrowserTab] !== value),
+      ) as Partial<BrowserTab>
+
+      if (Object.keys(changedUpdates).length === 0) {
+        return
+      }
+
+      lastEmittedStateRef.current = { ...lastState, ...changedUpdates }
+      onUpdate(tab.id, changedUpdates)
+    }
+
     function updateFromWebview() {
       if (!domReady) {
         return
@@ -100,7 +117,7 @@ export function BrowserWebview({
       const title = webviewElement.getTitle?.()
       const url = webviewElement.getURL?.()
 
-      onUpdate(tab.id, {
+      emitUpdate({
         ...(title ? { title } : {}),
         ...(url ? { url } : {}),
         canGoBack: webviewElement.canGoBack?.() ?? false,
@@ -108,8 +125,14 @@ export function BrowserWebview({
       })
     }
 
-    function handleStartLoading() {
-      onUpdate(tab.id, {
+    function handleStartNavigation(event: Event) {
+      const navigationEvent = event as NavigationEvent
+
+      if (navigationEvent.isMainFrame === false || navigationEvent.isSameDocument) {
+        return
+      }
+
+      emitUpdate({
         loading: true,
         loadError: undefined,
         loadErrorDetails: undefined,
@@ -122,7 +145,7 @@ export function BrowserWebview({
     }
 
     function handleStopLoading() {
-      onUpdate(tab.id, { loading: false })
+      emitUpdate({ loading: false })
       updateFromWebview()
     }
 
@@ -130,7 +153,7 @@ export function BrowserWebview({
       const title = (event as PageTitleEvent).title
 
       if (title) {
-        onUpdate(tab.id, { title })
+        emitUpdate({ title })
       }
     }
 
@@ -138,7 +161,7 @@ export function BrowserWebview({
       const url = (event as NavigationEvent).url ?? webviewElement.getURL?.()
 
       if (url) {
-        onUpdate(tab.id, {
+        emitUpdate({
           url,
           loadError: undefined,
           loadErrorDetails: undefined,
@@ -155,7 +178,7 @@ export function BrowserWebview({
       }
 
       event.preventDefault()
-      onUpdate(tab.id, {
+      emitUpdate({
         loading: false,
         loadError: 'Blocked unsafe navigation. Only http and https URLs are allowed.',
         loadErrorDetails: url,
@@ -167,7 +190,7 @@ export function BrowserWebview({
 
       event.preventDefault()
 
-      onUpdate(tab.id, {
+      emitUpdate({
         loadError: windowEvent.url ? `Blocked pop-up window: ${windowEvent.url}` : 'Blocked pop-up window.',
         loadErrorDetails: windowEvent.url,
       })
@@ -178,7 +201,7 @@ export function BrowserWebview({
       const faviconUrl = favicons?.[0]
 
       if (faviconUrl) {
-        onUpdate(tab.id, { faviconUrl })
+        emitUpdate({ faviconUrl })
       }
     }
 
@@ -189,7 +212,7 @@ export function BrowserWebview({
         return
       }
 
-      onUpdate(tab.id, {
+      emitUpdate({
         loading: false,
         loadError: getFriendlyLoadError(loadEvent.errorDescription),
         loadErrorDetails: getLoadErrorDetails(loadEvent),
@@ -213,7 +236,7 @@ export function BrowserWebview({
         : ''
       const nextError = `${consoleEvent.message}${location}`
 
-      onUpdate(tab.id, {
+      emitUpdate({
         consoleErrors: [nextError, ...(tab.consoleErrors ?? [])].slice(0, 5),
       })
     }
@@ -234,7 +257,7 @@ export function BrowserWebview({
       const reason = goneEvent.details?.reason ?? 'unknown'
       const exitCode = goneEvent.details?.exitCode
 
-      onUpdate(tab.id, {
+      emitUpdate({
         loading: false,
         loadError: 'The page renderer stopped unexpectedly.',
         loadErrorDetails: `Reason: ${reason}${typeof exitCode === 'number' ? `, exit code: ${exitCode}` : ''}`,
@@ -242,7 +265,7 @@ export function BrowserWebview({
     }
 
     webviewElement.addEventListener('dom-ready', handleDomReady)
-    webviewElement.addEventListener('did-start-loading', handleStartLoading)
+    webviewElement.addEventListener('did-start-navigation', handleStartNavigation)
     webviewElement.addEventListener('did-stop-loading', handleStopLoading)
     webviewElement.addEventListener('page-title-updated', handleTitle)
     webviewElement.addEventListener('did-navigate', handleNavigation)
@@ -257,7 +280,7 @@ export function BrowserWebview({
 
     return () => {
       webviewElement.removeEventListener('dom-ready', handleDomReady)
-      webviewElement.removeEventListener('did-start-loading', handleStartLoading)
+      webviewElement.removeEventListener('did-start-navigation', handleStartNavigation)
       webviewElement.removeEventListener('did-stop-loading', handleStopLoading)
       webviewElement.removeEventListener('page-title-updated', handleTitle)
       webviewElement.removeEventListener('did-navigate', handleNavigation)
