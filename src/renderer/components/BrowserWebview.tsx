@@ -25,6 +25,7 @@ type NavigationEvent = Event & {
   url?: string
   isMainFrame?: boolean
   isSameDocument?: boolean
+  isInPlace?: boolean
 }
 
 type WindowOpenEvent = Event & {
@@ -128,7 +129,7 @@ export function BrowserWebview({
     function handleStartNavigation(event: Event) {
       const navigationEvent = event as NavigationEvent
 
-      if (navigationEvent.isMainFrame === false || navigationEvent.isSameDocument) {
+      if (navigationEvent.isMainFrame === false || navigationEvent.isSameDocument || navigationEvent.isInPlace) {
         return
       }
 
