@@ -39,7 +39,7 @@ export function TabBar({
           return (
             <div
               key={tab.id}
-              className={`app-no-drag group relative flex h-9 w-56 shrink-0 items-center gap-2 rounded-t-lg border px-2.5 transition ${
+              className={`app-no-drag group relative flex h-9 w-56 shrink-0 items-center gap-2 overflow-hidden rounded-t-lg border px-2.5 transition ${
                 active
                   ? 'border-[var(--rt-border)] border-b-[var(--rt-surface-raised)] bg-[var(--rt-surface-raised)] text-[var(--rt-text)] shadow-[0_-1px_0_rgba(15,23,42,0.04),1px_0_0_rgba(15,23,42,0.04),-1px_0_0_rgba(15,23,42,0.04)]'
                   : split
@@ -49,7 +49,7 @@ export function TabBar({
             >
               <span
                 aria-hidden="true"
-                className="absolute inset-x-2 top-0 h-0.5 rounded-full"
+                className="pointer-events-none absolute inset-x-0 top-0 h-0.5 rounded-t-lg"
                 style={{ backgroundColor: tab.roleColor }}
               />
               {renamingTabId === tab.id ? (
