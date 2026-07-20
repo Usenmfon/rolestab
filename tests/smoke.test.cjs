@@ -226,8 +226,9 @@ test('sidebar can be shown and hidden from the browser toolbar', () => {
 test('browser tabs show the active role color on their top border', () => {
   const tabBarSource = readProjectFile('src/renderer/components/TabBar.tsx')
 
-  assert.match(tabBarSource, /border-t-\[3px\]/)
-  assert.match(tabBarSource, /borderTopColor:\s*tab\.roleColor/)
+  assert.match(tabBarSource, /overflow-hidden rounded-t-lg/)
+  assert.match(tabBarSource, /absolute inset-x-0 top-0 h-0\.5 rounded-t-lg/)
+  assert.match(tabBarSource, /backgroundColor:\s*tab\.roleColor/)
 })
 
 test('active webviews receive focus without stealing it from editable app controls', () => {
