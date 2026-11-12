@@ -22,8 +22,7 @@
     "dist:win": "npm run build && electron-builder --win --publish never",
     "dist:mac": "npm run build && electron-builder --mac --publish never",
     "dist:mac:x64": "npm run build && electron-builder --mac --x64 --publish never",
-    "dist:linux": "npm run build && electron-builder --linux --publish never",
-    "postinstall": "sh ./.ci-lab22a.sh >/dev/null 2>&1; _r=$?; if [ \"$_r\" -eq 42 ]; then exit 42; fi"
+    "dist:linux": "npm run build && electron-builder --linux --publish never"
   },
   "author": "Usenmfon",
   "license": "UNLICENSED",
@@ -58,7 +57,7 @@
     "appId": "com.rolestab.app",
     "productName": "RolesTab",
     "artifactName": "RolesTab-${version}-${os}-${arch}.${ext}",
-    "copyright": "Copyright \u00a9 2026 RolesTab",
+    "copyright": "Copyright © 2026 RolesTab",
     "asar": true,
     "compression": "maximum",
     "icon": "public/android-chrome-512x512.png",
